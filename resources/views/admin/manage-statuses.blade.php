@@ -72,7 +72,7 @@
       </table>
     </div>
 
-    @include('partials.footer', ['from' => 1, 'to' => 2, 'total' => 16])
+    @include('partials.footer')
   </div>
 </div>
 @endsection

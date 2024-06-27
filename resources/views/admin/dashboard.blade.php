@@ -5,28 +5,56 @@
   <h1>Dashboard</h1>
   <div class="stats">
     <div class="stat">
-      <img src="{{ asset('icons/orders-pending.png') }}" alt="Pending">
-      <h3>40,689</h3>
-      <p>Pending</p>
-      <span>8.5% Up from yesterday</span>
+      <div class="stat-top">
+        <img src="{{ asset('icons/orders-pending.png') }}" alt="Pending">
+        <div class="stat-info">
+          <h3>40,689</h3>
+          <p>Pending</p>
+        </div>
+      </div>
+      <div class="stat-btm">
+        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+        <p><span class="stat-up">8.5%</span> Up from yesterday</p>
+      </div>
     </div>
     <div class="stat">
-      <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
-      <h3>10,293</h3>
-      <p>In Production</p>
-      <span>1.3% Up from past week</span>
+      <div class="stat-top">
+        <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
+        <div class="stat-info">
+          <h3>10,293</h3>
+          <p>In Production</p>
+        </div>
+      </div>
+      <div class="stat-btm">
+        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+        <p><span class="stat-up">1.3%</span> Up from past week</p>
+      </div>
     </div>
     <div class="stat">
-      <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
-      <h3>89,000</h3>
-      <p>On Hold</p>
-      <span>4.3% Down from yesterday</span>
+      <div class="stat-top">
+        <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
+        <div class="stat-info">
+          <h3>89,000</h3>
+          <p>On Hold</p>
+        </div>
+      </div>
+      <div class="stat-btm">
+        <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+        <p><span class="stat-down">4.3%</span> Down from yesterday</p>
+      </div>
     </div>
     <div class="stat">
-      <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
-      <h3>2,040</h3>
-      <p>Ready to Ship</p>
-      <span>1.8% Up from yesterday</span>
+      <div class="stat-top">
+        <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
+        <div class="stat-info">
+          <h3>2,040</h3>
+          <p>Ready to Ship</p>
+        </div>
+      </div>
+      <div class="stat-btm">
+        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+        <p><span class="stat-up">1.8%</span> Up from yesterday</p>
+      </div>
     </div>
   </div>
   <div class="orders">
@@ -59,21 +87,21 @@
       <tbody>
         <tr>
           <td>00001</td>
-          <td>Completed</td>
+          <td><span class="status completed">Completed</span></td>
           <td>Jason Price</td>
           <td>12/09/2019</td>
           <td>20h05m</td>
         </tr>
         <tr>
           <td>00002</td>
-          <td>On Hold</td>
+          <td><span class="status on-hold">On Hold</span></td>
           <td>Duane Dean</td>
           <td>12/09/2019</td>
           <td>2h05m</td>
         </tr>
         <tr>
           <td>00003</td>
-          <td>Rejected</td>
+          <td><span class="status rejected">Rejected</span></td>
           <td>Jonathan Barker</td>
           <td>12/09/2019</td>
           <td>2h05m</td>

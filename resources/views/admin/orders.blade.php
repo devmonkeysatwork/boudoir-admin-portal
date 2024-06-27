@@ -12,17 +12,24 @@
     </div>
     <div class="filter-item">
       <select class="filter-select">
-        <option>Date</option>
+        <option value="" disabled selected>Date</option>
+        <option value="oldest">Oldest</option>
+        <option value="newest">Newest</option>
       </select>
     </div>
     <div class="filter-item">
       <select class="filter-select">
-        <option>Product</option>
+        <option value="" disabled selected>Product</option>
       </select>
     </div>
     <div class="filter-item">
       <select class="filter-select">
-        <option>Order Status</option>
+        <option value="" disabled selected>Order Status</option>
+        <option value="processing">Processing</option>
+        <option value="in-production">In Production</option>
+        <option value="on-hold">On Hold</option>
+        <option value="completed">Completed</option>
+        <option value="rejected">Rejected</option>
       </select>
     </div>
     <div class="filter-item">
@@ -107,6 +114,6 @@
       </tr>
     </tbody>
   </table>
-  @include('partials.footer', ['from' => 1, 'to' => 9, 'total' => 78])
+  <!-- @include('partials.footer', ['from' => 1, 'to' => 9, 'total' => 78]) -->
 </div>
 @endsection

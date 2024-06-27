@@ -71,7 +71,7 @@
         </tbody>
       </table>
     </div>
-    @include('partials.footer', ['from' => 1, 'to' => 5, 'total' => 5])
+    @include('partials.footer')
   </div>
 </div>
 @endsection

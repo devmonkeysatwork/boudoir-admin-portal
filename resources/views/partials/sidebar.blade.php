@@ -19,7 +19,7 @@
       </a>
     </li>
     <li>
-      <a href="{{ route('admin.settings') }}" class="{{ Request::routeIs('admin.settings') ? 'active' : '' }}">
+      <a href="{{ route('admin.settings') }}" class="{{ Request::is('settings*') ? 'active' : '' }}">
         <img src="{{ asset('icons/settings.png') }}" alt="Settings">Settings
       </a>
     </li>

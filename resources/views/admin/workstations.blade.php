@@ -57,6 +57,6 @@
       </tr>
     </tbody>
   </table>
-  @include('partials.footer', ['from' => 1, 'to' => 7, 'total' => 7])
+  <!-- @include('partials.footer', ['from' => 1, 'to' => 7, 'total' => 7]) -->
 </div>
 @endsection
