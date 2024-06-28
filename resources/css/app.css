@@ -1,21 +1,4 @@
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
-
-/* LOGIN */
-/* body {
-  background-color: #f8f9fa;
-  font-family: 'Nunito Sans', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: auto 0;
-} */
-
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
-
-
 
 body {
   background-color: #F5F6FA;
@@ -116,7 +99,6 @@ h1, h2 {
 }
 
 button {
-  /* width: 100%; */
   padding: 10px;
   border: none;
   font-size: 14px;
@@ -169,6 +151,7 @@ button {
   border-radius: 5px;
   width: 65%;
   position: relative;
+  transition: background-color 0.3s;
 }
 
 .sidebar-menu li a:hover {
@@ -176,7 +159,8 @@ button {
   color: #fff;
 }
 
-.sidebar-menu li a:hover::before {
+.sidebar-menu li a:hover::before,
+.sidebar-menu li a.active::before {
   content: "";
   position: absolute;
   left: -29px;
@@ -195,20 +179,9 @@ button {
 }
 
 .sidebar-menu li a.active {
+  font-weight: 700;
   background-color: #BD7F7F;
   color: #fff;
-}
-
-.sidebar-menu li a.active::before {
-  content: "";
-  position: absolute;
-  left: -29px;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  background-color: #BD7F7F;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
 }
 
 .sidebar-menu li a:hover img,
@@ -228,7 +201,7 @@ button {
   z-index: 1000;
 }
 
-.header-search, .orders-search {
+.header-search, .orders-search, .search-container {
   position: relative;
   display: flex;
   align-items: center;
@@ -287,7 +260,6 @@ button {
   border-radius: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 23%;
-  /* text-align: right; */
   position: relative;
 }
 
@@ -480,7 +452,7 @@ button {
   color: #d9534f;
   padding: 10px 0;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 14px;
   width: 125px;
 }
@@ -500,7 +472,7 @@ button {
   border: none;
   padding: 10px 0;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
   color: #202224;
   font-size: 14px;
   display: flex;
@@ -568,7 +540,7 @@ table th {
   padding: 5px 10px;
   border-radius: 5px;
   color: #fff;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .status.completed {
@@ -622,11 +594,12 @@ table th {
   gap: 10px;
   padding: 15px 20px;
   border-radius: 5px;
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.3s;
+  margin-bottom: 10px;
 }
 
 .settings-menu li a.active {
-  font-weight: bold;
+  font-weight: 700;
   background-color: #BD7F7F;
   color: #fff;
 }
@@ -732,7 +705,7 @@ table .actions {
   padding: 5px 10px;
   border-radius: 5px;
   color: #fff;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .status.not-started {
@@ -868,4 +841,295 @@ input:checked+.slider:before {
 
 .pagination-btn:hover {
   background-color: #eceff2;
+}
+
+
+/* MODAL */
+.modal {
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: relative;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 50%;
+  margin: auto;
+  transform: translateY(-50%);
+  top: 50%;
+}
+
+.close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 30px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+}
+
+#orderModal .modal-content {
+  width: 1200px;
+  height: 800px;
+}
+
+#orderModal .completed {
+  position: absolute;
+  right: 70px;
+  top: 22px;
+}
+
+#orderModal .orderModal-flex {
+  display: flex;
+}
+
+#orderModal .activity-log,
+#orderModal .comments {
+  width: 50%;
+  padding: 20px;
+  position: relative;
+}
+
+#orderModal .activity-log .log-entry {
+  margin-bottom: 5px;
+}
+
+#orderModal .activity-log .log-desc {
+  display: inline-flex;
+  max-width: 340px;
+}
+
+#orderModal .log-date,
+#orderModal .comment-date {
+  position: absolute;
+  right: 40px;
+}
+
+#orderModal .comment {
+  border: 1px solid #D5D5D5;
+  padding: 20px 20px 0 20px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+#orderModal .comment .comment-user {
+  font-weight: 700;
+  position: relative;
+  padding-left: 50px;
+}
+
+#orderModal .comment .comment-user,
+#orderModal .comment .comment-text {
+  padding-top: 10px;
+}
+
+
+#orderModal .comment .comment-user::before {
+  content: attr(data-initial);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  background-color: #6c757d;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+#orderModal .comment .comment-footer {
+  border-top: 1px solid #D5D5D5;
+  display: flex;
+  justify-content: flex-end;
+  width: 108%;
+  margin-left: -20px;
+}
+
+#orderModal .comment .comment-footer button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+#orderModal .pdf-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: transparent;
+  color: #000;
+  border: 1px solid #D5D5D5;
+  padding: 15px 50px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+}
+
+
+#orderModal .pdf-btn img {
+  width: 30px;
+  margin-right: 10px;
+}
+
+#orderModal .new-comment {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+}
+
+#orderModal .new-comment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  border: 1px solid #D5D5D5;
+  border-radius: 10px;
+  padding: 10px;
+  width: 560px;
+}
+
+#orderModal .new-comment textarea {
+  flex-grow: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  resize: none;
+  outline: none;
+  height: 50px;
+  background-color: transparent;
+  color: #202224;
+  font-size: 14px;
+}
+
+#orderModal .new-comment .msg-btn {
+  padding: 10px;
+  background-color: transparent;
+}
+
+#orderModal .new-comment .send-btn {
+  padding: 10px 25px;
+  margin: 10px;
+}
+
+#orderModal .new-comment button {
+  background-color: #BD7F7F;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#orderModal .new-comment button:hover {
+  background-color: #A76C6C;
+}
+
+#orderModal .new-comment textarea::placeholder {
+  color: #6c757d;
+}
+
+#orderModal .new-comment .attachment-icons {
+  display: flex;
+  gap: 10px;
+}
+
+#orderModal .new-comment .attachment-icons img {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+
+#workstationModal .modal-content {
+  max-width: 450px;
+}
+
+#workstationModal .search-container input {
+  padding: 10px 20px;
+  padding-left: 45px;
+  border-radius: 20px;
+  background-color: #F5F6FA;
+  border: 1px solid #D5D5D5;
+  width: 200px;
+}
+
+#workstationModal .search-container .search-icon {
+  position: absolute;
+  left: 15px;
+  width: 20px;
+  height: 20px;
+}
+
+#workstationModal .modal-content table th {
+  background-color: transparent;
+  color: #202224;
+  border: none;
+  border-bottom: 1px solid #000;
+  text-align: left;
+}
+
+#workstationModal .modal-content table tbody td {
+  padding: 10px 20px;
+  border-bottom: 0.5px solid #D5D5D5;
+}
+
+#workstationModal .modal-content .pagination {
+  margin: 0;
+}
+
+#workstationModal .modal-content .btn {
+  padding: 13px 35px;
+  background-color: transparent;
+  border: 1px solid #EF3826;
+  color: #EF3826;
+  border-radius: 4px;
+}
+
+
+#createStatusModal .modal-content,
+#editStatusModal .modal-content {
+  width: 550px;
+  height: 280px;
+}
+
+#createStatusModal .modal-content form,
+#editStatusModal .modal-content form {
+  display: flex;
+}
+
+#createStatusModal .modal-content .form-group.name,
+#editStatusModal .modal-content .form-group.name {
+  width: 60%;
+}
+
+#createStatusModal .modal-content .form-group.color,
+#editStatusModal .modal-content .form-group.color {
+  width: 40%;
 }
