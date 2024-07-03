@@ -202,6 +202,5 @@
       </x-slot>
     </div>
   </x-modal>
-  <!-- @include('partials.footer', ['from' => 1, 'to' => 9, 'total' => 78]) -->
 </div>
 @endsection

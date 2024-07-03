@@ -73,26 +73,34 @@
 
       <x-modal id="createEmailModal" title="Create New Template">
         <form>
-          <div class="form-group">
-            <label for="template-name">Template Name</label>
-            <input type="text" id="template-name" name="template-name">
+          <div class="second-top">
+            <div class="top">
+              <div class="form-group name">
+                <label for="template-name">Template Name:</label>
+                <input type="text" id="template-name" name="template-name">
+              </div>
+              <div class="form-group status">
+                <label for="associated-status">Associated Status:</label>
+                <select id="associated-status" name="associated-status">
+                  <option value="" disabled selected>Select an option</option>
+                  <option value="processing">Processing</option>
+                  <option value="in-production">In Production</option>
+                  <option value="on-hold">On Hold</option>
+                  <option value="completed">Completed</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group subject">
+              <label for="subject">Subject:</label>
+              <input type="text" id="subject" name="subject">
+            </div>
           </div>
-          <div class="form-group">
-            <label for="associated-status">Associated Status</label>
-            <select id="associated-status" name="associated-status">
-              <option value="">Select an option</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="subject">Subject</label>
-            <input type="text" id="subject" name="subject">
-          </div>
-          <div class="form-group">
-            <label for="email-content">Content</label>
+          <div class="form-group text">
             <textarea id="email-content" name="email-content"></textarea>
           </div>
-          <div class="form-group">
-            <button type="submit" class="btn">Save Template</button>
+          <div class="form-group btn-group">
+            <button type="submit" class="btn save-btn">Save Template</button>
             <button type="button" class="btn cancel-btn" onclick="document.getElementById('createEmailModal').style.display='none'">Cancel</button>
           </div>
         </form>
@@ -101,30 +109,37 @@
 
       <x-modal id="editEmailModal" title="Edit Template">
         <form>
-          <div class="form-group">
-            <label for="edit-template-name">Template Name</label>
-            <input type="text" id="edit-template-name" name="edit-template-name" value="">
+          <div class="second-top">
+            <div class="top">
+              <div class="form-group name">
+                <label for="template-name">Template Name:</label>
+                <input type="text" id="template-name" name="template-name">
+              </div>
+              <div class="form-group status">
+                <label for="associated-status">Associated Status:</label>
+                <select id="associated-status" name="associated-status">
+                  <option value="" disabled selected>Select an option</option>
+                  <option value="processing">Processing</option>
+                  <option value="in-production">In Production</option>
+                  <option value="on-hold">On Hold</option>
+                  <option value="completed">Completed</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group subject">
+              <label for="subject">Subject:</label>
+              <input type="text" id="subject" name="subject">
+            </div>
           </div>
-          <div class="form-group">
-            <label for="edit-associated-status">Associated Status</label>
-            <select id="edit-associated-status" name="edit-associated-status">
-              <option value=""></option>
-            </select>
+          <div class="form-group text">
+            <textarea id="email-content" name="email-content"></textarea>
           </div>
-          <div class="form-group">
-            <label for="edit-subject">Subject</label>
-            <input type="text" id="edit-subject" name="edit-subject" value="">
-          </div>
-          <div class="form-group">
-            <label for="edit-email-content">Content</label>
-            <textarea id="edit-email-content" name="edit-email-content"></textarea>
-          </div>
-          <div class="form-group">
-            <button type="submit" class="btn">Save Template</button>
+          <div class="form-group btn-group">
+            <button type="submit" class="btn save-btn">Save Template</button>
             <button type="button" class="btn cancel-btn" onclick="document.getElementById('editEmailModal').style.display='none'">Cancel</button>
           </div>
-        </form>
-        <x-slot name="footer"></x-slot>
+          <x-slot name="footer"></x-slot>
       </x-modal>
 
     </div>
