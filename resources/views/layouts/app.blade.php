@@ -216,8 +216,4 @@
         menubar: false,
         height: 300
     });
-<<<<<<< HEAD
 </script> -->
-=======
-</script>
->>>>>>> 636e67c5e733ffc703c48c2693cf80e5f4a52644
