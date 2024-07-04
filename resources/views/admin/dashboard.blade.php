@@ -66,7 +66,7 @@
           <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
         </div>
         <div class="sort-dropdown">
-          <select class="sort-select">
+          <select class="sort-select" id="order-sort">
             <option value="" disabled selected>Sort By</option>
             <option value="oldest">Oldest</option>
             <option value="newest">Newest</option>
@@ -114,7 +114,7 @@
       <div class="team-top">
         <h2>Team</h2>
         <div class="sort-dropdown">
-          <select class="sort-select">
+          <select class="sort-select" id="team-sort">
             <option value="week" selected>Week</option>
             <option value="day">Day</option>
             <option value="month">Month</option>
@@ -153,7 +153,7 @@
       <div class="workstations-top">
         <h2>Workstations</h2>
         <div class="sort-dropdown">
-          <select class="sort-select">
+          <select class="sort-select" id="workstation-sort">
             <option value="week" selected>Week</option>
             <option value="day">Day</option>
             <option value="month">Month</option>

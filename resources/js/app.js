@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    const closeButtons = document.querySelectorAll(".modal .close");
+    const closeButtons = document.querySelectorAll(".modal .close, .modal .cancel-btn");
     closeButtons.forEach(button => {
         button.addEventListener("click", function () {
             const modal = this.closest(".modal");
@@ -37,4 +37,3 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-
