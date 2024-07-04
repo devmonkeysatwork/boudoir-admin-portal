@@ -13,7 +13,7 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="barcodeModal" tabindex="-1" aria-labelledby="barcodeModalLabel" aria-hidden="true">
+    <div class="modal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -32,9 +32,7 @@
         </div>
     </div>
 
-    <!-- Include jQuery and Bootstrap JS for modal functionality -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#barcode_input').on('keypress', function(event) {
