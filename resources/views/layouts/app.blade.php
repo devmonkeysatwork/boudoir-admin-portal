@@ -10,9 +10,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
     <!-- tinymce -->
-    <script src="https://cdn.tiny.cloud/1/67ldg66kokeebemvaix2hwu9iu3gou1btkdl63h3wxexo5ki/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- <script src="https://cdn.tiny.cloud/1/67ldg66kokeebemvaix2hwu9iu3gou1btkdl63h3wxexo5ki/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script> -->
+    <!-- ckeditor -->
+    <script src="https://cdn.ckeditor.com/4.17.0/standard/ckeditor.js"></script>
     <!-- pickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css" />
+    <!-- choices.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <!-- vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -113,9 +117,94 @@
     });
 </script>
 
-
-
+<script src="https://cdn.ckeditor.com/4.17.0/standard/ckeditor.js"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        CKEDITOR.replace('email-content', {
+            toolbar: [{
+                    name: 'paragraph',
+                    items: ['Format']
+                },
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', 'Blockquote']
+                },
+                {
+                    name: 'links',
+                    items: ['Link', 'Unlink']
+                },
+                {
+                    name: 'insert',
+                    items: ['Image', 'Table']
+                },
+                {
+                    name: 'tools',
+                    items: ['Maximize']
+                }
+            ],
+            removePlugins: 'elementspath',
+            resize_enabled: false,
+        });
+
+        CKEDITOR.replace('edit-email-content', {
+            toolbar: [{
+                    name: 'paragraph',
+                    items: ['Format']
+                },
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', 'Blockquote']
+                },
+                {
+                    name: 'links',
+                    items: ['Link', 'Unlink']
+                },
+                {
+                    name: 'insert',
+                    items: ['Image', 'Table']
+                },
+                {
+                    name: 'tools',
+                    items: ['Maximize']
+                }
+            ],
+            removePlugins: 'elementspath',
+            resize_enabled: false,
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const orderSort = new Choices('#order-sort', {
+            searchEnabled: false,
+            itemSelectText: '',
+        });
+
+        const teamSort = new Choices('#team-sort', {
+            searchEnabled: false,
+            itemSelectText: '',
+        });
+
+        const workstationSort = new Choices('#workstation-sort', {
+            searchEnabled: false,
+            itemSelectText: '',
+        });
+    });
+</script>
+
+
+
+<!-- <script>
     tinymce.init({
         selector: 'textarea#email-content, textarea#edit-email-content',
         plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
@@ -126,4 +215,4 @@
         menubar: false,
         height: 300
     });
-</script>
+</script> -->

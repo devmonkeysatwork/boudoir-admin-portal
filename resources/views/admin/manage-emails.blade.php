@@ -133,7 +133,7 @@
             </div>
           </div>
           <div class="form-group text">
-            <textarea id="email-content" name="email-content"></textarea>
+            <textarea id="edit-email-content" name="edit-email-content"></textarea>
           </div>
           <div class="form-group btn-group">
             <button type="submit" class="btn save-btn">Save Template</button>
