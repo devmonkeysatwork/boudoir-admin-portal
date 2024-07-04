@@ -14,7 +14,7 @@
     <!-- pickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css" />
     <!-- vite -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
 </head>
 
 <body>
@@ -35,6 +35,7 @@
 </html>
 
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+<script src="{{asset('assets/js/app.js')}}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Initialize Pickr for create status modal

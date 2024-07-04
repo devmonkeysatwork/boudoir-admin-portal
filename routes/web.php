@@ -6,6 +6,14 @@ use App\Http\Controllers\CustomAuthController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+
+Route::get('/route-cache', function() {
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    Artisan::call('view:clear');
+    return redirect()->route('home')->with('cache','System Cache Has Been Removed.');
+});
 // Public routes
 Route::get('/', function () {
     return view('welcome');
