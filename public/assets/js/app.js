@@ -1,10 +1,3 @@
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-
-Alpine.start();
-
-
 // MODALS
 document.addEventListener("DOMContentLoaded", function () {
     const openModalButtons = document.querySelectorAll("[data-open-modal]");
