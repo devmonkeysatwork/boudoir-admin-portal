@@ -12,19 +12,19 @@
       </button>
     </div>
     <div class="filter-item">
-      <select class="filter-select">
+      <select class="sort-select" id="filter-date">
         <option value="" disabled selected>Date</option>
         <option value="oldest">Oldest</option>
         <option value="newest">Newest</option>
       </select>
     </div>
     <div class="filter-item">
-      <select class="filter-select">
+      <select class="sort-select" id="filter-product">
         <option value="" disabled selected>Product</option>
       </select>
     </div>
     <div class="filter-item">
-      <select class="filter-select">
+      <select class="sort-select" id="filter-status">
         <option value="" disabled selected>Order Status</option>
         <option value="processing">Processing</option>
         <option value="in-production">In Production</option>

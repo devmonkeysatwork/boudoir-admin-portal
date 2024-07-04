@@ -9,8 +9,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
-    <!-- tinymce -->
-    <!-- <script src="https://cdn.tiny.cloud/1/67ldg66kokeebemvaix2hwu9iu3gou1btkdl63h3wxexo5ki/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script> -->
     <!-- ckeditor -->
     <script src="https://cdn.ckeditor.com/4.17.0/standard/ckeditor.js"></script>
     <!-- pickr -->
@@ -18,7 +16,7 @@
     <!-- choices.js -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <!-- vite -->
-    <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body>
@@ -39,7 +37,6 @@
 </html>
 
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-<script src="{{asset('assets/js/app.js')}}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Initialize Pickr for create status modal
@@ -201,23 +198,19 @@
             itemSelectText: '',
         });
     });
-</script>
 
-
-
-<!-- <script>
-    tinymce.init({
-        selector: 'textarea#email-content, textarea#edit-email-content',
-        plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-        toolbar_mode: 'floating',
-        toolbar: 'undo redo | formatselect | bold italic backcolor | \
-                  alignleft aligncenter alignright alignjustify | \
-                  bullist numlist outdent indent | removeformat',
-        menubar: false,
-        height: 300
+    document.addEventListener("DOMContentLoaded", function() {
+        const filterDate = new Choices('#filter-date', {
+            searchEnabled: false,
+            itemSelectText: '',
+        });
+        const filterProduct = new Choices('#filter-product', {
+            searchEnabled: false,
+            itemSelectText: '',
+        });
+        const filterStatus = new Choices('#filter-status', {
+            searchEnabled: false,
+            itemSelectText: '',
+        });
     });
-<<<<<<< HEAD
-</script> -->
-=======
 </script>
->>>>>>> 636e67c5e733ffc703c48c2693cf80e5f4a52644
