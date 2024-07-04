@@ -32,7 +32,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#barcode_input').on('keypress', function(event) {
