@@ -38,6 +38,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script>
     $(document).ready(function() {
+        $('#barcode_input').focus();
         $('#barcode_input').on('keypress', function(event) {
             if (event.keyCode === 13) { // Enter key pressed
                 var barcode = $(this).val();
