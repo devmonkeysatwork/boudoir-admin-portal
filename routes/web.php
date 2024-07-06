@@ -48,7 +48,7 @@ Route::get('/barcode-scanner', function () {
 
 
 
-Route::post('/api/orders', [\App\Http\Controllers\OrdersController::class, 'store']);
+Route::post('/api/save_order', [\App\Http\Controllers\OrdersController::class, 'store']);
 
 
 require __DIR__ . '/auth.php';
