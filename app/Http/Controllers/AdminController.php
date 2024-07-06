@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -18,6 +19,11 @@ class AdminController extends Controller
 
     public function workstations()
     {
+        $user = User::find(1);
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        echo $token;
+        exit;
         return view('admin.workstations');
     }
 

@@ -46,4 +46,11 @@ Route::get('/barcode-scanner', function () {
     return view('barcode-scanner');
 });
 
+
+
+Route::middleware(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class)->group(function () {
+    Route::post('/api/orders', [\App\Http\Controllers\OrdersController::class, 'store'])->middleware('auth:sanctum');
+});
+
+
 require __DIR__ . '/auth.php';
