@@ -19,11 +19,6 @@ class AdminController extends Controller
 
     public function workstations()
     {
-        $user = User::find(1);
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        echo $token;
-        exit;
         return view('admin.workstations');
     }
 
