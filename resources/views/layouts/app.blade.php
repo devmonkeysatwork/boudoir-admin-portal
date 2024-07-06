@@ -16,7 +16,8 @@
     <!-- choices.js -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <!-- vite -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
+{{--    @vite(['resources/css/app.css', 'resources/js/app.js'])--}}
 </head>
 
 <body>
@@ -213,10 +214,5 @@
             itemSelectText: '',
         });
     });
-<<<<<<< HEAD
 </script>
-=======
-<<<<<<< HEAD
-</script> -->
-
->>>>>>> 8acf142e84c734b4a965f6b6165ba500c0e3a805
+<script src="{{asset('assets/js/app.js')}}"></script>
