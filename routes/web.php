@@ -49,7 +49,7 @@ Route::get('/barcode-scanner', function () {
 
 
 Route::middleware(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class)->group(function () {
-    Route::post('/api/orders', [\App\Http\Controllers\OrdersController::class, 'store'])->middleware('auth:sanctum');
+    Route::post('/api/orders', [\App\Http\Controllers\OrdersController::class, 'store'])->middleware('auth:api');
 });
 
 
