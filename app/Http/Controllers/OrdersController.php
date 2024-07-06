@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Orders;
 use App\Http\Requests\StoreOrdersRequest;
 use App\Http\Requests\UpdateOrdersRequest;
+use Illuminate\Support\Facades\Log;
 
 class OrdersController extends Controller
 {
@@ -29,7 +30,7 @@ class OrdersController extends Controller
      */
     public function store(StoreOrdersRequest $request)
     {
-        dd($request);
+        Log::info($request);
     }
 
     /**
