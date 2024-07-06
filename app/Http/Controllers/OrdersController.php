@@ -30,7 +30,7 @@ class OrdersController extends Controller
      */
     public function store(StoreOrdersRequest $request)
     {
-        Log::info($request);
+        dd($request);
     }
 
     /**
