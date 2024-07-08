@@ -41,13 +41,13 @@ class OrdersController extends Controller
 
             if($request->has('order_id')){
                 $order_data = $request->all();
-                $existingOrder = Orders::where('order_id', $order_data['order_id'])->first();
+                $existingOrder = Orders::where('order_id', $order_data['order_number'])->first();
                 if ($existingOrder) {
                     // Order already exists, handle accordingly (e.g., return a response or log a message)
                     return response()->json(['message' => 'Order already exists'], 409);
                 }
                 $order = new Orders();
-                $order->order_id = $order_data['order_id']??null;
+                $order->order_id = $order_data['order_number']??null;
                 $order->customer_name = $order_data['customer_name']??null;
                 $order->customer_email = $order_data['customer_email']??null;
                 $order->date_started = Carbon::now()->format('Y-m-d h:i:s')??null;
