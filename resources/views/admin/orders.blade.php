@@ -50,69 +50,80 @@
       </tr>
     </thead>
     <tbody>
-      <tr data-open-modal="orderModal">
-        <td>00001</td>
-        <td><span class="status completed">Completed</span></td>
-        <td>Jason Price</td>
-        <td>12/09/2019</td>
-        <td>20h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00002</td>
-        <td><span class="status on-hold">On Hold</span></td>
-        <td>Duane Dean</td>
-        <td>12/09/2019</td>
-        <td>2h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00003</td>
-        <td><span class="status rejected">Rejected</span></td>
-        <td>Duane Dean</td>
-        <td>12/09/2019</td>
-        <td>2h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00004</td>
-        <td><span class="status in-production">In Production</span></td>
-        <td>Jonathan Barker</td>
-        <td>12/09/2019</td>
-        <td>2h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00005</td>
-        <td><span class="status processing">Processing</span></td>
-        <td>Jason Price</td>
-        <td>12/09/2019</td>
-        <td>2h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00006</td>
-        <td><span class="status completed">Completed</span></td>
-        <td>Jason Price</td>
-        <td>12/09/2019</td>
-        <td>20h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00007</td>
-        <td><span class="status processing">Processing</span></td>
-        <td>Jonathan Barker</td>
-        <td>12/09/2019</td>
-        <td>2h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00008</td>
-        <td><span class="status in-production">In Production</span></td>
-        <td>Jason Price</td>
-        <td>12/09/2019</td>
-        <td>2h05m</td>
-      </tr>
-      <tr data-open-modal="orderModal">
-        <td>00009</td>
-        <td><span class="status in-production">In Production</span></td>
-        <td>Duane Dean</td>
-        <td>12/09/2019</td>
-        <td>2h05m</td>
-      </tr>
+        @foreach($orders as $order)
+          <tr data-open-modal="orderModal">
+            <td>{{$order->order_id}}</td>
+            <td><span class="status completed" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
+            <td>{{$order->station?->worker?->name ?? null}}</td>
+            <td>{{$order->date_started}}</td>
+            <td>
+                @php
+                    $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                    $now = \Carbon\Carbon::now();
+                    $timeSpent = $dateStarted->diff($now);
+                @endphp
+                {{ $timeSpent->days > 0 ? $timeSpent->days . 'd ' : '' }}
+                {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
+                {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
+            </td>
+          </tr>
+        @endforeach
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00002</td>--}}
+{{--        <td><span class="status on-hold">On Hold</span></td>--}}
+{{--        <td>Duane Dean</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>2h05m</td>--}}
+{{--      </tr>--}}
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00003</td>--}}
+{{--        <td><span class="status rejected">Rejected</span></td>--}}
+{{--        <td>Duane Dean</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>2h05m</td>--}}
+{{--      </tr>--}}
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00004</td>--}}
+{{--        <td><span class="status in-production">In Production</span></td>--}}
+{{--        <td>Jonathan Barker</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>2h05m</td>--}}
+{{--      </tr>--}}
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00005</td>--}}
+{{--        <td><span class="status processing">Processing</span></td>--}}
+{{--        <td>Jason Price</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>2h05m</td>--}}
+{{--      </tr>--}}
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00006</td>--}}
+{{--        <td><span class="status completed">Completed</span></td>--}}
+{{--        <td>Jason Price</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>20h05m</td>--}}
+{{--      </tr>--}}
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00007</td>--}}
+{{--        <td><span class="status processing">Processing</span></td>--}}
+{{--        <td>Jonathan Barker</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>2h05m</td>--}}
+{{--      </tr>--}}
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00008</td>--}}
+{{--        <td><span class="status in-production">In Production</span></td>--}}
+{{--        <td>Jason Price</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>2h05m</td>--}}
+{{--      </tr>--}}
+{{--      <tr data-open-modal="orderModal">--}}
+{{--        <td>00009</td>--}}
+{{--        <td><span class="status in-production">In Production</span></td>--}}
+{{--        <td>Duane Dean</td>--}}
+{{--        <td>12/09/2019</td>--}}
+{{--        <td>2h05m</td>--}}
+{{--      </tr>--}}
     </tbody>
   </table>
 
