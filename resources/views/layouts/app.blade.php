@@ -16,6 +16,7 @@
     <!-- choices.js -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <!-- vite -->
+    <link rel="stylesheet" href="{{ asset('assets/css/notyf.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
 {{--    @vite(['resources/css/app.css', 'resources/js/app.js'])--}}
 </head>
@@ -182,6 +183,7 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="{{asset('assets/js/notyf.js')}}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const orderSort = new Choices('#order-sort', {
@@ -214,5 +216,36 @@
             itemSelectText: '',
         });
     });
+    function show_toast(message,type='warning'){
+
+        var notyf = new Notyf({
+            position: {
+                x: 'right',
+                y: 'top',
+            },
+            types: [
+                {
+                    type: 'warning',
+                    background: '#f89406',
+                    icon: {
+                        className: 'fa fa-exclamation-circle',
+                        tagName: 'i',
+                        color: 'white'
+                    }
+                },
+            ],
+            duration: 5000,
+            alertIcon: 'fa fa-exclamation-circle',
+            confirmIcon: 'fa fa-check-circle'
+        })
+
+        notyf.open({
+            type: type,
+            message: message
+        });
+
+    }
 </script>
 <script src="{{asset('assets/js/app.js')}}"></script>
+<script src="{{asset('assets/js/jquery.js')}}"></script>
+@yield('footer_scripts')
