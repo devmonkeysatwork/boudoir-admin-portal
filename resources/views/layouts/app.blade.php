@@ -77,43 +77,6 @@
             document.querySelector('#status-color').value = colorValue;
             createPickr.hide();
         });
-
-        // Initialize Pickr for edit status modal
-        const editPickr = Pickr.create({
-            el: '#edit-status-color-picker',
-            theme: 'classic', // or 'monolith', or 'nano'
-            default: '#007BFF',
-            components: {
-                // Main components
-                preview: true,
-                opacity: true,
-                hue: true,
-
-                // Input / output Options
-                interaction: {
-                    hex: true,
-                    rgba: true,
-                    hsla: true,
-                    hsva: true,
-                    cmyk: true,
-                    input: true,
-                    clear: true,
-                    save: true
-                }
-            }
-        });
-
-        editPickr.on('change', (color, instance) => {
-            const colorValue = color.toHEXA().toString();
-            document.querySelector('#edit-status-color').value = colorValue;
-            document.querySelector('#edit-preview').style.backgroundColor = colorValue;
-        });
-
-        editPickr.on('save', (color, instance) => {
-            const colorValue = color.toHEXA().toString();
-            document.querySelector('#edit-status-color').value = colorValue;
-            editPickr.hide();
-        });
     });
 </script>
 

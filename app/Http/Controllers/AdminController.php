@@ -60,6 +60,26 @@ class AdminController extends Controller
 
         return response()->json($response);
     }
+
+    public function updateStatus(Request $request){
+        // Validate incoming request
+        $request->validate([
+            'edit-status-name' => 'required|string|max:255',
+            'edit-status-color' => 'required|string|max:10', // Assuming color is a hex code
+        ]);
+        $status = OrderStatus::findOrFail($request->id);
+        $status->status_name = $request->input('edit-status-name');
+        $status->status_color = $request->input('edit-status-color');
+        $status->save();
+
+        // Prepare response data
+        $response = [
+            'status' => 200,
+            'message' => 'Status updated successfully.',
+        ];
+
+        return response()->json($response);
+    }
     public function deleteStatus(Request $request)
     {
         $statusId = $request->input('id');

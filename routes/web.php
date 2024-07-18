@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/manage-statuses', [AdminController::class, 'manageStatuses'])->name('admin.manage-statuses');
     Route::post('/add_status', [AdminController::class, 'addStatuses'])->name('admin.add_status');
     Route::post('/delete_status', [AdminController::class, 'deleteStatus'])->name('admin.delete_status');
+    Route::post('/update_status', [AdminController::class, 'updateStatus'])->name('admin.update_status');
     Route::get('/settings/manage-emails', [AdminController::class, 'manageEmails'])->name('admin.manage-emails');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
