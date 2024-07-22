@@ -89,7 +89,7 @@
           @foreach($orders as $order)
             <tr>
               <td>{{$order->order_id}}</td>
-              <td><span class="status">{{$order->status?->status_name}}</span></td>
+              <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
               <td>{{$order->station?->worker?->name}}</td>
               <td>{{$order->date_started}}</td>
               <td>
