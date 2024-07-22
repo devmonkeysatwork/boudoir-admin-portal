@@ -8,53 +8,19 @@
       <tr>
         <th>Workstation #</th>
         <th># of Orders</th>
-        <th>Time in Production</th>
+        <th>Active Order</th>
         <th>Assigned To</th>
       </tr>
     </thead>
     <tbody>
-      <tr data-open-modal="workstationModal">
-        <td>1</td>
-        <td>5</td>
-        <td>13h39m</td>
-        <td>Jason Price</td>
-      </tr>
-      <tr data-open-modal="workstationModal">
-        <td>2</td>
-        <td>7</td>
-        <td>20h27m</td>
-        <td>Duane Dean</td>
-      </tr>
-      <tr data-open-modal="workstationModal">
-        <td>3</td>
-        <td>4</td>
-        <td>11h15m</td>
-        <td>Jonathan Barker</td>
-      </tr>
-      <tr data-open-modal="workstationModal">
-        <td>4</td>
-        <td>8</td>
-        <td>24h51m</td>
-        <td>Raphael Margeritti</td>
-      </tr>
-      <tr data-open-modal="workstationModal">
-        <td>5</td>
-        <td>12</td>
-        <td>32h16m</td>
-        <td>Leonardo Dicaprio</td>
-      </tr>
-      <tr data-open-modal="workstationModal">
-        <td>6</td>
-        <td>31</td>
-        <td>72h05m</td>
-        <td>Michaelangelo Smith</td>
-      </tr>
-      <tr data-open-modal="workstationModal">
-        <td>7</td>
-        <td>15</td>
-        <td>40h30m</td>
-        <td>Donatello Johnson</td>
-      </tr>
+        @foreach($workstations as $workstation)
+          <tr data-open-modal="workstationModal">
+            <td>{{$workstation->workstation_number}}</td>
+            <td>{{$workstation->getOrderCount()}}</td>
+            <td>{{$workstation->activeOrder()}}</td>
+            <td>{{$workstation->worker?->name}}</td>
+          </tr>
+        @endforeach
     </tbody>
   </table>
 

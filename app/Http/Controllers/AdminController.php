@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Orders;
 use App\Models\OrderStatus;
 use App\Models\User;
+use App\Models\Workstations;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -18,13 +20,40 @@ class AdminController extends Controller
     {
         $data['orders'] = Orders::with(['items','status','addresses','station','station.worker','items.attributes'])
         ->get();
-//        dd($data['orders']);
+        $data['workstations'] = Workstations::all();
+        $data['statuses'] = OrderStatus::all();
+//        dd($data);
         return view('admin.orders',$data);
+    }
+
+    public function updateOrderStatus(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $order = Orders::find($request->id);
+            $order->status_id = $request->edit_status;
+            $order->workstation_id = $request->edit_workstation;
+            $order->save();
+            DB::commit();
+            $response = [
+                'status' => 200,
+                'message' => 'Status updated successfully.',
+            ];
+        }catch (\Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 400,
+                'message' => 'Something went wrong'.$e->getMessage()
+            ]);
+        }
+
+        return response()->json($response);
     }
 
     public function workstations()
     {
-        return view('admin.workstations');
+        $data['workstations'] = Workstations::with('worker')->get();
+        return view('admin.workstations',$data);
     }
 
     public function manageStatuses()

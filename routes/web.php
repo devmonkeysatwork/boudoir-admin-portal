@@ -28,7 +28,14 @@ Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+    Route::post('/update_order_status', [AdminController::class, 'updateOrderStatus'])->name('admin.update_order_status');
+
+
+
+
     Route::get('/workstations', [AdminController::class, 'workstations'])->name('admin.workstations');
     Route::get('/settings', function () {
         return redirect()->route('admin.manage-statuses');

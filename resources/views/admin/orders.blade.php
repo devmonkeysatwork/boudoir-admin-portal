@@ -47,13 +47,14 @@
         <th>Team Member</th>
         <th>Date Started</th>
         <th>Time in Production</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
         @foreach($orders as $order)
           <tr data-open-modal="orderModal">
             <td>{{$order->order_id}}</td>
-            <td><span class="status completed" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
+            <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
             <td>{{$order->station?->worker?->name ?? null}}</td>
             <td>{{$order->date_started}}</td>
             <td>
@@ -66,64 +67,13 @@
                 {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
                 {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
             </td>
+              <td>
+                  <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                      <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
+                  </button>
+              </td>
           </tr>
         @endforeach
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00002</td>--}}
-{{--        <td><span class="status on-hold">On Hold</span></td>--}}
-{{--        <td>Duane Dean</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>2h05m</td>--}}
-{{--      </tr>--}}
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00003</td>--}}
-{{--        <td><span class="status rejected">Rejected</span></td>--}}
-{{--        <td>Duane Dean</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>2h05m</td>--}}
-{{--      </tr>--}}
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00004</td>--}}
-{{--        <td><span class="status in-production">In Production</span></td>--}}
-{{--        <td>Jonathan Barker</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>2h05m</td>--}}
-{{--      </tr>--}}
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00005</td>--}}
-{{--        <td><span class="status processing">Processing</span></td>--}}
-{{--        <td>Jason Price</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>2h05m</td>--}}
-{{--      </tr>--}}
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00006</td>--}}
-{{--        <td><span class="status completed">Completed</span></td>--}}
-{{--        <td>Jason Price</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>20h05m</td>--}}
-{{--      </tr>--}}
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00007</td>--}}
-{{--        <td><span class="status processing">Processing</span></td>--}}
-{{--        <td>Jonathan Barker</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>2h05m</td>--}}
-{{--      </tr>--}}
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00008</td>--}}
-{{--        <td><span class="status in-production">In Production</span></td>--}}
-{{--        <td>Jason Price</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>2h05m</td>--}}
-{{--      </tr>--}}
-{{--      <tr data-open-modal="orderModal">--}}
-{{--        <td>00009</td>--}}
-{{--        <td><span class="status in-production">In Production</span></td>--}}
-{{--        <td>Duane Dean</td>--}}
-{{--        <td>12/09/2019</td>--}}
-{{--        <td>2h05m</td>--}}
-{{--      </tr>--}}
     </tbody>
   </table>
 
@@ -213,5 +163,82 @@
       </x-slot>
     </div>
   </x-modal>
+
+    <x-modal id="editStatusModal" title="Update Status">
+        <form id="editStatusForm" action="javascript:void(0);" method="post" class="d-block">
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-group">
+                        <input type="hidden" id="edit_id" name="id">
+                        <label for="status-name">Status</label>
+                        <select name="edit_status" class="form-select" id="edit_status">
+                            @foreach($statuses as $status)
+                                <option value="{{$status->id}}">{{$status->status_name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="status-color">WorkStation</label>
+                        <select name="edit_workstation" class="form-select" id="edit_workstation">
+                            @foreach($workstations as $workstation)
+                                <option value="{{$workstation->id}}">{{$workstation->workstation_number}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <x-slot name="footer">
+            <div class="form-group buttons">
+                <button type="submit" class="btn save-btn" onclick="updateStatus()">Update Status</button>
+                <button type="button" class="btn cancel-btn" onclick="document.getElementById('editStatusModal').style.display='none'">Cancel</button>
+            </div>
+        </x-slot>
+    </x-modal>
 </div>
+@endsection
+@section('footer_scripts')
+    <script>
+        function editStatus(me){
+            $('#edit_id').val($(me).data('id'));
+            $('#edit_status').val($(me).data('status'));
+            $('#edit_workstation').val($(me).data('workstation'));
+            console.log($(me).data('status'));
+            console.log($(me).data('workstation'));
+            $('#editStatusModal').show();
+        }
+        function updateStatus(){
+            let data  = new FormData($('#editStatusForm')[0]);
+            data.append('_token','{{@csrf_token()}}');
+            $.ajax({
+                type: 'post',
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: '{{route('admin.update_order_status')}}',
+                data: data,
+                beforeSend() {
+                    show_loader();
+                },
+                complete: function (response) {
+                    hide_loader();
+
+                },
+                success: function (response) {
+                    if(response.status == 200){
+                        show_toast(response.message,'success');
+                        window.location.reload();
+
+                    }else{
+                        show_toast(response.message,'error');
+                    }
+
+                },
+                error: function (response) {
+                }
+            })
+        }
+    </script>
 @endsection

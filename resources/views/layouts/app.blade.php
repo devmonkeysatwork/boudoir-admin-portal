@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <!-- vite -->
     <link rel="stylesheet" href="{{ asset('assets/css/notyf.css')}}" />
+    <link rel="stylesheet" href="{{asset('assets/css/bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
 {{--    @vite(['resources/css/app.css', 'resources/js/app.js'])--}}
 </head>
