@@ -13,7 +13,9 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        return view('admin.dashboard');
+        $data['orders'] = Orders::with(['items','status','addresses','station','station.worker'])
+            ->get();
+        return view('admin.dashboard',$data);
     }
 
     public function orders()

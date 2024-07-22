@@ -1632,3 +1632,8 @@ input:checked+.slider:before {
     }
 
 }
+
+#orders_table_db{
+    max-height: 500px;
+    overflow-y: auto;
+}

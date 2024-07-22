@@ -57,12 +57,12 @@
       </div>
     </div>
   </div>
-  <div class="orders">
+  <div class="orders" id="orders_table_db">
     <div class="orders-top">
       <h2>List of Orders</h2>
       <div class="orders-filter">
         <div class="orders-search">
-          <input type="text" placeholder="Search">
+          <input type="text" id="searchInput" placeholder="Search">
           <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
         </div>
         <div class="sort-dropdown">
@@ -84,28 +84,31 @@
           <th>Time in Production</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>00001</td>
-          <td><span class="status completed">Completed</span></td>
-          <td>Jason Price</td>
-          <td>12/09/2019</td>
-          <td>20h05m</td>
-        </tr>
-        <tr>
-          <td>00002</td>
-          <td><span class="status on-hold">On Hold</span></td>
-          <td>Duane Dean</td>
-          <td>12/09/2019</td>
-          <td>2h05m</td>
-        </tr>
-        <tr>
-          <td>00003</td>
-          <td><span class="status rejected">Rejected</span></td>
-          <td>Jonathan Barker</td>
-          <td>12/09/2019</td>
-          <td>2h05m</td>
-        </tr>
+      <tbody id="ordersBody">
+      @if(isset($orders) && count($orders))
+          @foreach($orders as $order)
+            <tr>
+              <td>{{$order->order_id}}</td>
+              <td><span class="status completed">{{$order->status?->status_name}}</span></td>
+              <td>{{$order->station?->worker?->name}}</td>
+              <td>{{$order->date_started}}</td>
+              <td>
+                @php
+                    $dateStarted = new DateTime($order->date_started);
+                    $now = new DateTime();
+                    $timeSpent = $now->diff($dateStarted);
+
+                    $days = $timeSpent->d;
+                    $hours = $timeSpent->h;
+                    $minutes = $timeSpent->i;
+
+                    $timeSpentString = ($days > 0 ? $days . 'd ' : '') . ($hours > 0 ? $hours . 'h ' : '') . ($minutes > 0 ? $minutes . 'm' : '');
+                @endphp
+                {{ $timeSpentString ?? '' }}
+              </td>
+            </tr>
+          @endforeach
+        @endif
       </tbody>
     </table>
   </div>
@@ -194,4 +197,57 @@
     </div>
   </div>
 </div>
+@endsection
+@section('footer_scripts')
+    <script>
+        $(document).ready(function() {
+            // Function to perform AJAX search
+            function performSearch(query) {
+                $.ajax({
+                    url: '{{ route('search.orders') }}', // Replace with your search route
+                    type: 'GET',
+                    data: { query: query },
+                    success: function(response) {
+                        $('#ordersBody').empty(); // Clear previous results
+
+                        // Append new search results to the table
+                        if (response.orders.length > 0) {
+                            $.each(response.orders, function(index, order) {
+                                var dateStarted = new Date(order.date_started); // Assuming order.date_started is a valid date string or Date object
+                                var now = new Date();
+                                var timeDiff = now - dateStarted;
+
+                                var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                                var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+                                var timeSpentString = (days > 0 ? days + 'd ' : '') + (hours > 0 ? hours + 'h ' : '') + (minutes > 0 ? minutes + 'm' : '');
+
+                                var row = '<tr>' +
+                                    '<td>' + order.order_id + '</td>' +
+                                    '<td><span class="status completed">' + (order.status ? order.status.status_name : '') + '</span></td>' +
+                                    '<td>' + (order.station ? order.station.worker.name : '') + '</td>' +
+                                    '<td>' + order.date_started + '</td>' +
+                                    '<td>' + timeSpentString + '</td>' +
+                                    '</tr>';
+
+                                $('#ordersBody').append(row);
+                            });
+                        } else {
+                            $('#ordersBody').append('<tr><td colspan="5">No results found</td></tr>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            // Event listener for search input
+            $('#searchInput').on('keyup', function() {
+                var query = $(this).val();
+                performSearch(query);
+            });
+        });
+    </script>
 @endsection
