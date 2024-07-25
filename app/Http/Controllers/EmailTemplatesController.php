@@ -69,4 +69,29 @@ class EmailTemplatesController extends Controller
 
         return response()->json($response);
     }
+
+    public function deleteEmail($id){
+        try {
+            $email = EmailTemplates::find($id);
+
+            if (!$email) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Email template not found.'
+                ]);
+            }
+
+            $email->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Email template deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Failed to delete email template. Error: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

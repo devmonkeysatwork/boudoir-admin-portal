@@ -51,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/manage-emails', [EmailTemplatesController::class, 'manageEmails'])->name('admin.manage-emails');
     Route::post('/email/add', [EmailTemplatesController::class, 'addEmailTemplate'])->name('email.add');
     Route::post('/email/update_status', [EmailTemplatesController::class, 'updateStatus'])->name('email.update_status');
+    Route::delete('/email/delete/{id}', [EmailTemplatesController::class, 'deleteEmail'])->name('email.delete');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

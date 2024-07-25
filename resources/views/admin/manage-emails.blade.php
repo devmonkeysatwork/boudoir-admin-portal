@@ -45,7 +45,7 @@
                 <button class="edit-btn" data-open-modal="editEmailModal">
                   <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
                 </button>
-                <button class="delete-btn">
+                <button class="delete-btn" onclick="deleteTemplate({{$template->id}})">
                   <img src="{{ asset('icons/delete.png') }}" alt="Delete Icon">
                 </button>
               </div>
@@ -196,6 +196,37 @@
                 error: function (response) {
                 }
             })
+        }
+
+        function deleteTemplate(templateId){
+            if (confirm("Are you sure you want to delete this template?")) {
+                $.ajax({
+                    type: 'delete',
+                    url: '/email/delete/' + templateId,
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    beforeSend() {
+                        show_loader();
+                    },
+                    complete: function (response) {
+                        hide_loader();
+
+                    },
+                    success: function (response) {
+                        if (response.status == 200) {
+                            show_toast(response.message, 'success');
+                            window.location.reload();
+
+                        } else {
+                            show_toast(response.message, 'error');
+                        }
+
+                    },
+                    error: function (response) {
+                    }
+                })
+            }
         }
 
 
