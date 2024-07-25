@@ -13,19 +13,19 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        $data['orders'] = Orders::with(['items','status','addresses','station','station.worker'])
-            ->get();
-        return view('admin.dashboard',$data);
+        $query = Orders::with(['items','status','addresses','station','station.worker']);
+        $orders = $query->paginate(10);
+        return view('admin.dashboard',compact('orders'));
     }
 
     public function orders()
     {
-        $data['orders'] = Orders::with(['items','status','addresses','station','station.worker','items.attributes'])
-        ->get();
-        $data['workstations'] = Workstations::all();
-        $data['statuses'] = OrderStatus::all();
+        $query = Orders::with(['items','status','addresses','station','station.worker','items.attributes']);
+        $orders = $query->paginate(10);
+        $workstations = Workstations::all();
+        $statuses = OrderStatus::all();
 //        dd($data);
-        return view('admin.orders',$data);
+        return view('admin.orders',compact('orders', 'workstations', 'statuses'));
     }
 
     public function updateOrderStatus(Request $request)
@@ -64,11 +64,6 @@ class AdminController extends Controller
 
 
         return view('admin.manage-statuses',$data);
-    }
-
-    public function manageEmails()
-    {
-        return view('admin.manage-emails');
     }
 
     public function addStatuses(Request $request){

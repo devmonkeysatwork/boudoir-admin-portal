@@ -26,11 +26,9 @@
     <div class="filter-item">
       <select class="sort-select" id="filter-status">
         <option value="" disabled selected>Order Status</option>
-        <option value="processing">Processing</option>
-        <option value="in-production">In Production</option>
-        <option value="on-hold">On Hold</option>
-        <option value="completed">Completed</option>
-        <option value="rejected">Rejected</option>
+          @foreach($statuses??[] as $status)
+              <option value="{{$status->id}}">{{$status->status_name}}</option>
+          @endforeach
       </select>
     </div>
     <div class="filter-item">
@@ -76,6 +74,13 @@
         @endforeach
     </tbody>
   </table>
+    <div class="row justify-content-end d-flex">
+        <div class="col-12 col-sm-3">
+            {{ $orders->links() }}
+        </div>
+    </div>
+
+
 
   <x-modal id="orderModal" title="Order #00001">
     <span class="status completed">Completed</span>

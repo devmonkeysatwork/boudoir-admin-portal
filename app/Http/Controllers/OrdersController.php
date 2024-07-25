@@ -174,6 +174,7 @@ class OrdersController extends Controller
 
         // Perform search based on your logic
         $orders = Orders::where('order_id', 'like', '%' . $term . '%')
+            ->with(['status','station','station.worker'])
             ->orWhereHas('status', function ($query) use ($term) {
                 $query->where('status_name', 'like', '%' . $term . '%');
             })
@@ -181,7 +182,6 @@ class OrdersController extends Controller
                 $query->where('name', 'like', '%' . $term . '%');
             })
             ->get();
-
         // Return JSON response
         return response()->json(['orders' => $orders]);
     }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomAuthController;
+use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,7 +47,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/add_status', [AdminController::class, 'addStatuses'])->name('admin.add_status');
     Route::post('/delete_status', [AdminController::class, 'deleteStatus'])->name('admin.delete_status');
     Route::post('/update_status', [AdminController::class, 'updateStatus'])->name('admin.update_status');
-    Route::get('/settings/manage-emails', [AdminController::class, 'manageEmails'])->name('admin.manage-emails');
+
+    Route::get('/settings/manage-emails', [EmailTemplatesController::class, 'manageEmails'])->name('admin.manage-emails');
+    Route::post('/email/add', [EmailTemplatesController::class, 'addEmailTemplate'])->name('email.add');
+    Route::post('/email/update_status', [EmailTemplatesController::class, 'updateStatus'])->name('email.update_status');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

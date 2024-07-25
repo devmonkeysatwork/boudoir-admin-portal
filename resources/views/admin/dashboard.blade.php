@@ -111,6 +111,11 @@
         @endif
       </tbody>
     </table>
+      <div class="row justify-content-end d-flex">
+          <div class="col-12 col-sm-3">
+              {{ $orders->links() }}
+          </div>
+      </div>
   </div>
   <div class="team-workstations">
     <div class="team">
@@ -213,6 +218,7 @@
                         // Append new search results to the table
                         if (response.orders.length > 0) {
                             $.each(response.orders, function(index, order) {
+                                console.log(order);
                                 var dateStarted = new Date(order.date_started); // Assuming order.date_started is a valid date string or Date object
                                 var now = new Date();
                                 var timeDiff = now - dateStarted;
@@ -225,7 +231,7 @@
 
                                 var row = '<tr>' +
                                     '<td>' + order.order_id + '</td>' +
-                                    '<td><span class="status completed">' + (order.status ? order.status.status_name : '') + '</span></td>' +
+                                    '<td><span class="status" style="background-color: '+order.status.status_color+'">' + (order.status ? order.status.status_name : '') + '</span></td>' +
                                     '<td>' + (order.station ? order.station.worker.name : '') + '</td>' +
                                     '<td>' + order.date_started + '</td>' +
                                     '<td>' + timeSpentString + '</td>' +
