@@ -25,6 +25,7 @@
             </div>
             <div class="modal-body">
                 <p id="barcode_result"></p>
+                <p id="scanner_id" class="text-muted"></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -42,12 +43,26 @@
         $('#barcode_input').on('keypress', function(event) {
             if (event.keyCode === 13) { // Enter key pressed
                 var barcode = $(this).val();
+                var scannerId = extractScannerId(barcode); // Function to parse unique identifier
+
                 $('#barcode_result').text(barcode);
+                $('#scanner_id').text('Scanner ID: ' + scannerId);
                 $('#barcodeModal').modal('show');
                 $(this).val(''); // Clear the input field
             }
         });
     });
+
+    // Function to extract the scanner ID from the barcode data
+    function extractScannerId(barcode) {
+        // Example logic: assuming the scanner ID is a fixed prefix in the barcode data
+        var prefix = 'SCANID-'; // Example prefix
+        if (barcode.startsWith(prefix)) {
+            return barcode.substring(prefix.length);
+        } else {
+            return 'Unknown';
+        }
+    }
 </script>
 </body>
 </html>
