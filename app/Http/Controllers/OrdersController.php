@@ -41,6 +41,7 @@ class OrdersController extends Controller
 
             if($request->has('order_id')){
                 $order_data = $request->all();
+                Log::info($request->all());
                 $existingOrder = Orders::where('order_id', $order_data['order_number'])->first();
                 if ($existingOrder) {
                     // Order already exists, handle accordingly (e.g., return a response or log a message)
