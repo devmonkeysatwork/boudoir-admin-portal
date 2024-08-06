@@ -13,7 +13,7 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        $query = Orders::with(['items','status','addresses','station','station.worker']);
+        $query = Orders::with(['items','status','addresses','station','station.worker'])->where('orderType',Orders::parentType);
         $orders = $query->paginate(10);
         return view('admin.dashboard',compact('orders'));
     }
