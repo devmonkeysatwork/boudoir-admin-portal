@@ -16,9 +16,7 @@ Route::get('/route-cache', function() {
     return redirect()->route('home')->with('cache','System Cache Has Been Removed.');
 });
 // Public routes
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/',[CustomAuthController::class, 'showLoginForm'])->name('home');
 
 Route::get('/login', [CustomAuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [CustomAuthController::class, 'login'])->name('custom.login');

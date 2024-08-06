@@ -10,7 +10,8 @@
 </head>
 
 <body>
-    <div class="login-container">
+    <img src="{{ asset('images/logo.png') }}" class="mx-auto" width="200px" alt="The Boudoir Album">
+    <div class="login-container flex-row">
         <form method="POST" action="{{ route('login') }}">
             @csrf
             <h2>Login</h2>

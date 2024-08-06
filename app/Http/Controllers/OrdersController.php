@@ -46,8 +46,27 @@ class OrdersController extends Controller
                     // Order already exists, handle accordingly (e.g., return a response or log a message)
                     return response()->json(['message' => 'Order already exists'], 409);
                 }
+
+                $order_number = $order_data['order_number'] ?? null;
                 $order = new Orders();
-                $order->order_id = $order_data['order_number']??null;
+                if ($order_number) {
+                    if (strpos($order_number, '-') !== false) {
+                        $parts = explode('-', $order_number);
+                        $parent_order_id = $parts[0];
+
+                        $parent_order = Orders::where('order_id',$parent_order_id)->pluck('id')->first();
+                        if (!$parent_order) {
+                            return response()->json(['message' => 'Parent order with '.$parent_order.' does not exists.'], 409);
+                        }
+                        $order->parentOrder = $parent_order;
+                        $order->orderType = \App\Models\Orders::childType;
+                    } else {
+                        $order->order_id = $order_number;
+                        $order->orderType = \App\Models\Orders::parentType;
+                    }
+                }
+
+                $order->order_id = $order_number;
                 $order->customer_name = $order_data['customer_name']??null;
                 $order->customer_email = $order_data['customer_email']??null;
                 $order->date_started = Carbon::now()->format('Y-m-d h:i:s')??null;

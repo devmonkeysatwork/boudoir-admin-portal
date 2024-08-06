@@ -9,6 +9,10 @@ class Orders extends Model
 {
     use HasFactory;
 
+    const parentType = 'PARENT';
+    const singleType = 'SINGLE';
+    const childType = 'CHILD';
+
 
 
     function items(){
