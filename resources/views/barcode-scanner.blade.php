@@ -30,7 +30,7 @@
                 var inputValue = $(this).val().trim();
                 if (inputValue) {
                     $.ajax({
-                        url: "{{'order.add_log'}}",
+                        url: "{{route('order.add_log')}}",
                         type: 'POST',
                         data: {
                             input: inputValue
