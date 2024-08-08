@@ -35,7 +35,6 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-
     Route::get('/workstations', [AdminController::class, 'workstations'])->name('admin.workstations');
     Route::get('/settings', function () {
         return redirect()->route('admin.manage-statuses');
@@ -63,6 +62,6 @@ Route::get('/barcode-scanner', function () {
 
 
 Route::post('/api/save_order', [\App\Http\Controllers\OrdersController::class, 'store']);
-
+Route::post('/update_order_log', [\App\Http\Controllers\OrdersController::class, 'addOrUpdateOrderStatusRow'])->name('order.add_log');
 
 require __DIR__ . '/auth.php';
