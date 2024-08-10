@@ -211,80 +211,92 @@ class OrdersController extends Controller
 
     public function addOrUpdateOrderStatusRow(Request $request)
     {
-        try {
-            $text = explode('-', $request->input);
-            if (count($text) > 0) {
-                DB::beginTransaction();
 
-                $userId = User::where('name', $text[0])->pluck('id')->first();
-                $content = $text[1];
+        $inputs = explode(',', $request->input);
+        if (count($inputs) > 0) {
+            try {
+                for ($i = 0; $i < count($inputs) - 1; $i++) {
+                    $input = $inputs[$i];
+                    $text = explode('-', $input);
+                    if (count($text) > 0) {
+                        DB::beginTransaction();
 
-                if (is_numeric($text[1])) {
-                    $content = $text[1];
-                    $existingOrderStatus = OrderLogs::where('status_id', null)
-                        ->where('order_id', $content)
-                        ->first();
+                        $userId = User::where('name', $text[0])->pluck('id')->first();
+                        $content = $text[1];
 
-                    if ($existingOrderStatus) {
-                        $response = [
-                            'status' => 200,
-                            'message' => 'Order log row already exists.',
-                        ];
-                    } else {
-                        $orderStatus = new OrderLogs();
-                        $orderStatus->order_id = $content;
-                        $orderStatus->user_id = $userId;
-                        $orderStatus->save();
+                        if (is_numeric($text[1])) {
+                            $content = $text[1];
+                            $existingOrderStatus = OrderLogs::where('status_id', null)
+                                ->where('order_id', $content)
+                                ->first();
 
-                        $response = [
-                            'status' => 200,
-                            'message' => 'Status log row created.',
-                        ];
-                    }
+                            if ($existingOrderStatus) {
+                                $response = [
+                                    'status' => 200,
+                                    'message' => 'Order log row already exists.',
+                                ];
+                            } else {
+                                $orderStatus = new OrderLogs();
+                                $orderStatus->order_id = $content;
+                                $orderStatus->user_id = $userId;
+                                $orderStatus->save();
 
-                } else {
-                    $status_id = OrderStatus::where('status_name', $content)->pluck('id')->first();
-                    $orderStatus = OrderLogs::where('user_id', $userId)
-                        ->where('order_id', '!=', null)
-                        ->where('status_id', null)
-                        ->first();
+                                $response = [
+                                    'status' => 200,
+                                    'message' => 'Status log row created.',
+                                ];
+                            }
 
-                    if ($orderStatus) {
-                        $orderStatus->status_id = $status_id;
-                        $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
-                        $orderStatus->save();
+                        } else {
+                            $status_id = OrderStatus::where('status_name', $content)->pluck('id')->first();
+                            $orderStatus = OrderLogs::where('user_id', $userId)
+                                ->where('order_id', '!=', null)
+                                ->where('status_id', null)
+                                ->first();
 
-                        $order = Orders::where('order_id', $orderStatus->order_id)->first();
-                        if ($order) {
-                            $order->status_id = $status_id;
-                            $order->save();
+                            if ($orderStatus) {
+                                $orderStatus->status_id = $status_id;
+                                $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+                                $orderStatus->save();
+
+                                $order = Orders::where('order_id', $orderStatus->order_id)->first();
+                                if ($order) {
+                                    $order->status_id = $status_id;
+                                    $order->save();
+                                }
+
+                                $response = [
+                                    'status' => 200,
+                                    'message' => 'Status log updated successfully.',
+                                ];
+                            } else {
+                                $response = [
+                                    'status' => 404,
+                                    'message' => 'No matching order status found to update.',
+                                ];
+                            }
                         }
 
-                        $response = [
-                            'status' => 200,
-                            'message' => 'Status log updated successfully.',
-                        ];
+                        DB::commit();
                     } else {
-                        $response = [
-                            'status' => 404,
-                            'message' => 'No matching order status found to update.',
-                        ];
+                        Log::info('--------------ERROR WHILE UPDATING STATUS-----------------------');
+                        Log::info($input);
+                        Log::info('-------------------------------------');
                     }
                 }
 
-                DB::commit();
-            } else {
-                $response = [
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json([
                     'status' => 400,
-                    'message' => 'Invalid input format.',
-                ];
+                    'message' => 'Something went wrong: ' . $e->getMessage(),
+                ]);
             }
-
-        } catch (\Exception $e) {
-            DB::rollBack();
+        }
+        else{
             return response()->json([
                 'status' => 400,
-                'message' => 'Something went wrong: ' . $e->getMessage(),
+                'message' => 'No inputs provided.',
             ]);
         }
 
