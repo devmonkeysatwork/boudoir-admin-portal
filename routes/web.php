@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
     Route::get('/search_orders', [\App\Http\Controllers\OrdersController::class, 'search'])->name('search.orders');
     Route::post('/update_order_status', [AdminController::class, 'updateOrderStatus'])->name('admin.update_order_status');
+    Route::post('/get_order_details', [\App\Http\Controllers\OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
+    Route::post('/order_add_comment', [\App\Http\Controllers\OrdersController::class, 'addComment'])->name('order.add_comment');
 
 
 

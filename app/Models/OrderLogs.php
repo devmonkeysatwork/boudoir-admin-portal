@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class OrderLogs extends Model
 {
     use HasFactory;
+
+    function user(){
+        return $this->belongsTo(User::class,'user_id','id');
+    }
+    function status(){
+        return $this->belongsTo(OrderStatus::class,'status_id','id');
+    }
 }

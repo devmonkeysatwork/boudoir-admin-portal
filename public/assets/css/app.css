@@ -1638,3 +1638,17 @@ input:checked+.slider:before {
     overflow-y: auto;
 }
 
+
+#order_logs li {
+    position: relative;
+}
+#order_logs li:not(:last-child)::before {
+    background: #a36a6a;
+    opacity: 0.5;
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: -14px;
+    width: 2px;
+    height: 110%;
+}

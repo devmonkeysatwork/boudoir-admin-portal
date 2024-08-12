@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
 let modal = (function () {/*
 <div id="background_fade" style="z-index:9999999; height: 100% !important; min-height: 100%; width: 100%; position: fixed; top: 0; background-color: rgba(0, 0, 0, 0.7);display:none;">
         <div id="processing" style="z-index:99999999;display: block; padding-right: 17px;" class="modal  show" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-dialog ajax_modal modal-sm" role="document">
+            <div class="modal-dialog ajax_modal modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title" id="modal_title">Processing..</h4>

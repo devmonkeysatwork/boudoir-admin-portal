@@ -27,4 +27,12 @@ class Orders extends Model
     function addresses(){
         return $this->hasMany(CostumerAddress::class,'order_id','id');
     }
+    function logs(){
+        return $this->hasMany(OrderLogs::class,'order_id','order_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(OrderComments::class,'order_id','id')->where('parent_id',null);
+    }
 }

@@ -50,7 +50,7 @@
     </thead>
     <tbody>
         @foreach($orders as $order)
-          <tr data-open-modal="orderModal">
+          <tr>
             <td>{{$order->order_id}}</td>
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
             <td>{{$order->station?->worker?->name ?? null}}</td>
@@ -68,6 +68,9 @@
               <td>
                   <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
                       <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
+                  </button>
+                  <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
+                      View details
                   </button>
               </td>
           </tr>
@@ -87,64 +90,42 @@
     <div class="orderModal-flex">
       <div class="activity-log">
         <h2>Activity Log</h2>
-        <ul>
-          <li class="log-entry">
-            <span class="log-desc">Danielle scanned Order #00002 to Workstation #1</span>
-            <span class="log-date">Apr 16 at 3:28 pm</span>
-          </li>
-          <li class="log-entry">
-            <span class="log-desc">Dora changed status of Order #00002 to Issue with Print</span>
-            <span class="log-date">Apr 16 at 3:28 pm</span>
-          </li>
-          <li class="log-entry">
-            <span class="log-desc">Sarah added new print layout to Order #00002</span>
-            <span class="log-date">Apr 17 at 9:45 am</span>
-          </li>
-          <li class="log-entry">
-            <span class="log-desc">Emily moved Order #00002 to Quality Check</span>
-            <span class="log-date">Apr 17 at 1:10 pm</span>
-          </li>
-          <li class="log-entry">
-            <span class="log-desc">Danielle reassigned Order #00002 to Workstation #3 for reprinting</span>
-            <span class="log-date">Apr 18 at 11:30 am</span>
-          </li>
-          <li class="log-entry">
-            <span class="log-desc">Danielle reassigned Order #00002 to Workstation #3 for reprinting</span>
-            <span class="log-date">Apr 18 at 11:30 am</span>
-          </li>
+        <ul id="order_logs">
         </ul>
       </div>
       <div class="comments">
         <h2>Comments</h2>
-        <div class="comment">
-          <div class="comment-body">
-            <span class="comment-user" data-initial="D">Danielle</span>
-            <span class="comment-date">Apr 16 at 3:29 pm</span>
-            <p class="comment-text">I noticed a slight color mismatch in the print. I'll recheck the printer settings.</p>
-          </div>
-          <div class="comment-footer">
-            <button class="btn">Reply
-          </div>
+        <div id="comments_container">
+            <div class="comment">
+                <div class="comment-body">
+                    <span class="comment-user" data-initial="D">Danielle</span>
+                    <span class="comment-date">Apr 16 at 3:29 pm</span>
+                    <p class="comment-text">I noticed a slight color mismatch in the print. I'll recheck the printer settings.</p>
+                </div>
+                <div class="comment-footer">
+                    <button class="btn">Reply</button>
+                </div>
+            </div>
+            <div class="comment">
+                <div class="comment-body">
+                    <span class="comment-user" data-initial="D">Dora</span>
+                    <span class="comment-date">Apr 16 at 3:29 pm</span>
+                    <p class="comment-text">The album cover material seems off. Need to confirm with the client.</p>
+                </div>
+                <div class="comment-footer">
+                    <button class="btn">Reply</button>
+                </div>
+            </div>
+            <div class="comment">
+                <div class="comment-body">
+                    <span class="comment-user" data-initial="S">Sarah</span>
+                    <span class="comment-date">Apr 17 at 9:45 am</span>
+                    <p class="comment-text">Added new layout design based on client's feedback. Looks good!</p>
+                </div>
+                <div class="comment-footer">
+                    <button class="btn">Reply</button>
+                </div>
         </div>
-        <div class="comment">
-          <div class="comment-body">
-            <span class="comment-user" data-initial="D">Dora</span>
-            <span class="comment-date">Apr 16 at 3:29 pm</span>
-            <p class="comment-text">The album cover material seems off. Need to confirm with the client.</p>
-          </div>
-          <div class="comment-footer">
-            <button class="btn">Reply
-          </div>
-        </div>
-        <div class="comment">
-          <div class="comment-body">
-            <span class="comment-user" data-initial="S">Sarah</span>
-            <span class="comment-date">Apr 17 at 9:45 am</span>
-            <p class="comment-text">Added new layout design based on client's feedback. Looks good!</p>
-          </div>
-          <div class="comment-footer">
-            <button class="btn">Reply
-          </div>
         </div>
 
       </div>
@@ -153,14 +134,14 @@
           <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
         </button>
         <div class="new-comment">
-          <textarea placeholder="Write a message..."></textarea>
-          <button class="msg-btn">
-            <img src="{{ asset('icons/attach.png') }}" alt="Attach file">
-          </button>
-          <button class="msg-btn">
-            <img src="{{ asset('icons/media.png') }}" alt="Media">
-          </button>
-          <button class="send-btn">
+          <textarea placeholder="Write a message..." id="comment_input"></textarea>
+{{--          <button class="msg-btn">--}}
+{{--            <img src="{{ asset('icons/attach.png') }}" alt="Attach file">--}}
+{{--          </button>--}}
+{{--          <button class="msg-btn">--}}
+{{--            <img src="{{ asset('icons/media.png') }}" alt="Media">--}}
+{{--          </button>--}}
+          <button class="send-btn" onclick="addComment()">
             Send
             <img src="{{ asset('icons/send.png') }}" alt="Send">
           </button>
@@ -206,6 +187,7 @@
 @endsection
 @section('footer_scripts')
     <script>
+        let activeOrder = 0;
         function editStatus(me){
             $('#edit_id').val($(me).data('id'));
             $('#edit_status').val($(me).data('status'));
@@ -245,5 +227,133 @@
                 }
             })
         }
+
+        function viewDetails(orderId,title) {
+            activeOrder = orderId;
+            show_loader();
+
+            let data  = new FormData();
+            data.append('_token','{{@csrf_token()}}');
+            data.append('id',orderId);
+            $.ajax({
+                type: 'post',
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: '{{route('admin.get_order_details')}}',
+                data: data,
+                beforeSend() {
+                    show_loader();
+                },
+                complete: function (response) {
+                    hide_loader();
+
+                },
+                success: function (response) {
+                    console.log(response);
+                    if(response.status == 200){
+                        let logs = response.order.logs;
+                        let comments = response.order.comments;
+                        $('#order_logs').empty();
+                        $('#comments_container').empty();
+                        $.each(logs, function( index, value ) {
+                            let html = `<li class="log-entry">
+                                        <span class="log-desc">${value.user.name} update the status to ${value.status.status_name} for order ${value.order_id}</span>
+                                        <span class="log-date">${value.time_started}</span>
+                                      </li>`;
+                            $('#order_logs').append(html);
+                        });
+                        $.each(comments, function( index, value ) {
+                            var originalDate = value.created_at.trim();
+                            var formattedDate = formatDate(originalDate);
+                            var initial = value.user.name.charAt(0);
+                            let html = `<div class="comment">
+                                            <div class="comment-body">
+                                                <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
+                                                <span class="comment-date">${formattedDate}</span>
+                                                <p class="comment-text">${value.comment}</p>
+                                            </div>
+                                            <div class="comment-footer">
+                                                <button class="btn">Reply</button>
+                                            </div>
+                                        </div>`;
+                            $('#comments_container').append(html);
+                        });
+
+
+                        $('#orderModal').show();
+                        $('#orderModal > div > h2').text('Order #' + title);
+
+
+                    }else{
+                        show_toast(response.message,'error');
+                    }
+
+                },
+                error: function (response) {
+                }
+            })
+        }
+        function formatDate(dateString) {
+            var date = new Date(dateString);
+            var options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+            };
+            return new Intl.DateTimeFormat('en-US', options).format(date);
+        }
+
+        function addComment(){
+            let data  = new FormData($('#editStatusForm')[0]);
+            data.append('_token','{{@csrf_token()}}');
+            data.append('comment',$('#comment_input').val());
+            data.append('order_id',activeOrder);
+            $.ajax({
+                type: 'post',
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: '{{route('order.add_comment')}}',
+                data: data,
+                beforeSend() {
+                    show_loader();
+                },
+                complete: function (response) {
+                    hide_loader();
+
+                },
+                success: function (response) {
+                    if(response.status == 200){
+                        show_toast(response.message,'success');
+                        let comment = response.comment;
+                        var originalDate = comment.created_at.trim();
+                        var formattedDate = formatDate(originalDate);
+                        var initial = comment.user.name.charAt(0);
+                        let html = `<div class="comment">
+                                            <div class="comment-body">
+                                                <span class="comment-user" data-initial="${initial}">${comment.user.name}</span>
+                                                <span class="comment-date">${formattedDate}</span>
+                                                <p class="comment-text">${comment.comment}</p>
+                                            </div>
+                                            <div class="comment-footer">
+                                                <button class="btn">Reply</button>
+                                            </div>
+                                        </div>`;
+                        $('#comments_container').append(html);
+                    }else{
+                        show_toast(response.message,'error');
+                    }
+
+                },
+                error: function (response) {
+                }
+            })
+        }
+
+
     </script>
 @endsection

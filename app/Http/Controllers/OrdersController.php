@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CostumerAddress;
 use App\Models\ItemAttributes;
+use App\Models\OrderComments;
 use App\Models\OrderItems;
 use App\Models\OrderLogs;
 use App\Models\Orders;
@@ -13,6 +14,7 @@ use App\Models\OrderStatus;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -189,6 +191,45 @@ class OrdersController extends Controller
     public function destroy(Orders $orders)
     {
         //
+    }
+
+
+    public function addComment(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $order = new OrderComments();
+            $order->order_id = $request->order_id;
+            $order->user_id = Auth::user()->id;
+            $order->comment = $request->comment;
+            $order->save();
+            DB::commit();
+            $comment = OrderComments::whereId($order->id)->with('user')->first();
+            $response = [
+                'status' => 200,
+                'message' => 'Comment added successfully.',
+                'comment' => $comment,
+            ];
+        }catch (\Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 400,
+                'message' => 'Something went wrong'.$e->getMessage()
+            ]);
+        }
+        return response()->json($response);
+
+    }
+
+    public function getOrderDetails(Request $request)
+    {
+        $id = $request->id;
+
+        $order = Orders::with(['logs','logs.user','logs.status','comments','comments.replies','comments.user'])
+            ->whereId($id)->first();
+
+        return response()->json(['status' => 200,'order' => $order]);
+
     }
 
     public function search(Request $request)
