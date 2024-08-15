@@ -216,7 +216,7 @@
     Pusher.logToConsole = true;
 
     var pusher = new Pusher('{{env('PUSHER_APP_KEY')}}', {
-        cluster: 'ap2',
+        cluster: '{{env('PUSHER_APP_CLUSTER')}}',
         forceTLS: false // Set to false for local development
     });
 
