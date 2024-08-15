@@ -215,7 +215,7 @@
 <script>
     Pusher.logToConsole = true;
 
-    var pusher = new Pusher('7e09d527f8f78dc9735d', {
+    var pusher = new Pusher('{{env('PUSHER_APP_KEY')}}', {
         cluster: 'ap2',
         forceTLS: false // Set to false for local development
     });
