@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewMessage;
 use App\Models\CostumerAddress;
 use App\Models\ItemAttributes;
 use App\Models\OrderComments;
@@ -203,8 +204,13 @@ class OrdersController extends Controller
             $order->user_id = Auth::user()->id;
             $order->comment = $request->comment;
             $order->save();
-            DB::commit();
             $comment = OrderComments::whereId($order->id)->with('user')->first();
+
+            $message = 'A comment was added on order id '.$request->order_id;
+            event(new NewMessage($message));
+
+
+            DB::commit();
             $response = [
                 'status' => 200,
                 'message' => 'Comment added successfully.',

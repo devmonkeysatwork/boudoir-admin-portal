@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
 use App\Models\User;
 use App\Models\Workstations;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
@@ -36,6 +38,12 @@ class AdminController extends Controller
             $order->status_id = $request->edit_status;
             $order->workstation_id = $request->edit_workstation;
             $order->save();
+
+            $orderStatus = new OrderLogs();
+            $orderStatus->order_id = $request->id;
+            $orderStatus->status_id = $request->edit_status;
+            $orderStatus->user_id = Auth::user()->id;
+            $orderStatus->save();
             DB::commit();
             $response = [
                 'status' => 200,

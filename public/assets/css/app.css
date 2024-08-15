@@ -1125,7 +1125,8 @@ input:checked+.slider:before {
 
 #orderModal .activity-log .log-desc {
     display: inline-flex;
-    max-width: 340px;
+    max-width: 300px;
+    word-wrap: break-word;
 }
 
 #orderModal .log-date,

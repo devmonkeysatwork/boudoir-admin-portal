@@ -38,7 +38,7 @@
 </body>
 
 </html>
-
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -212,4 +212,17 @@
 </script>
 <script src="{{asset('assets/js/app.js')}}"></script>
 <script src="{{asset('assets/js/jquery.js')}}"></script>
+<script>
+    Pusher.logToConsole = true;
+
+    var pusher = new Pusher('7e09d527f8f78dc9735d', {
+        cluster: 'ap2'
+    });
+
+    var channel = pusher.subscribe('my-channel');
+    channel.bind('my-event', function(data) {
+        alert(JSON.stringify(data));
+        console.log(JSON.stringify(data));
+    });
+</script>
 @yield('footer_scripts')
