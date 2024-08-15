@@ -217,7 +217,7 @@
 
     var pusher = new Pusher('{{env('PUSHER_APP_KEY')}}', {
         cluster: '{{env('PUSHER_APP_CLUSTER')}}',
-        forceTLS: false // Set to false for local development
+        forceTLS: '{{env('PUSHER_FORSE_TLS')}}' // Set to false for local development
     });
 
     var channel = pusher.subscribe('my-channel');
