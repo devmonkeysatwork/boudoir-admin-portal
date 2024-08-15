@@ -216,13 +216,13 @@
     Pusher.logToConsole = true;
 
     var pusher = new Pusher('7e09d527f8f78dc9735d', {
-        cluster: 'ap2'
+        cluster: 'ap2',
+        forceTLS: false // Set to false for local development
     });
 
     var channel = pusher.subscribe('my-channel');
     channel.bind('my-event', function(data) {
-        alert(JSON.stringify(data));
-        console.log(JSON.stringify(data));
+        show_toast(data.message,'warning');
     });
 </script>
 @yield('footer_scripts')

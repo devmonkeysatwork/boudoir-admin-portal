@@ -12,8 +12,8 @@ return [
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
             'options' => [
-                'cluster' => env('PUSHER_APP_CLUSTER','ap2'),
-                'useTLS' => true,
+                'cluster' => env('PUSHER_APP_CLUSTER'),
+                'useTLS' => false, // Use false for local testing without SSL
             ],
         ],
 
