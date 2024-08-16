@@ -234,6 +234,7 @@
                     <p class="p12 m-0">on ${date}</p>
                 </div>`;
             $('#notifications').append(`${html}`);
+            playNotifications();
         }
         else if(data.message.log){
             let log = data.message.log;
@@ -243,9 +244,24 @@
                     <p class="p12 m-0">on ${date}</p>
                 </div>`;
             $('#notifications').append(`${html}`);
+            playNotifications();
         }
     });
 
+    function playNotifications(){
+        var audio = new Audio('{{asset('assets/audio/notification.mp3')}}');
+        audio.play().then(() => {
+            // Unmute audio after user interaction if needed
+            document.addEventListener('click', function() {
+                audio.muted = false;
+                audio.play().catch(function(error) {
+                    console.error('Error playing audio:', error);
+                });
+            });
+        }).catch(function(error) {
+            console.error('Error playing audio:', error);
+        });
+    }
     function toggleNotifications(){
         $('#notifications_div').toggle();
     }
