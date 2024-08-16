@@ -250,17 +250,7 @@
 
     function playNotifications(){
         var audio = new Audio('{{asset('assets/audio/notification.mp3')}}');
-        audio.play().then(() => {
-            // Unmute audio after user interaction if needed
-            document.addEventListener('click', function() {
-                audio.muted = false;
-                audio.play().catch(function(error) {
-                    console.error('Error playing audio:', error);
-                });
-            });
-        }).catch(function(error) {
-            console.error('Error playing audio:', error);
-        });
+        audio.play();
     }
     function toggleNotifications(){
         $('#notifications_div').toggle();
