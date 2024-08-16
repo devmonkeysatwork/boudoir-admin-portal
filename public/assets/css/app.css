@@ -156,7 +156,7 @@ button {
     padding: 15px;
     text-decoration: none;
     border-radius: 5px;
-    width: 65%;
+    width: 80%;
     position: relative;
     transition: background-color 0.3s;
 }
@@ -1340,7 +1340,6 @@ input:checked+.slider:before {
 #createStatusModal .modal-content,
 #editStatusModal .modal-content {
     width: 550px;
-    height: 280px;
 }
 
 #createStatusModal .modal-content form,
@@ -1639,7 +1638,10 @@ input:checked+.slider:before {
     overflow-y: auto;
 }
 
-
+#comments_container{
+    max-height: 500px;
+    overflow-y: auto;
+}
 #order_logs li {
     position: relative;
 }
@@ -1652,4 +1654,39 @@ input:checked+.slider:before {
     left: -14px;
     width: 2px;
     height: 110%;
+}
+.p12{
+    font-family: Nunito Sans;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16.37px;
+    text-align: left;
+}
+#notifications_div{
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0px;
+    width: 250px;
+    height: auto;
+    border-radius: 8px;
+}
+#notifications_div #notifications{
+    display: flex;
+    flex-direction: column;
+    max-height: 180px;
+    overflow-y: auto;
+}
+#notifications_div #notifications .notification{
+    margin: 0px;
+    padding: 15px 8px;
+}
+.notification_header{
+    height: 36px;
+    border-radius: 8px 8px 0px 0px;
+    padding: 8px;
+    background-color: #BD7F7F;
+    display: flex;
+    justify-content: start;
+    align-items: center;
 }

@@ -2,11 +2,11 @@
 
 @section('content')
 <div class="workstations">
-  <h1>Workstations</h1>
+  <h1>Production Team</h1>
   <table>
     <thead>
       <tr>
-        <th>Workstation #</th>
+        <th>Team</th>
         <th># of Orders</th>
         <th>Active Order</th>
         <th>Assigned To</th>
@@ -24,7 +24,7 @@
     </tbody>
   </table>
 
-  <x-modal id="workstationModal" title="Workstation #4">
+  <x-modal id="workstationModal" title="Team">
     <div class="workstation-details">
       <div class="search-container">
         <input type="text" class="search-input" placeholder="Search">

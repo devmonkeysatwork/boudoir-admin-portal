@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewMessage;
 use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
@@ -36,14 +37,22 @@ class AdminController extends Controller
             DB::beginTransaction();
             $order = Orders::find($request->id);
             $order->status_id = $request->edit_status;
-            $order->workstation_id = $request->edit_workstation;
             $order->save();
 
             $orderStatus = new OrderLogs();
             $orderStatus->order_id = $request->id;
             $orderStatus->status_id = $request->edit_status;
-            $orderStatus->user_id = Auth::user()->id;
+            $orderStatus->user_id = $request->user_id;
+            $orderStatus->updated_by = Auth::user()->id;
+            $orderStatus->notes = $request->notes??null;
             $orderStatus->save();
+
+            $log = OrderLogs::whereId($orderStatus->id)->with(['user','status','updated_by'])->first();
+
+            $message = ['message'=>'A status was updated for order id '.$request->order_id,'log'=>$log];
+            event(new NewMessage($message));
+
+
             DB::commit();
             $response = [
                 'status' => 200,

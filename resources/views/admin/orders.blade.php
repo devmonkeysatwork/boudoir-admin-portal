@@ -41,10 +41,12 @@
     <thead>
       <tr>
         <th>Order #</th>
+        <th>Priority</th>
         <th>Phase</th>
         <th>Team Member</th>
         <th>Date Started</th>
         <th>Time in Production</th>
+        <th>Late</th>
         <th></th>
       </tr>
     </thead>
@@ -52,6 +54,7 @@
         @foreach($orders as $order)
           <tr>
             <td>{{$order->order_id}}</td>
+            <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
             <td>{{$order->station?->worker?->name ?? null}}</td>
             <td>{{$order->date_started}}</td>
@@ -65,6 +68,7 @@
                 {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
                 {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
             </td>
+              <td><img src="{{asset('icons/exclaimatio.svg')}}" alt=""></td>
               <td>
                   <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
                       <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
@@ -166,13 +170,16 @@
                 </div>
                 <div class="col-6">
                     <div class="form-group">
-                        <label for="status-color">WorkStation</label>
-                        <select name="edit_workstation" class="form-select" id="edit_workstation">
-                            @foreach($workstations as $workstation)
-                                <option value="{{$workstation->id}}">{{$workstation->workstation_number}}</option>
+                        <label for="status-color">Users</label>
+                        <select name="user_id" class="form-select" id="edit_user_id">
+                            @foreach($users as $user)
+                                <option value="{{$user->id}}">{{$user->name}}</option>
                             @endforeach
                         </select>
                     </div>
+                </div>
+                <div class="col-12 mt-2">
+                    <textarea name="notes"class="form-control" placeholder="Notes..."></textarea>
                 </div>
             </div>
         </form>
@@ -269,8 +276,10 @@
                             var initial = value.user.name.charAt(0);
                             let html = `<div class="comment">
                                             <div class="comment-body">
-                                                <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
-                                                <span class="comment-date">${formattedDate}</span>
+                                                <div class="d-flex justify-content-between align-items-center flex-row">
+                                                    <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
+                                                    <span class="">${formattedDate}</span>
+                                                </div>
                                                 <p class="comment-text">${value.comment}</p>
                                             </div>
                                             <div class="comment-footer">
@@ -293,18 +302,6 @@
                 error: function (response) {
                 }
             })
-        }
-        function formatDate(dateString) {
-            var date = new Date(dateString);
-            var options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-            };
-            return new Intl.DateTimeFormat('en-US', options).format(date);
         }
 
         function addComment(){

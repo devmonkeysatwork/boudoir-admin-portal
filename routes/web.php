@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomAuthController;
+use \App\Http\Controllers\OrdersController;
 use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -29,15 +30,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
 
-    Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
-    Route::get('/search_orders', [\App\Http\Controllers\OrdersController::class, 'search'])->name('search.orders');
+    Route::get('/orders', [OrdersController::class, 'index'])->name('admin.orders');
+    Route::get('/search_orders', [OrdersController::class, 'search'])->name('search.orders');
     Route::post('/update_order_status', [AdminController::class, 'updateOrderStatus'])->name('admin.update_order_status');
-    Route::post('/get_order_details', [\App\Http\Controllers\OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
-    Route::post('/order_add_comment', [\App\Http\Controllers\OrdersController::class, 'addComment'])->name('order.add_comment');
+    Route::post('/get_order_details', [OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
+    Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
 
 
 
-    Route::get('/workstations', [AdminController::class, 'workstations'])->name('admin.workstations');
+    Route::get('/team', [AdminController::class, 'workstations'])->name('admin.workstations');
     Route::get('/settings', function () {
         return redirect()->route('admin.manage-statuses');
     })->name('admin.settings');
@@ -63,7 +64,7 @@ Route::get('/barcode-scanner', function () {
 
 
 
-Route::post('/api/save_order', [\App\Http\Controllers\OrdersController::class, 'store']);
-Route::post('/update_order_log', [\App\Http\Controllers\OrdersController::class, 'addOrUpdateOrderStatusRow'])->name('order.add_log');
+Route::post('/api/save_order', [OrdersController::class, 'store']);
+Route::post('/update_order_log', [OrdersController::class, 'addOrUpdateOrderStatusRow'])->name('order.add_log');
 
 require __DIR__ . '/auth.php';

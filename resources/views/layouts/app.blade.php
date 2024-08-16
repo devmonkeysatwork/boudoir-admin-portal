@@ -222,7 +222,44 @@
 
     var channel = pusher.subscribe('my-channel');
     channel.bind('my-event', function(data) {
-        show_toast(data.message,'warning');
+        if($('#notifications .no_notif').length){
+            $('#notifications').empty();
+            $('.notification_footer').removeClass('d-none');
+        }
+        if(data.message.comment){
+            let comment = data.message.comment;
+            let date = formatDate(comment.created_at);
+            let html = `<div class="d-flex flex-column gap-1 notification">
+                    <p class="m-0">${comment.user.name} added a comment on order id ${comment.order_id}</p>
+                    <p class="p12 m-0">on ${date}</p>
+                </div>`;
+            $('#notifications').append(`${html}`);
+        }
+        else if(data.message.log){
+            let log = data.message.log;
+            let date = formatDate(log.created_at);
+            let html = `<div class="d-flex flex-column gap-1 notification">
+                    <p class="m-0">${log.updated_by.name} changed the status to ${log.status.status_name} for order id ${log.order_id}</p>
+                    <p class="p12 m-0">on ${date}</p>
+                </div>`;
+            $('#notifications').append(`${html}`);
+        }
     });
+
+    function toggleNotifications(){
+        $('#notifications_div').toggle();
+    }
+    function formatDate(dateString) {
+        var date = new Date(dateString);
+        var options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+        };
+        return new Intl.DateTimeFormat('en-US', options).format(date);
+    }
 </script>
 @yield('footer_scripts')

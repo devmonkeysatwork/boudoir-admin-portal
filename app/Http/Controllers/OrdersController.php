@@ -13,6 +13,7 @@ use App\Http\Requests\StoreOrdersRequest;
 use App\Http\Requests\UpdateOrdersRequest;
 use App\Models\OrderStatus;
 use App\Models\User;
+use App\Models\Workstations;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,13 @@ class OrdersController extends Controller
      */
     public function index()
     {
-        //
+        $query = Orders::with(['items','status','addresses','station','station.worker','items.attributes']);
+        $orders = $query->paginate(10);
+        $workstations = Workstations::all();
+        $statuses = OrderStatus::all();
+        $users = User::all();
+//        dd($data);
+        return view('admin.orders',compact('orders', 'workstations', 'statuses','users'));
     }
 
     /**
@@ -206,7 +213,7 @@ class OrdersController extends Controller
             $order->save();
             $comment = OrderComments::whereId($order->id)->with('user')->first();
 
-            $message = 'A comment was added on order id '.$request->order_id;
+            $message = ['message'=>'A comment was added on order id '.$request->order_id,'comment'=>$comment];
             event(new NewMessage($message));
 
 
