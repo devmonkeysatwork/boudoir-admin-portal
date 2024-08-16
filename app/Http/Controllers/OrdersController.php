@@ -212,15 +212,16 @@ class OrdersController extends Controller
             $orderComment->user_id = Auth::user()->id;
             $orderComment->comment = $request->comment;
             $orderComment->save();
+
             $comment = OrderComments::whereId($orderComment->id)->with('user')->first();
+            $order_id = Orders::find($request->order_id)->pluck('order_id')->first();
 
             $notification = new Notifications();
             $notification->type = Notifications::typeComment;
             $notification->comment_id = $comment->id;
             $notification->save();
 
-
-            $message = ['message'=>'A comment was added on order id '.$request->order_id,'comment'=>$comment];
+            $message = ['message'=>'A comment was added on order id '.$order_id,'comment'=>$comment,'order_id'=>$order_id];
             event(new NewMessage($message));
 
 

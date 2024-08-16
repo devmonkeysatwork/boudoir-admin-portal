@@ -230,11 +230,12 @@
             let comment = data.message.comment;
             let date = formatDate(comment.created_at);
             let html = `<div class="d-flex flex-column gap-1 notification">
-                    <p class="m-0">${comment.user.name} added a comment on order id ${comment.order_id}</p>
+                    <p class="m-0">${comment.user.name} added a comment on order id ${data.message.order_id}</p>
                     <p class="p12 m-0">on ${date}</p>
                 </div>`;
             $('#notifications').append(`${html}`);
             playNotifications();
+            addNotification();
         }
         else if(data.message.log){
             let log = data.message.log;
@@ -245,6 +246,7 @@
                 </div>`;
             $('#notifications').append(`${html}`);
             playNotifications();
+            addNotification();
         }
     });
 
@@ -254,6 +256,10 @@
     }
     function toggleNotifications(){
         $('#notifications_div').toggle();
+    }
+    function addNotification(){
+        let counts = parseInt($('.notification_counter').text()) + 1;
+        $('.notification_counter').empty().html(counts);
     }
     function formatDate(dateString) {
         var date = new Date(dateString);

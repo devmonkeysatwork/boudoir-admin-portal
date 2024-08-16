@@ -1690,3 +1690,23 @@ input:checked+.slider:before {
     justify-content: start;
     align-items: center;
 }
+.notification_container > button{
+    position: relative;
+}
+.notification_container .notification_counter{
+    position: absolute;
+    display: block;
+    width: 20px;
+    height: 20px;
+    top: -3px;
+    right: 6px;
+    background-color: #F93C65;
+    border-radius: 50%;
+    padding: 4px;
+    font-family: Nunito Sans;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 12px;
+    text-align: center;
+    color: #fff;
+}

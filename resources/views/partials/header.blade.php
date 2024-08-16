@@ -5,7 +5,9 @@
   </div>
   <div class="header-user">
     <div class="notification_container position-relative">
-        <button class="btn bg-transparent" onclick="toggleNotifications()"><img src="{{ asset('icons/notification.png') }}" alt="Notifications"></button>
+        <button class="btn bg-transparent" onclick="toggleNotifications()"><img src="{{ asset('icons/notification.png') }}" alt="Notifications">
+            <span class="notification_counter">0</span>
+        </button>
         <div id="notifications_div" class=" bg-white">
             <div class="notification_header">
                 <p class="p12 m-0 text-white">Notifications</p>
@@ -14,7 +16,7 @@
                 <p class="p12 no_notif p-3">Not notifications to show</p>
             </div>
             <div class="notification_footer d-flex py-3 px-2 justify-content-center align-items-center bg-white d-none">
-                <a href="#" class="p12 text-dark">See all notification</a>
+                <a href="{{route('admin.notification')}}" class="p12 text-dark">See all notification</a>
             </div>
         </div>
     </div>
