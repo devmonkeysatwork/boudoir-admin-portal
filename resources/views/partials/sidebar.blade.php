@@ -19,6 +19,12 @@
       </a>
     </li>
     <li>
+      <a href="{{ route('admin.notification') }}" class="{{ Request::is('notification*') ? 'active' : '' }}">
+        <img src="{{ asset('icons/notification.png') }}" alt="Settings">Notofications
+      </a>
+    </li>
+    <li>
+    <li>
       <a href="{{ route('admin.settings') }}" class="{{ Request::is('settings*') ? 'active' : '' }}">
         <img src="{{ asset('icons/settings.png') }}" alt="Settings">Settings
       </a>

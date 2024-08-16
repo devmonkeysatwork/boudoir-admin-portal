@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
+use App\Models\Notifications;
 use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
@@ -40,14 +41,20 @@ class AdminController extends Controller
             $order->save();
 
             $orderStatus = new OrderLogs();
-            $orderStatus->order_id = $request->id;
+            $orderStatus->order_id = $order->order_id;
             $orderStatus->status_id = $request->edit_status;
             $orderStatus->user_id = $request->user_id;
             $orderStatus->updated_by = Auth::user()->id;
             $orderStatus->notes = $request->notes??null;
+            $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
             $orderStatus->save();
 
             $log = OrderLogs::whereId($orderStatus->id)->with(['user','status','updated_by'])->first();
+
+            $notification = new Notifications();
+            $notification->type = Notifications::typestatus;
+            $notification->log_id = $log->id;
+            $notification->save();
 
             $message = ['message'=>'A status was updated for order id '.$request->order_id,'log'=>$log];
             event(new NewMessage($message));
@@ -73,6 +80,12 @@ class AdminController extends Controller
     {
         $data['workstations'] = Workstations::with('worker')->get();
         return view('admin.workstations',$data);
+    }
+    public function notification()
+    {
+        $data['notifications'] = Notifications::with(['log','log.user','log.status','comment','comment.user','comment.order'])->get();
+
+        return view('admin.notifications',$data);
     }
 
     public function manageStatuses()

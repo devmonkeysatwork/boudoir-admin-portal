@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 
+    Route::get('/notification', [AdminController::class, 'notification'])->name('admin.notification');
     Route::get('/team', [AdminController::class, 'workstations'])->name('admin.workstations');
     Route::get('/settings', function () {
         return redirect()->route('admin.manage-statuses');

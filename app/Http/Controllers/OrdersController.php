@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\NewMessage;
 use App\Models\CostumerAddress;
 use App\Models\ItemAttributes;
+use App\Models\Notifications;
 use App\Models\OrderComments;
 use App\Models\OrderItems;
 use App\Models\OrderLogs;
@@ -206,12 +207,18 @@ class OrdersController extends Controller
     {
         try {
             DB::beginTransaction();
-            $order = new OrderComments();
-            $order->order_id = $request->order_id;
-            $order->user_id = Auth::user()->id;
-            $order->comment = $request->comment;
-            $order->save();
-            $comment = OrderComments::whereId($order->id)->with('user')->first();
+            $orderComment = new OrderComments();
+            $orderComment->order_id = $request->order_id;
+            $orderComment->user_id = Auth::user()->id;
+            $orderComment->comment = $request->comment;
+            $orderComment->save();
+            $comment = OrderComments::whereId($orderComment->id)->with('user')->first();
+
+            $notification = new Notifications();
+            $notification->type = Notifications::typeComment;
+            $notification->comment_id = $comment->id;
+            $notification->save();
+
 
             $message = ['message'=>'A comment was added on order id '.$request->order_id,'comment'=>$comment];
             event(new NewMessage($message));
