@@ -194,6 +194,16 @@
 @endsection
 @section('footer_scripts')
     <script>
+        const order_id = '{{$order_id??null}}';
+        $(document).ready(function() {
+            var url = window.location.href;
+            var urlObj = new URL(url);
+            var orderId = urlObj.searchParams.get('order_id');
+            var tab = urlObj.searchParams.get('tab');
+            if (orderId && tab === 'open') {
+                viewDetails(order_id,orderId);
+            }
+        });
         let activeOrder = 0;
         function editStatus(me){
             $('#edit_id').val($(me).data('id'));

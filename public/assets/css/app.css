@@ -1680,6 +1680,8 @@ input:checked+.slider:before {
 #notifications_div #notifications .notification{
     margin: 0px;
     padding: 15px 8px;
+    color: #191919;
+    text-decoration: none;
 }
 .notification_header{
     height: 36px;
@@ -1709,4 +1711,9 @@ input:checked+.slider:before {
     line-height: 12px;
     text-align: center;
     color: #fff;
+}
+.notification_time{
+    position: absolute;
+    top: 0px;
+    right: -10px;
 }

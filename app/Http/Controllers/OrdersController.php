@@ -26,15 +26,19 @@ class OrdersController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $query = Orders::with(['items','status','addresses','station','station.worker','items.attributes']);
         $orders = $query->paginate(10);
         $workstations = Workstations::all();
         $statuses = OrderStatus::all();
         $users = User::all();
+        $order_id = null;
+        if($request->order_id){
+            $order_id = Orders::where('order_id',$request->order_id)->pluck('id')->first();
+        }
 //        dd($data);
-        return view('admin.orders',compact('orders', 'workstations', 'statuses','users'));
+        return view('admin.orders',compact('orders', 'workstations', 'statuses','users','order_id'));
     }
 
     /**
