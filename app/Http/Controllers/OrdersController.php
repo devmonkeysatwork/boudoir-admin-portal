@@ -173,8 +173,9 @@ class OrdersController extends Controller
                 $address2->order_id = $order->id;
                 $address2->save();
 
-                $deadline = Carbon::now()->addDays($production_days)->format('Y-m-d');
-                $order->deadline = $deadline;
+                $startDate = Carbon::now();
+                $deadline = $this->addBusinessDays($startDate, $production_days);
+                $order->deadline = $deadline->format('Y-m-d');
                 $order->save();
 
                 DB::commit();
@@ -188,6 +189,19 @@ class OrdersController extends Controller
             Log::info('Error -------'.$e);
         }
 
+    }
+
+    function addBusinessDays(Carbon $startDate, int $daysToAdd) {
+        $currentDate = $startDate->copy();
+
+        while ($daysToAdd > 0) {
+            $currentDate->addDay();
+            if ($currentDate->isWeekday()) {
+                $daysToAdd--;
+            }
+        }
+
+        return $currentDate;
     }
 
     /**
