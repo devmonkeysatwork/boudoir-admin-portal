@@ -68,7 +68,15 @@
                 {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
                 {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
             </td>
-              <td><img src="{{asset('icons/exclaimatio.svg')}}" alt=""></td>
+              <td>
+                  @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                    <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
+                  @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
+                      <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
+                  @else
+                      -
+                  @endif
+              </td>
               <td>
                   <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
                       <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
@@ -90,7 +98,7 @@
 
 
   <x-modal id="orderModal" title="Order #00001">
-    <span class="status completed">Completed</span>
+    <span class="status" id="modal_status_text">Completed</span>
     <div class="orderModal-flex">
       <div class="activity-log">
         <h2>Activity Log</h2>
@@ -162,18 +170,21 @@
                         <input type="hidden" id="edit_id" name="id">
                         <label for="status-name">Status</label>
                         <select name="edit_status" class="form-select" id="edit_status">
-                            @foreach($statuses as $status)
+                            <option value="0">Select One</option>
+                            @foreach($edit_statuses as $status)
                                 <option value="{{$status->id}}">{{$status->status_name}}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-6" id="sub_status_div" style="display: none;">
                     <div class="form-group">
-                        <label for="status-color">Users</label>
-                        <select name="user_id" class="form-select" id="edit_user_id">
-                            @foreach($users as $user)
-                                <option value="{{$user->id}}">{{$user->name}}</option>
+                        <label for="">Sub Status</label>
+                        <select name="edit_sub_status" class="form-select" id="edit_sub_status">
+                            @foreach($sub_statuses as $sub_status)
+                                <option value="{{$sub_status->id}}" data-parent="{{$sub_status->status_id}}" style="display: none;">
+                                    {{$sub_status->name}}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -203,14 +214,37 @@
             if (orderId && tab === 'open') {
                 viewDetails(order_id,orderId);
             }
+
+
+
+            $('#edit_status').on('change', function() {
+                var selectedStatusId = $(this).val();
+                var $subStatusOptions = $('#edit_sub_status option');
+                var hasVisibleOptions = false;
+
+                $subStatusOptions.each(function() {
+                    if ($(this).data('parent') == selectedStatusId) {
+                        $(this).show();
+                        hasVisibleOptions = true;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+                // Show or hide the sub-status div based on whether there are visible options
+                $('#sub_status_div').toggle(hasVisibleOptions);
+            });
+
+            $('#edit_status').trigger('change');
+
         });
         let activeOrder = 0;
         function editStatus(me){
             $('#edit_id').val($(me).data('id'));
             $('#edit_status').val($(me).data('status'));
             $('#edit_workstation').val($(me).data('workstation'));
-            console.log($(me).data('status'));
-            console.log($(me).data('workstation'));
+            if(!$('#edit_status').val()){
+                $('#edit_status').val('0');
+            }
             $('#editStatusModal').show();
         }
         function updateStatus(){
@@ -269,13 +303,21 @@
                 success: function (response) {
                     console.log(response);
                     if(response.status == 200){
+                        let status = response.status_log;
                         let logs = response.order.logs;
                         let comments = response.order.comments;
                         $('#order_logs').empty();
                         $('#comments_container').empty();
                         $.each(logs, function( index, value ) {
                             let html = `<li class="log-entry">
-                                        <span class="log-desc">${value.user.name} update the status to ${value.status.status_name} for order ${value.order_id}</span>
+                                        <span class="log-desc">${value.user.name} update the status to <span class="fw-bold">${value.status.status_name}</span>`;
+                                if(value.sub_status){
+                                    html += ` because of ${value.sub_status.name}`;
+                                }
+                                if(value.notes){
+                                    html += `<br><b>Notes: </b><i>${value.notes}</i>`;
+                                }
+                            html += `</span>
                                         <span class="log-date">${value.time_started}</span>
                                       </li>`;
                             $('#order_logs').append(html);
@@ -298,8 +340,15 @@
                                         </div>`;
                             $('#comments_container').append(html);
                         });
-
-
+                        if(status){
+                            if(status.sub_status){
+                                $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
+                            }else{
+                                $('#modal_status_text').empty().html(status.status.status_name).css('background-color',status.status.status_color);
+                            }
+                        }else{
+                            $('#modal_status_text').empty().html(response.order.status.status_name).css('background-color',response.order.status.status_color);
+                        }
                         $('#orderModal').show();
                         $('#orderModal > div > h2').text('Order #' + title);
 

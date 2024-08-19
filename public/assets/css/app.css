@@ -1102,7 +1102,7 @@ input:checked+.slider:before {
     height: 800px;
 }
 
-#orderModal .completed {
+#orderModal #modal_status_text{
     position: absolute;
     right: 70px;
     top: 22px;
@@ -1124,7 +1124,7 @@ input:checked+.slider:before {
 }
 
 #orderModal .activity-log .log-desc {
-    display: inline-flex;
+    display: inline-block;
     max-width: 300px;
     word-wrap: break-word;
 }
@@ -1641,6 +1641,9 @@ input:checked+.slider:before {
 #comments_container{
     max-height: 500px;
     overflow-y: auto;
+}
+#order_logs li > * {
+    vertical-align: text-top;
 }
 #order_logs li {
     position: relative;

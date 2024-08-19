@@ -43,8 +43,8 @@ class AdminController extends Controller
             $orderStatus = new OrderLogs();
             $orderStatus->order_id = $order->order_id;
             $orderStatus->status_id = $request->edit_status;
-            $orderStatus->user_id = $request->user_id;
-            $orderStatus->updated_by = Auth::user()->id;
+            $orderStatus->sub_status_id = $request->edit_sub_status??null;
+            $orderStatus->user_id = Auth::user()->id;
             $orderStatus->notes = $request->notes??null;
             $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
             $orderStatus->save();
@@ -83,7 +83,8 @@ class AdminController extends Controller
     }
     public function notification()
     {
-        $data['notifications'] = Notifications::with(['log','log.user','log.status','comment','comment.user','comment.order'])->get();
+        $data['notifications'] = Notifications::with(['log','log.user','log.status','log.sub_status','comment','comment.user','comment.order'])
+            ->orderBy('created_at','DESC')->get();
 
         return view('admin.notifications',$data);
     }

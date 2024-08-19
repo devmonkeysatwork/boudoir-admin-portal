@@ -30,6 +30,11 @@ class Orders extends Model
     function logs(){
         return $this->hasMany(OrderLogs::class,'order_id','order_id');
     }
+    function last_log(){
+        return $this->hasMany(OrderLogs::class, 'order_id', 'order_id')
+            ->latest('time_started')
+            ->first();
+    }
 
     public function comments()
     {

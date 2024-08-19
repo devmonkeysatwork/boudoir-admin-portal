@@ -15,6 +15,9 @@ class OrderLogs extends Model
     function status(){
         return $this->belongsTo(OrderStatus::class,'status_id','id');
     }
+    function sub_status(){
+        return $this->belongsTo(SubStatus::class,'sub_status_id','id');
+    }
     function updated_by(){
         return $this->belongsTo(User::class,'updated_by','id');
     }

@@ -13,6 +13,8 @@ use App\Models\Orders;
 use App\Http\Requests\StoreOrdersRequest;
 use App\Http\Requests\UpdateOrdersRequest;
 use App\Models\OrderStatus;
+use App\Models\SubStatus;
+use App\Models\TimelinePool;
 use App\Models\User;
 use App\Models\Workstations;
 use Carbon\Carbon;
@@ -28,17 +30,21 @@ class OrdersController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Orders::with(['items','status','addresses','station','station.worker','items.attributes']);
+        $query = Orders::with(['items','status','addresses','station','station.worker','items.attributes'])
+            ->orderBy('deadline','DESC')
+            ->orderBy('date_started','DESC');
         $orders = $query->paginate(10);
         $workstations = Workstations::all();
         $statuses = OrderStatus::all();
+        $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
+        $sub_statuses = SubStatus::with('status')->get();
         $users = User::all();
         $order_id = null;
         if($request->order_id){
             $order_id = Orders::where('order_id',$request->order_id)->pluck('id')->first();
         }
 //        dd($data);
-        return view('admin.orders',compact('orders', 'workstations', 'statuses','users','order_id'));
+        return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id','sub_statuses'));
     }
 
     /**
@@ -56,7 +62,7 @@ class OrdersController extends Controller
     {
         try {
             DB::beginTransaction();
-
+            $production_days = 0;
             if($request->has('order_id')){
                 $order_data = $request->all();
                 Log::info($request->all());
@@ -119,6 +125,8 @@ class OrdersController extends Controller
                     $order_item->sku = $item['sku'];
                     $order_item->save();
 
+                    $production_days += TimelinePool::where('item',$item['product_name'])->whereNull('attribute')
+                        ->whereNull('attribute_value')->pluck('days')->first();
                     $attributes = $item['attributes']??[];
                     foreach ($attributes as $attribute){
                         $arr = explode('_',$attribute);
@@ -127,6 +135,10 @@ class OrdersController extends Controller
                         $order_attribute->title=$arr[1]??null;
                         $order_attribute->item_id=$order_item->id;
                         $order_attribute->save();
+                        $production_days += TimelinePool::where('item',$item['product_name'])->where('attribute',$arr[0])
+                            ->where('attribute_value',$arr[1])->pluck('days')->first();
+
+                        Log::info('**********************************');
                     }
                 }
 
@@ -160,6 +172,10 @@ class OrdersController extends Controller
                 $address2->type = 'shipping_address';
                 $address2->order_id = $order->id;
                 $address2->save();
+
+                $deadline = Carbon::now()->addDays($production_days)->format('Y-m-d');
+                $order->deadline = $deadline;
+                $order->save();
 
                 DB::commit();
                 Log::info('Successfully saved ORDER -------'.$order->id);
@@ -250,10 +266,14 @@ class OrdersController extends Controller
     {
         $id = $request->id;
 
-        $order = Orders::with(['logs','logs.user','logs.status','comments','comments.replies','comments.user'])
+        $order = Orders::with(['status','logs','logs.user','logs.status','logs.sub_status','comments','comments.replies','comments.user'])
             ->whereId($id)->first();
 
-        return response()->json(['status' => 200,'order' => $order]);
+        $status_log = OrderLogs::with(['user','status','sub_status'])
+            ->where('order_id',$order->order_id)->latest('time_started')
+            ->first();
+
+        return response()->json(['status' => 200,'order' => $order,'status_log' => $status_log]);
 
     }
 

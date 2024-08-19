@@ -15,7 +15,11 @@
                             $order_id = $notification->comment->order->order_id
                           @endphp
                       @else
-                          {{$notification->log?->user?->name}} updated a status for order id <span class="fw-bold">{{$notification->log?->order_id}}</span>
+                          {{$notification->log?->user?->name}} updated a status to <span class="fw-bold">{{$notification->log?->status?->status_name}}</span>
+                          @if(isset($notification->log?->sub_status_id))
+                            -> {{$notification->log?->sub_status?->name}}
+                          @endif
+                          for order id <span class="fw-bold">{{$notification->log?->order_id}}</span>
                           @php
                               $order_id = $notification->log?->order_id
                           @endphp
