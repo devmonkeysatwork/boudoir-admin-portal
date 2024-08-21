@@ -30,10 +30,11 @@ class OrdersController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Orders::with(['items','status','addresses','station','station.worker','items.attributes'])
+        $query = Orders::with(['items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
             ->orderBy('deadline','DESC')
             ->orderBy('date_started','DESC');
         $orders = $query->paginate(10);
+//        dd($orders);
         $workstations = Workstations::all();
         $statuses = OrderStatus::all();
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();

@@ -1633,7 +1633,7 @@ input:checked+.slider:before {
 
 }
 
-#orders_table_db{
+#orders_table_db #orders_table_container{
     max-height: 500px;
     overflow-y: auto;
 }

@@ -12,6 +12,8 @@ class Orders extends Model
     const parentType = 'PARENT';
     const singleType = 'SINGLE';
     const childType = 'CHILD';
+    const statusCompleted = 'Completed';
+    const statusHold = 'On hold';
 
 
 
@@ -31,9 +33,8 @@ class Orders extends Model
         return $this->hasMany(OrderLogs::class,'order_id','order_id');
     }
     function last_log(){
-        return $this->hasMany(OrderLogs::class, 'order_id', 'order_id')
-            ->latest('time_started')
-            ->first();
+        return $this->hasOne(OrderLogs::class, 'order_id', 'order_id')
+            ->latest('time_started');
     }
 
     public function comments()

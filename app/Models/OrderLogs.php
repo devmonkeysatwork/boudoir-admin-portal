@@ -21,4 +21,9 @@ class OrderLogs extends Model
     function updated_by(){
         return $this->belongsTo(User::class,'updated_by','id');
     }
+
+    public function order()
+    {
+        return $this->belongsTo(Orders::class, 'order_id', 'order_id');
+    }
 }

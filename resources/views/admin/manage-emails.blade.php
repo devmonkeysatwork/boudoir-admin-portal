@@ -15,9 +15,14 @@
           <img src="{{ asset('icons/email.png') }}" alt="Email Icon">Manage Emails
         </a>
       </li>
+      <li>
+        <a href="javascript:void(0);" class="adminSettingsBtn">
+          <img src="{{ asset('icons/settings.png') }}" alt="Email Icon">Admin Settings
+        </a>
+      </li>
     </ul>
   </div>
-  <div class="settings-content">
+  <div class="settings-content" id="emailContentDiv">
     <div class="manage-top">
       <h2>Manage Emails</h2>
       <button class="create-btn" data-open-modal="createEmailModal">+ Create New Email Template</button>
@@ -126,11 +131,28 @@
     </div>
     @include('partials.footer')
   </div>
+    <div id="adminSettings" style="display: none;"  class="settings-content">
+        <div class="manage-top">
+            <h2>Admin settings</h2>
+            <button class="create-btn" id="updateAdminSettings">Update</button>
+        </div>
+        <div class="manage-btm">
+
+        </div>
+        @include('partials.footer')
+    </div>
+
 </div>
 @endsection
 @section('footer_scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            $('.adminSettingsBtn').click(function(){
+                $('.settings-menu a').removeClass('active');
+                $(this).addClass('active');
+                $('#adminSettings').toggle();
+                $('#emailContentDiv').toggle();
+            });
             $('#save_template').click(function(){
                 let data = new FormData($('#emailTemplateForm')[0]);
                 data.append('_token', '{{@csrf_token()}}');

@@ -12,12 +12,13 @@ use App\Models\Workstations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        $query = Orders::with(['items','status','addresses','station','station.worker'])->where('orderType',Orders::parentType);
+        $query = Orders::with(['items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker'])->where('orderType',Orders::parentType);
         $orders = $query->paginate(10);
         return view('admin.dashboard',compact('orders'));
     }
@@ -92,8 +93,6 @@ class AdminController extends Controller
     public function manageStatuses()
     {
         $data['statuses'] = OrderStatus::all();
-
-
         return view('admin.manage-statuses',$data);
     }
 
@@ -155,5 +154,24 @@ class AdminController extends Controller
         ];
 
         return response()->json($response);
+    }
+
+
+
+    public function sendSummaryEmail(){
+
+        $completed_status = OrderStatus::where('status_name',Orders::statusCompleted)->pluck('id')->first();
+        $hold_status = OrderStatus::where('status_name',Orders::statusHold)->pluck('id')->first();
+        $issues = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->pluck('id');
+
+        $mailData['production_order'] = Orders::with(['status','station','station.worker'])
+            ->where('status_id','!=',$completed_status)->get();
+        $mailData['orders_on_hold'] = Orders::with(['status','station','station.worker'])
+            ->where('status_id',$hold_status)->get();
+        $mailData['order_with_issues'] = Orders::with(['status','station','station.worker'])
+            ->whereIn('status_id',$issues)->get();
+
+        $mailData['title']='Daily Summary Report';
+        Mail::to(env('ADMIN_EMAIL'))->send(new \App\Mail\OrderSummaryEmail($mailData));
     }
 }

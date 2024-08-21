@@ -55,7 +55,14 @@
           <tr>
             <td>{{$order->order_id}}</td>
             <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
-            <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
+            <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
+                    @if(isset($order->last_log->sub_status))
+                        {{$order->last_log?->sub_status?->name ?? null}}
+                    @else
+                        {{$order->last_log?->status?->status_name ?? null}}
+                    @endif
+                </span>
+            </td>
             <td>{{$order->station?->worker?->name ?? null}}</td>
             <td>{{$order->date_started}}</td>
             <td>
@@ -181,6 +188,7 @@
                     <div class="form-group">
                         <label for="">Sub Status</label>
                         <select name="edit_sub_status" class="form-select" id="edit_sub_status">
+                            <option value="">Select One</option>
                             @foreach($sub_statuses as $sub_status)
                                 <option value="{{$sub_status->id}}" data-parent="{{$sub_status->status_id}}" style="display: none;">
                                     {{$sub_status->name}}

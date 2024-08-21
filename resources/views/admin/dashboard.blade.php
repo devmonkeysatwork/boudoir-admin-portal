@@ -74,43 +74,52 @@
         </div>
       </div>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Order #</th>
-          <th>Phase</th>
-          <th>Team Member</th>
-          <th>Date Started</th>
-          <th>Time in Production</th>
-        </tr>
-      </thead>
-      <tbody id="ordersBody">
-      @if(isset($orders) && count($orders))
-          @foreach($orders as $order)
+    <div id="orders_table_container">
+        <table>
+            <thead>
             <tr>
-              <td>{{$order->order_id}}</td>
-              <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">{{$order->status?->status_name ?? null}}</span></td>
-              <td>{{$order->station?->worker?->name}}</td>
-              <td>{{$order->date_started}}</td>
-              <td>
-                @php
-                    $dateStarted = new DateTime($order->date_started);
-                    $now = new DateTime();
-                    $timeSpent = $now->diff($dateStarted);
-
-                    $days = $timeSpent->d;
-                    $hours = $timeSpent->h;
-                    $minutes = $timeSpent->i;
-
-                    $timeSpentString = ($days > 0 ? $days . 'd ' : '') . ($hours > 0 ? $hours . 'h ' : '') . ($minutes > 0 ? $minutes . 'm' : '');
-                @endphp
-                {{ $timeSpentString ?? '' }}
-              </td>
+                <th>Order #</th>
+                <th>Phase</th>
+                <th>Team Member</th>
+                <th>Date Started</th>
+                <th>Time in Production</th>
             </tr>
-          @endforeach
-        @endif
-      </tbody>
-    </table>
+            </thead>
+            <tbody id="ordersBody">
+            @if(isset($orders) && count($orders))
+                @foreach($orders as $order)
+                    <tr>
+                        <td>{{$order->order_id}}</td>
+                        <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
+                    @if(isset($order->last_log->sub_status))
+                                    {{$order->last_log?->sub_status?->name ?? null}}
+                                @else
+                                    {{$order->last_log?->status?->status_name ?? null}}
+                                @endif
+                </span>
+                        </td>
+                        <td>{{$order->station?->worker?->name}}</td>
+                        <td>{{$order->date_started}}</td>
+                        <td>
+                            @php
+                                $dateStarted = new DateTime($order->date_started);
+                                $now = new DateTime();
+                                $timeSpent = $now->diff($dateStarted);
+
+                                $days = $timeSpent->d;
+                                $hours = $timeSpent->h;
+                                $minutes = $timeSpent->i;
+
+                                $timeSpentString = ($days > 0 ? $days . 'd ' : '') . ($hours > 0 ? $hours . 'h ' : '') . ($minutes > 0 ? $minutes . 'm' : '');
+                            @endphp
+                            {{ $timeSpentString ?? '' }}
+                        </td>
+                    </tr>
+                @endforeach
+            @endif
+            </tbody>
+        </table>
+    </div>
       <div class="row justify-content-end d-flex">
           <div class="col-12 col-sm-3">
               {{ $orders->links() }}

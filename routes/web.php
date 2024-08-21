@@ -6,6 +6,8 @@ use App\Http\Controllers\CustomAuthController;
 use \App\Http\Controllers\OrdersController;
 use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\ProfileController;
+use App\Mail\grantDetails;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 
@@ -62,6 +64,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/barcode-scanner', function () {
     return view('barcode-scanner');
 });
+Route::get('/send_email', [AdminController::class,'sendSummaryEmail'])->name('send-summary-email');
 
 
 
