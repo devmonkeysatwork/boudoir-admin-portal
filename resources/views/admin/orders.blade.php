@@ -32,6 +32,13 @@
       </select>
     </div>
     <div class="filter-item">
+      <select class="sort-select" id="filter-priority">
+        <option value="" disabled selected>Priority</option>
+        <option value="normal">Normal</option>
+        <option value="rush">Rush</option>
+      </select>
+    </div>
+    <div class="filter-item">
       <button class="reset-btn">
         <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
       </button>
@@ -241,12 +248,12 @@
         </button>
         <div class="new-comment">
           <textarea placeholder="Write a message..." id="comment_input"></textarea>
-{{--          <button class="msg-btn">--}}
-{{--            <img src="{{ asset('icons/attach.png') }}" alt="Attach file">--}}
-{{--          </button>--}}
-{{--          <button class="msg-btn">--}}
-{{--            <img src="{{ asset('icons/media.png') }}" alt="Media">--}}
-{{--          </button>--}}
+          {{-- <button class="msg-btn">
+            <img src="{{ asset('icons/attach.png') }}" alt="Attach file">
+          </button>
+          <button class="msg-btn">
+            <img src="{{ asset('icons/media.png') }}" alt="Media">
+          </button> --}}
           <button class="send-btn" onclick="addComment()">
             Send
             <img src="{{ asset('icons/send.png') }}" alt="Send">

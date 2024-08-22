@@ -373,7 +373,7 @@ button {
     border-radius: 5px;
     transition: border-color 0.3s, box-shadow 0.3s;
     cursor: pointer;
-    width: 125px;
+    width: fit-content;
     padding: 0 10px;
     height: 40px;
     box-sizing: border-box;
@@ -409,6 +409,21 @@ button {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.choices__list--dropdown {
+    width: 100%; 
+    min-width: max-content;
+}
+
+.choices__list--dropdown .choices__list {
+    width: 100%; 
+    min-width: max-content; 
+}
+
+.choices__list--dropdown .choices__list .choices__item--selectable {
+    width: auto; 
+    white-space: nowrap; 
+}
+
 .choices__list--dropdown .choices__item--choice {
     padding: 10px 0;
     font-size: 14px;
@@ -422,8 +437,8 @@ button {
 
 .choices__list--dropdown .choices__item,
 .choices__list[aria-expanded] .choices__item {
-    padding: 10px 0 10px 15px;
-    width: 110px;
+    padding: 10px 15px 10px 15px;
+    width: 100%;
 }
 
 .choices__list--dropdown .choices__item--selectable.is-highlighted,
@@ -436,6 +451,14 @@ button {
 .choices__list--dropdown .choices__item--choice.is-disabled {
     color: #ccc;
     cursor: not-allowed;
+}
+
+.choices__list choices__list--dropdown {
+    width: max-content;
+}
+
+.choices__list--single {
+    margin-right: 1rem;
 }
 
 .choices__list--single .choices__item {
@@ -604,8 +627,8 @@ button {
 
 .filter-item .choices__list--dropdown .choices__item,
 .filter-item .choices__list[aria-expanded] .choices__item {
-    padding: 10px 0 10px 15px;
-    width: 110px;
+    padding: 10px 15px 10px 15px;
+    width: 100%;
 }
 
 .filter-item .choices__list--dropdown .choices__item--selectable.is-highlighted,
@@ -676,6 +699,10 @@ button {
 .filter-item .choices__list--dropdown .choices__item--choice,
 .filter-item .choices__list--single .choices__item {
     line-height: 1.25;
+}
+
+.filter-item .choices__inner {
+    width: fit-content;
 }
 
 table {
@@ -1091,12 +1118,6 @@ input:checked+.slider:before {
     cursor: pointer;
 }
 
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 10px;
-}
-
 #orderModal .modal-content {
     width: 1200px;
     height: 800px;
@@ -1137,9 +1158,12 @@ input:checked+.slider:before {
 
 #orderModal .comment {
     border: 1px solid #D5D5D5;
-    padding: 20px 20px 0 20px;
     border-radius: 10px;
     margin-bottom: 10px;
+}
+
+#orderModal .comment .comment-body {
+    padding: 20px 20px 0 20px;
 }
 
 #orderModal .comment .comment-user {
@@ -1174,8 +1198,8 @@ input:checked+.slider:before {
     border-top: 1px solid #D5D5D5;
     display: flex;
     justify-content: flex-end;
-    width: 108%;
-    margin-left: -20px;
+    width: 100%;
+    /* margin-left: -20px; */
 }
 
 #orderModal .comment .comment-footer button {
@@ -1183,6 +1207,13 @@ input:checked+.slider:before {
     border: none;
     cursor: pointer;
     margin-right: 10px;
+}
+
+#orderModal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: none;
 }
 
 #orderModal .pdf-btn {

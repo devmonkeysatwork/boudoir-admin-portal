@@ -179,6 +179,10 @@
             searchEnabled: false,
             itemSelectText: '',
         });
+        const filterPriority = new Choices('#filter-priority', {
+            searchEnabled: false,
+            itemSelectText: '',
+        });
     });
     function show_toast(message,type='warning'){
 
