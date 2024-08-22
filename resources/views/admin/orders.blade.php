@@ -64,8 +64,10 @@
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
                     @if(isset($order->last_log->sub_status))
                         {{$order->last_log?->sub_status?->name ?? null}}
-                    @else
+                    @elseif(isset($order->last_log->status))
                         {{$order->last_log?->status?->status_name ?? null}}
+                    @else
+                        {{$order->status?->status_name ?? null}}
                     @endif
                 </span>
             </td>
