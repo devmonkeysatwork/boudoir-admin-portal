@@ -49,6 +49,11 @@
                 @endforeach
                 </tbody>
             </table>
+            <div class="row justify-content-end d-flex">
+                <div class="col-12 col-sm-3">
+                    {{ $statuses->links() }}
+                </div>
+            </div>
         @endif
     </div>
       <x-modal id="createStatusModal" title="Create New Status">
