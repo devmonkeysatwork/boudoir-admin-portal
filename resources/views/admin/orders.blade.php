@@ -52,7 +52,7 @@
     </thead>
     <tbody>
         @foreach($orders as $order)
-          <tr class="{{isset($order->children)? 'has_child' : ''}}">
+          <tr>
             <td>{{$order->order_id}}</td>
             <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
@@ -91,10 +91,15 @@
                   <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
                       View details
                   </button>
+                  @if(isset($order->children) && count($order->children))
+                      <button class="edit-btn" onclick="viewChildren('children_{{$order->id}}')">
+                          <img src="{{ asset('icons/chevron-down.svg') }}" alt="Edit Icon">
+                      </button>
+                  @endif
               </td>
           </tr>
-            @if(isset($order->children))
-                <tr style="display: none;border: 1px solid #191919;">
+            @if(isset($order->children) && count($order->children))
+                <tr style="display: none;border: 1px solid #191919;" id="children_{{$order->id}}">
                     <td colspan="8" style="border: 1px solid #191919;">
                         <table>
                             <thead>
@@ -289,12 +294,6 @@
             }
 
 
-
-            $('.has_child').on('click', function() {
-                $(this).next().toggle();
-            });
-
-
             $('#edit_status').on('change', function() {
                 var selectedStatusId = $(this).val();
                 var $subStatusOptions = $('#edit_sub_status option');
@@ -315,6 +314,13 @@
             $('#edit_status').trigger('change');
 
         });
+
+
+        function viewChildren(row_id){
+            $('#'+row_id).toggle();
+        }
+
+
         let activeOrder = 0;
         function editStatus(me){
             $('#edit_id').val($(me).data('id'));
