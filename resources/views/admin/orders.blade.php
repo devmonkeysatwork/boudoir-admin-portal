@@ -54,7 +54,13 @@
         @foreach($orders as $order)
           <tr>
             <td>{{$order->order_id}}</td>
-            <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
+            <td>
+                @if($order->is_rush)
+                    <img src="{{asset('icons/rush.svg')}}" alt="">
+                @else
+                    -
+                @endif
+            </td>
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
                     @if(isset($order->last_log->sub_status))
                         {{$order->last_log?->sub_status?->name ?? null}}

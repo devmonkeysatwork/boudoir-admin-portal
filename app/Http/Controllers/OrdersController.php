@@ -31,6 +31,7 @@ class OrdersController extends Controller
     public function index(Request $request)
     {
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
+            ->orderBy('is_rush','DESC')
             ->orderBy('deadline','DESC')
             ->orderBy('date_started','DESC')
             ->where('orderType','=',Orders::parentType);
@@ -140,8 +141,6 @@ class OrdersController extends Controller
                         $order_attribute->save();
                         $production_days += TimelinePool::where('item',$item['product_name'])->where('attribute',$arr[0])
                             ->where('attribute_value',$arr[1])->pluck('days')->first();
-
-                        Log::info('**********************************');
                     }
                 }
 
