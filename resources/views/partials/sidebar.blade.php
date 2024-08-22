@@ -9,6 +9,11 @@
       </a>
     </li>
     <li>
+      <a href="{{ route('admin.notification') }}" class="{{ Request::is('notification*') ? 'active' : '' }}">
+        <img src="{{ asset('icons/notification.png') }}" alt="Settings">Notifications
+      </a>
+    </li>
+    <li>
       <a href="{{ route('admin.orders') }}" class="{{ Request::routeIs('admin.orders') ? 'active' : '' }}">
         <img src="{{ asset('icons/order-list.png') }}" alt="Order List">Order List
       </a>
@@ -18,11 +23,7 @@
         <img src="{{ asset('icons/workstations.png') }}" alt="Workstations">Production Team
       </a>
     </li>
-    <li>
-      <a href="{{ route('admin.notification') }}" class="{{ Request::is('notification*') ? 'active' : '' }}">
-        <img src="{{ asset('icons/notification.png') }}" alt="Settings">Notofications
-      </a>
-    </li>
+    <hr>
     <li>
     <li>
       <a href="{{ route('admin.settings') }}" class="{{ Request::is('settings*') ? 'active' : '' }}">
