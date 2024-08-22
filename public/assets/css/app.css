@@ -769,7 +769,7 @@ table th {
     padding: 20px;
     height: 600px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    position: fixed;
+    position: absolute;
     top: 175px;
     left: 280px;
     border-radius: 8px;
@@ -810,7 +810,7 @@ table th {
 }
 
 .settings-content {
-    margin-left: 198px;
+    margin-left: 130px;
     flex-grow: 1;
 }
 
@@ -1029,7 +1029,7 @@ input:checked+.slider:before {
     margin-top: 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     text-align: center;
 }
 
@@ -1705,7 +1705,7 @@ input:checked+.slider:before {
     height: 20px;
     top: -3px;
     right: 6px;
-    background-color: #F93C65;
+    background-color: #BD7F7F;
     border-radius: 50%;
     padding: 4px;
     font-family: Nunito Sans;
