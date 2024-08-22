@@ -8,7 +8,7 @@
       <div class="stat-top">
         <img src="{{ asset('icons/orders-pending.png') }}" alt="Pending">
         <div class="stat-info">
-          <h3>40,689</h3>
+          <h3>N/A</h3>
           <p>Pending</p>
         </div>
       </div>
@@ -21,7 +21,7 @@
       <div class="stat-top">
         <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
         <div class="stat-info">
-          <h3>10,293</h3>
+          <h3>{{ $inProductionOrdersCount }}</h3>
           <p>In Production</p>
         </div>
       </div>
@@ -34,7 +34,7 @@
       <div class="stat-top">
         <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
         <div class="stat-info">
-          <h3>89,000</h3>
+          <h3>{{ $onHoldOrdersCount }}</h3>
           <p>On Hold</p>
         </div>
       </div>
@@ -47,13 +47,27 @@
       <div class="stat-top">
         <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
         <div class="stat-info">
-          <h3>2,040</h3>
+          <h3>{{ $readyToShipOrdersCount }}</h3>
           <p>Ready to Ship</p>
         </div>
       </div>
       <div class="stat-btm">
         <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
         <p><span class="stat-up">1.8%</span> Up from yesterday</p>
+      </div>
+    </div>
+    <!-- New Quality Control Stat Card -->
+    <div class="stat">
+      <div class="stat-top">
+        <img src="{{ asset('icons/quality-control.png') }}" alt="Quality Control">
+        <div class="stat-info">
+          <h3>{{ $qualityControlOrdersCount }}</h3> <!-- Replace with dynamic data -->
+          <p>in Quality Control</p>
+        </div>
+      </div>
+      <div class="stat-btm">
+        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+        <p><span class="stat-up">0%</span> Up from yesterday</p> <!-- Replace with dynamic data -->
       </div>
     </div>
   </div>

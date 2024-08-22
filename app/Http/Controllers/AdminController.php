@@ -17,11 +17,44 @@ use Illuminate\Support\Facades\Mail;
 class AdminController extends Controller
 {
     public function dashboard()
-    {
-        $query = Orders::with(['items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker'])->where('orderType',Orders::parentType);
-        $orders = $query->paginate(10);
-        return view('admin.dashboard',compact('orders'));
-    }
+{
+    // Replace with actual status IDs
+    $onHoldStatusId = 9;
+    $readyToShipStatusId = 8;
+    $qualityControlStatusId = 6;
+    $waitingStatusId = 7;
+
+    // Counting orders in production, which are not in the excluded statuses
+    $inProductionOrdersCount = Orders::whereNotIn('status_id', [
+        $onHoldStatusId, 
+        $readyToShipStatusId, 
+        $qualityControlStatusId, 
+        $waitingStatusId
+    ])->count();
+
+    // Counting other statuses normally
+    $pendingStatusId = 1; // Example
+    $pendingOrdersCount = Orders::where('status_id', $pendingStatusId)->count();
+    $onHoldOrdersCount = Orders::where('status_id', $onHoldStatusId)->count();
+    $readyToShipOrdersCount = Orders::where('status_id', $readyToShipStatusId)->count();
+    $qualityControlOrdersCount = Orders::where('status_id', $qualityControlStatusId)->count();
+
+    // Fetching orders with pagination
+    $orders = Orders::with(['items', 'status', 'last_log', 'last_log.status', 'last_log.sub_status', 'addresses', 'station', 'station.worker'])
+                     ->where('orderType', Orders::parentType)
+                     ->paginate(10);
+
+    // Passing data to the view
+    return view('admin.dashboard', compact(
+        'pendingOrdersCount',
+        'inProductionOrdersCount',
+        'onHoldOrdersCount',
+        'readyToShipOrdersCount',
+        'qualityControlOrdersCount',
+        'orders'
+    ));
+}
+
 
     public function orders()
     {
