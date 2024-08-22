@@ -110,7 +110,7 @@ class OrdersController extends Controller
                 $order->shipping_total = $order_data['shipping_total']??null;
                 $order->shipping_tax = $order_data['shipping_tax']??null;
                 $order->customer_note = $order_data['customer_note']??null;
-                $order->is_rush = $order_data['rush']??0;
+                $order->is_rush = intval($order_data['rush']) ??0;
                 $order->save();
 
                 $items = $order_data['items'];
