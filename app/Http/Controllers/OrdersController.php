@@ -282,7 +282,7 @@ class OrdersController extends Controller
     {
         $id = $request->id;
 
-        $order = Orders::with(['status','logs','logs.user','logs.status','logs.sub_status','comments','comments.replies','comments.user'])
+        $order = Orders::with(['children','children.status','children.station','children.station.worker','status','logs','logs.user','logs.status','logs.sub_status','comments','comments.replies','comments.user'])
             ->whereId($id)->first();
 
         $status_log = OrderLogs::with(['user','status','sub_status'])

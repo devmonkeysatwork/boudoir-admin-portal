@@ -176,11 +176,28 @@
 
   <x-modal id="orderModal" title="Order #00001">
     <span class="status" id="modal_status_text">Completed</span>
-    <div class="orderModal-flex">
-      <div class="activity-log">
-        <h2>Activity Log</h2>
-        <ul id="order_logs">
-        </ul>
+    <div class="orderModal-flex h-100 pb-3 pb-lg-5">
+      <div class="activity-log d-flex flex-column gap-3 justify-content-between h-100">
+        <div>
+            <h2>Activity Log</h2>
+            <ul id="order_logs">
+            </ul>
+        </div>
+        <div id="child_order">
+              <table class="border-1 border-dark">
+                  <thead>
+                    <tr>
+                        <th>Order Id</th>
+                        <th>Status</th>
+                        <th>Team member</th>
+                        <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+              </table>
+          </div>
       </div>
       <div class="comments">
         <h2>Comments</h2>
@@ -390,6 +407,7 @@
                         let status = response.status_log;
                         let logs = response.order.logs;
                         let comments = response.order.comments;
+                        let child_orders = response.order.children;
                         $('#order_logs').empty();
                         $('#comments_container').empty();
                         $.each(logs, function( index, value ) {
@@ -432,6 +450,21 @@
                             }
                         }else{
                             $('#modal_status_text').empty().html(response.order.status.status_name).css('background-color',response.order.status.status_color);
+                        }
+                        if(child_orders && child_orders.length > 0){
+                            $('#child_order').show();
+                            $('#child_order table tbody');
+                            $.each(child_orders, function( index, value ) {
+                                let html = `<tr>
+                                                <td>${value.order_id}</td>
+                                                <td>${value.status.status_name}</td>
+                                                <td>${value.station.worker.name}</td>
+                                                <td>${value.date_started}</td>
+                                            </tr>`;
+                                $('#child_order table tbody').append(html);
+                            });
+                        }else{
+                            $('#child_order').hide();
                         }
                         $('#orderModal').show();
                         $('#orderModal > div > h2').text('Order #' + title);
