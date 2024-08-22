@@ -30,9 +30,10 @@ class OrdersController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Orders::with(['items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
+        $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
             ->orderBy('deadline','DESC')
-            ->orderBy('date_started','DESC');
+            ->orderBy('date_started','DESC')
+            ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 //        dd($orders);
         $workstations = Workstations::all();

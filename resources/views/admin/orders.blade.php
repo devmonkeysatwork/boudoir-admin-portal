@@ -52,7 +52,7 @@
     </thead>
     <tbody>
         @foreach($orders as $order)
-          <tr>
+          <tr class="{{isset($order->children)? 'has_child' : ''}}">
             <td>{{$order->order_id}}</td>
             <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
@@ -93,6 +93,71 @@
                   </button>
               </td>
           </tr>
+            @if(isset($order->children))
+                <tr style="display: none;border: 1px solid #191919;">
+                    <td colspan="8" style="border: 1px solid #191919;">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Priority</th>
+                                <th>Phase</th>
+                                <th>Team Member</th>
+                                <th>Date Started</th>
+                                <th>Time in Production</th>
+                                <th>Late</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach($order->children as $order)
+                                <tr>
+                                    <td>{{$order->order_id}}</td>
+                                    <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
+                                    <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
+                    @if(isset($order->last_log->sub_status))
+                                                {{$order->last_log?->sub_status?->name ?? null}}
+                                            @else
+                                                {{$order->last_log?->status?->status_name ?? null}}
+                                            @endif
+                </span>
+                                    </td>
+                                    <td>{{$order->station?->worker?->name ?? null}}</td>
+                                    <td>{{$order->date_started}}</td>
+                                    <td>
+                                        @php
+                                            $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                                            $now = \Carbon\Carbon::now();
+                                            $timeSpent = $dateStarted->diff($now);
+                                        @endphp
+                                        {{ $timeSpent->days > 0 ? $timeSpent->days . 'd ' : '' }}
+                                        {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
+                                        {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
+                                    </td>
+                                    <td>
+                                        @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                                            <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
+                                        @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
+                                            <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                            <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
+                                        </button>
+                                        <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
+                                            View details
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            @endif
         @endforeach
     </tbody>
   </table>
@@ -223,6 +288,11 @@
                 viewDetails(order_id,orderId);
             }
 
+
+
+            $('.has_child').on('click', function() {
+                $(this).next().toggle();
+            });
 
 
             $('#edit_status').on('change', function() {
