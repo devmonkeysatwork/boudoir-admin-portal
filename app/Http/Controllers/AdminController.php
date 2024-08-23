@@ -100,25 +100,33 @@ class AdminController extends Controller
 
     public function areas()
     {
-        // Fetching the workstations data dynamically
-        $workstations = OrderStatus::with(['orders', 'workstation.worker'])
-            ->whereIn('id', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
-            ->paginate(10);
+        $workstations = OrderStatus::with(['orders' => function($query) {
+            $query->with('station.worker'); 
+        }])->paginate(10);
 
-        // Calculating time in production for each workstation
         foreach ($workstations as $workstation) {
             $totalTimeInProduction = 0;
+            $assignedWorker = 'Unassigned';
+
             foreach ($workstation->orders as $order) {
-                $dateStarted = \Carbon\Carbon::parse($order->date_started);
-                $now = \Carbon\Carbon::now();
-                $totalTimeInProduction += $dateStarted->diffInSeconds($now);
+                if ($order->date_started) {
+                    $dateStarted = \Carbon\Carbon::parse($order->date_started);
+                    $now = \Carbon\Carbon::now();
+                    $totalTimeInProduction += $dateStarted->diffInSeconds($now);
+                }
+
+                if ($order->station && $order->station->worker) {
+                    $assignedWorker = $order->station->worker->name;
+                }
             }
 
             $workstation->time_in_production = gmdate('H:i:s', $totalTimeInProduction);
+            $workstation->assigned_to = $assignedWorker;
         }
 
         return view('admin.areas', compact('workstations'));
     }
+
 
     public function team()
     {
@@ -128,8 +136,6 @@ class AdminController extends Controller
         }])->paginate(10);
 
         foreach ($teamMembers as $teamMember) {
-            // Assume `time_spent` is calculated based on the orders related to the workstation.
-            // You'll need to adjust the logic depending on your actual use case.
             $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
         }
 
@@ -138,16 +144,12 @@ class AdminController extends Controller
 
     private function calculateTimeSpent($workstationIds)
     {
-        // Implement the logic to calculate time spent based on your requirements.
-        // Example:
+
         $totalTime = Orders::whereIn('workstation_id', $workstationIds)
                         ->sum(DB::raw('TIMESTAMPDIFF(SECOND, date_started, NOW())'));
 
         return gmdate('H:i:s', $totalTime);
     }
-
-
-
 
     public function notification()
     {
@@ -159,23 +161,21 @@ class AdminController extends Controller
 
     public function manageStatuses()
     {
-        $data['statuses'] = OrderStatus::paginate(10); // Pagination applied here
+        $data['statuses'] = OrderStatus::paginate(10);
         return view('admin.manage-statuses', $data);
     }
 
     public function addStatuses(Request $request){
         $request->validate([
             'status-name' => 'required|string|max:255',
-            'status-color' => 'required|string|max:10', // Assuming color is a hex code
+            'status-color' => 'required|string|max:10',
         ]);
 
-        // Create a new status record
         $status = new OrderStatus();
         $status->status_name = $request->input('status-name');
         $status->status_color = $request->input('status-color');
         $status->save();
 
-        // Prepare response data
         $response = [
             'status' => 200,
             'message' => 'Status added successfully.',
@@ -185,17 +185,15 @@ class AdminController extends Controller
     }
 
     public function updateStatus(Request $request){
-        // Validate incoming request
         $request->validate([
             'edit-status-name' => 'required|string|max:255',
-            'edit-status-color' => 'required|string|max:10', // Assuming color is a hex code
+            'edit-status-color' => 'required|string|max:10', 
         ]);
         $status = OrderStatus::findOrFail($request->id);
         $status->status_name = $request->input('edit-status-name');
         $status->status_color = $request->input('edit-status-color');
         $status->save();
 
-        // Prepare response data
         $response = [
             'status' => 200,
             'message' => 'Status updated successfully.',

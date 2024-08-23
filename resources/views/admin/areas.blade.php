@@ -18,7 +18,7 @@
           <td>{{ $workstation->status_name }}</td>
           <td>{{ $workstation->orders->count() }}</td> 
           <td>{{ $workstation->time_in_production }}</td> 
-          <td>{{ $workstation->workstation->worker->name ?? 'Unassigned' }}</td>
+          <td>{{ $workstation->assigned_to }}</td>
         </tr>
       @endforeach
     </tbody>
