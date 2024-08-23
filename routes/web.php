@@ -30,7 +30,7 @@ Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-
+    Route::get('/notification', [AdminController::class, 'notification'])->name('admin.notification');
 
     Route::get('/orders', [OrdersController::class, 'index'])->name('admin.orders');
     Route::get('/search_orders', [OrdersController::class, 'search'])->name('search.orders');
@@ -38,9 +38,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/get_order_details', [OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
 
-
-
-    Route::get('/notification', [AdminController::class, 'notification'])->name('admin.notification');
+    Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
+    
     Route::get('/team', [AdminController::class, 'workstations'])->name('admin.workstations');
     Route::get('/settings', function () {
         return redirect()->route('admin.manage-statuses');

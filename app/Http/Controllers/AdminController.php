@@ -98,11 +98,29 @@ class AdminController extends Controller
         return response()->json($response);
     }
 
-    public function workstations()
+    public function areas()
     {
-        $data['workstations'] = Workstations::with('worker')->get();
-        return view('admin.workstations',$data);
+        // Fetching the workstations data dynamically
+        $workstations = OrderStatus::with(['orders', 'workstation.worker'])
+            ->whereIn('id', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+            ->paginate(10);
+
+        // Calculating time in production for each workstation
+        foreach ($workstations as $workstation) {
+            $totalTimeInProduction = 0;
+            foreach ($workstation->orders as $order) {
+                $dateStarted = \Carbon\Carbon::parse($order->date_started);
+                $now = \Carbon\Carbon::now();
+                $totalTimeInProduction += $dateStarted->diffInSeconds($now);
+            }
+
+            $workstation->time_in_production = gmdate('H:i:s', $totalTimeInProduction);
+        }
+
+        return view('admin.areas', compact('workstations'));
     }
+
+
     public function notification()
     {
         $data['notifications'] = Notifications::with(['log','log.user','log.status','log.sub_status','comment','comment.user','comment.order'])

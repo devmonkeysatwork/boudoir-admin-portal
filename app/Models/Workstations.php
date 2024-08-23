@@ -30,4 +30,18 @@ class Workstations extends Model
     {
         return $this->orders()->where('status_id', 1)->pluck('order_id')->first();
     }
+
+    public function getTimeInProductionAttribute()
+    {
+        // Assuming you have a relationship between workstation and orders
+        $totalTime = $this->orders->reduce(function ($carry, $order) {
+            $start = \Carbon\Carbon::parse($order->created_at);
+            $end = \Carbon\Carbon::now(); // Or the time the order was completed
+            $timeSpent = $start->diffInMinutes($end);
+            return $carry + $timeSpent;
+        }, 0);
+
+        return gmdate('H:i:s', $totalTime * 60); // Convert to H:i:s format
+    }
+
 }

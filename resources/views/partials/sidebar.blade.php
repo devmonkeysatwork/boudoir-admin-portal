@@ -19,8 +19,13 @@
       </a>
     </li>
     <li>
+      <a href="{{ route('admin.areas') }}" class="{{ Request::routeIs('admin.areas') ? 'active' : '' }}">
+        <img src="{{ asset('icons/workstations.png') }}" alt="Areas">Areas
+      </a>
+    </li>
+    <li>
       <a href="{{ route('admin.workstations') }}" class="{{ Request::routeIs('admin.workstations') ? 'active' : '' }}">
-        <img src="{{ asset('icons/workstations.png') }}" alt="Workstations">Production Team
+        <img src="{{ asset('icons/teams.png') }}" alt="Workstations">Production Team
       </a>
     </li>
     <hr>

@@ -45,4 +45,10 @@ class Orders extends Model
     {
         return $this->hasMany(OrderComments::class,'order_id','id')->where('parent_id',null);
     }
+
+    public function orderStatus()
+    {
+        return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
+    }
+
 }

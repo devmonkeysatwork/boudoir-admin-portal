@@ -15,4 +15,14 @@ class OrderStatus extends Model
     function sub_status(){
         return $this->hasMany(SubStatus::class,'status_id','id');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Orders::class, 'status_id', 'id');
+    }
+
+    public function workstation()
+    {
+        return $this->belongsTo(Workstations::class, 'id', 'id');
+    }
 }
