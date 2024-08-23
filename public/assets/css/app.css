@@ -493,7 +493,7 @@ button {
 }
 
 .dashboard table tbody th, .dashboard table tbody td {
-    padding: 25px 20px;
+    padding: 15px 20px;
 }
 
 .team-workstations {
@@ -722,13 +722,11 @@ table td {
     border: 1px solid #dee2e6;
 }
 
-
-.dashboard .orders table td {
-    padding: 25px 20px;
-}
-
-.dashboard .team table td {
-    padding: 25px 20px;
+.dashboard .orders table td,
+.dashboard .team table td,
+.workstations table tbody th,
+.workstations table tbody td {
+    padding: 15px 20px;
 }
 
 .orders table tbody th,
@@ -740,11 +738,6 @@ table td {
 .team table tbody th,
 .team table tbody td {
     padding: 20px 20px;
-}
-
-.workstations table tbody th,
-.workstations table tbody td {
-    padding: 25px 20px;
 }
 
 .content .orders table tbody td,
