@@ -40,11 +40,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
     
-    Route::get('/team', [AdminController::class, 'workstations'])->name('admin.workstations');
+    Route::get('/team', [AdminController::class, 'team'])->name('admin.team');
+
     Route::get('/settings', function () {
         return redirect()->route('admin.manage-statuses');
     })->name('admin.settings');
-
     Route::get('/settings/manage-statuses', [AdminController::class, 'manageStatuses'])->name('admin.manage-statuses');
     Route::post('/add_status', [AdminController::class, 'addStatuses'])->name('admin.add_status');
     Route::post('/delete_status', [AdminController::class, 'deleteStatus'])->name('admin.delete_status');

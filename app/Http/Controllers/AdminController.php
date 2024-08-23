@@ -120,6 +120,34 @@ class AdminController extends Controller
         return view('admin.areas', compact('workstations'));
     }
 
+    public function team()
+    {
+        $teamMembers = User::with(['workstations' => function($query) {
+            $query->select('workstations.id', 'workstations.assigned_to_id', 'workstations.num_orders')
+                ->withCount('orders');
+        }])->paginate(10);
+
+        foreach ($teamMembers as $teamMember) {
+            // Assume `time_spent` is calculated based on the orders related to the workstation.
+            // You'll need to adjust the logic depending on your actual use case.
+            $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
+        }
+
+        return view('admin.team', compact('teamMembers'));
+    }
+
+    private function calculateTimeSpent($workstationIds)
+    {
+        // Implement the logic to calculate time spent based on your requirements.
+        // Example:
+        $totalTime = Orders::whereIn('workstation_id', $workstationIds)
+                        ->sum(DB::raw('TIMESTAMPDIFF(SECOND, date_started, NOW())'));
+
+        return gmdate('H:i:s', $totalTime);
+    }
+
+
+
 
     public function notification()
     {

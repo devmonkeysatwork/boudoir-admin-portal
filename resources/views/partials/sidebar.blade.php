@@ -24,8 +24,8 @@
       </a>
     </li>
     <li>
-      <a href="{{ route('admin.workstations') }}" class="{{ Request::routeIs('admin.workstations') ? 'active' : '' }}">
-        <img src="{{ asset('icons/teams.png') }}" alt="Workstations">Production Team
+      <a href="{{ route('admin.team') }}" class="{{ Request::routeIs('admin.team') ? 'active' : '' }}">
+        <img src="{{ asset('icons/teams.png') }}" alt="Team">Production Team
       </a>
     </li>
     <hr>
