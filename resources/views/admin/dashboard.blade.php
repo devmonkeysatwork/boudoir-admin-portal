@@ -56,18 +56,17 @@
         <p><span class="stat-up">1.8%</span> Up from yesterday</p>
       </div>
     </div>
-    <!-- New Quality Control Stat Card -->
     <div class="stat">
       <div class="stat-top">
         <img src="{{ asset('icons/quality-control.png') }}" alt="Quality Control">
         <div class="stat-info">
-          <h3>{{ $qualityControlOrdersCount }}</h3> <!-- Replace with dynamic data -->
+          <h3>{{ $qualityControlOrdersCount }}</h3> 
           <p>in Quality Control</p>
         </div>
       </div>
       <div class="stat-btm">
         <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-        <p><span class="stat-up">0%</span> Up from yesterday</p> <!-- Replace with dynamic data -->
+        <p><span class="stat-up">0%</span> Up from yesterday</p> 
       </div>
     </div>
   </div>
@@ -91,47 +90,74 @@
     <div id="orders_table_container">
         <table>
             <thead>
-            <tr>
-                <th>Order #</th>
-                <th>Phase</th>
-                <th>Team Member</th>
-                <th>Date Started</th>
-                <th>Time in Production</th>
-            </tr>
+              <tr>
+                  <th>Order #</th>
+                  <th>Priority</th>
+                  <th>Phase</th>
+                  <th>Team Member</th>
+                  <th>Date Started</th>
+                  <th>Time in Production</th>
+                  <th>Late</th>
+                  <th></th> 
+              </tr>
             </thead>
+
             <tbody id="ordersBody">
-            @if(isset($orders) && count($orders))
-                @foreach($orders as $order)
-                    <tr>
-                        <td>{{$order->order_id}}</td>
-                        <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
-                    @if(isset($order->last_log->sub_status))
-                                    {{$order->last_log?->sub_status?->name ?? null}}
-                                @else
-                                    {{$order->last_log?->status?->status_name ?? null}}
-                                @endif
-                </span>
-                        </td>
-                        <td>{{$order->station?->worker?->name}}</td>
-                        <td>{{$order->date_started}}</td>
-                        <td>
-                            @php
-                                $dateStarted = new DateTime($order->date_started);
-                                $now = new DateTime();
-                                $timeSpent = $now->diff($dateStarted);
+              @if(isset($orders) && count($orders))
+                  @foreach($orders as $order)
+                      <tr>
+                          <td>{{$order->order_id}}</td>
+                          <td>
+                              @if($order->priority == 'rush')
+                                  <img src="{{asset('icons/rush.svg')}}" alt="Rush">
+                              @else
+                                  -
+                              @endif
+                          </td>
+                          <td>
+                              <span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
+                                  @if(isset($order->last_log->sub_status))
+                                      {{$order->last_log?->sub_status?->name ?? null}}
+                                  @else
+                                      {{$order->last_log?->status?->status_name ?? null}}
+                                  @endif
+                              </span>
+                          </td>
+                          <td>{{$order->station?->worker?->name}}</td>
+                          <td>{{$order->date_started}}</td>
+                          <td>
+                              @php
+                                  $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                                  $now = \Carbon\Carbon::now();
+                                  $timeSpent = $dateStarted->diff($now);
+                              @endphp
+                              {{ $timeSpent->days > 0 ? $timeSpent->days . 'd ' : '' }}
+                              {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
+                              {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
+                          </td>
+                          <td>
+                              @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                                  <img src="{{asset('icons/exclaimatio.svg')}}" alt="Late">
+                              @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
+                                  <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
+                              @else
+                                  -
+                              @endif
+                          </td>
+                          <td>
+                              <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                  <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
+                              </button>
+                              <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
+                                  View details
+                              </button>
+                          </td>
+                      </tr>
+                  @endforeach
+              @endif
+           </tbody>
 
-                                $days = $timeSpent->d;
-                                $hours = $timeSpent->h;
-                                $minutes = $timeSpent->i;
 
-                                $timeSpentString = ($days > 0 ? $days . 'd ' : '') . ($hours > 0 ? $hours . 'h ' : '') . ($minutes > 0 ? $minutes . 'm' : '');
-                            @endphp
-                            {{ $timeSpentString ?? '' }}
-                        </td>
-                    </tr>
-                @endforeach
-            @endif
-            </tbody>
         </table>
     </div>
       <div class="row justify-content-end d-flex">
