@@ -1,8 +1,8 @@
 <div class="header">
-  <div class="header-search">
+  <!-- <div class="header-search">
     <input type="text" placeholder="Search">
     <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
-  </div>
+  </div> -->
   <div class="header-user">
     <div class="notification_container position-relative">
         <button class="btn bg-transparent" onclick="toggleNotifications()"><img src="{{ asset('icons/notification.png') }}" alt="Notifications">

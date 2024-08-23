@@ -3,47 +3,55 @@
 @section('content')
 <div class="orders">
   <h1>Order List</h1>
-  <div class="filters">
 
-    <div class="filter-item">
-      <button class="filter-btn">
-        <img src="{{ asset('icons/filter.png') }}" alt="Filter Icon">
-        <span>Filter By</span>
-      </button>
+  <div class="filters">
+    <div class="filter-bar">
+        <div class="filter-item">
+        <button class="filter-btn">
+            <img src="{{ asset('icons/filter.png') }}" alt="Filter Icon">
+            <span>Filter By</span>
+        </button>
+        </div>
+        <div class="filter-item">
+        <select class="sort-select" id="filter-date">
+            <option value="" disabled selected>Date</option>
+            <option value="oldest">Oldest</option>
+            <option value="newest">Newest</option>
+        </select>
+        </div>
+        <div class="filter-item">
+        <select class="sort-select" id="filter-product">
+            <option value="" disabled selected>Product</option>
+        </select>
+        </div>
+        <div class="filter-item">
+        <select class="sort-select" id="filter-status">
+            <option value="" disabled selected>Order Status</option>
+            @foreach($statuses??[] as $status)
+                <option value="{{$status->id}}">{{$status->status_name}}</option>
+            @endforeach
+        </select>
+        </div>
+        <div class="filter-item">
+        <select class="sort-select" id="filter-priority">
+            <option value="" disabled selected>Priority</option>
+            <option value="normal">Normal</option>
+            <option value="rush">Rush</option>
+        </select>
+        </div>
+        <div class="filter-item">
+        <button class="reset-btn">
+            <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
+        </button>
+        </div>
     </div>
-    <div class="filter-item">
-      <select class="sort-select" id="filter-date">
-        <option value="" disabled selected>Date</option>
-        <option value="oldest">Oldest</option>
-        <option value="newest">Newest</option>
-      </select>
+    <div class="orders-search">
+      <input type="text" id="searchInput" placeholder="Search">
+      <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
     </div>
-    <div class="filter-item">
-      <select class="sort-select" id="filter-product">
-        <option value="" disabled selected>Product</option>
-      </select>
-    </div>
-    <div class="filter-item">
-      <select class="sort-select" id="filter-status">
-        <option value="" disabled selected>Order Status</option>
-          @foreach($statuses??[] as $status)
-              <option value="{{$status->id}}">{{$status->status_name}}</option>
-          @endforeach
-      </select>
-    </div>
-    <div class="filter-item">
-      <select class="sort-select" id="filter-priority">
-        <option value="" disabled selected>Priority</option>
-        <option value="normal">Normal</option>
-        <option value="rush">Rush</option>
-      </select>
-    </div>
-    <div class="filter-item">
-      <button class="reset-btn">
-        <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
-      </button>
-    </div>
-  </div>
+  </div>  
+        
+
   <table>
     <thead>
       <tr>
