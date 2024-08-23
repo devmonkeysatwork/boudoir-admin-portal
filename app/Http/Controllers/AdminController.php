@@ -130,17 +130,23 @@ class AdminController extends Controller
 
     public function team()
     {
-        $teamMembers = User::with(['workstations' => function($query) {
-            $query->select('workstations.id', 'workstations.assigned_to_id', 'workstations.num_orders')
-                ->withCount('orders');
-        }])->paginate(10);
+        $teamMembers = User::with(['workstations'])->get();
 
         foreach ($teamMembers as $teamMember) {
+            $totalOrders = 0;
+
+            foreach ($teamMember->workstations as $workstation) {
+                $totalOrders += Orders::where('workstation_id', $workstation->id)->count();
+            }
+
+            $teamMember->total_orders = $totalOrders;
             $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
         }
 
         return view('admin.team', compact('teamMembers'));
     }
+
+
 
     private function calculateTimeSpent($workstationIds)
     {
