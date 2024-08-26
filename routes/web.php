@@ -54,6 +54,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/email/add', [EmailTemplatesController::class, 'addEmailTemplate'])->name('email.add');
     Route::post('/email/update_status', [EmailTemplatesController::class, 'updateStatus'])->name('email.update_status');
     Route::delete('/email/delete/{id}', [EmailTemplatesController::class, 'deleteEmail'])->name('email.delete');
+    Route::get('/send-template-email/{templateId}/{recipientEmail}', [EmailTemplatesController::class, 'sendTemplateEmail']);
+    Route::get('/email/get-template/{id}', [EmailTemplatesController::class, 'getTemplateData'])->name('email.get-template');
+
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

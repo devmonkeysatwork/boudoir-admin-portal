@@ -229,20 +229,32 @@ class AdminController extends Controller
 
 
 
-    public function sendSummaryEmail(){
+    public function sendSummaryEmail()
+    {
+        // Fetch the status IDs based on names
+        $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
+        $hold_status = OrderStatus::where('status_name', Orders::statusHold)->pluck('id')->first();
+        $issues = OrderStatus::whereIn('status_name', OrderStatus::adminStatuses)->pluck('id');
 
-        $completed_status = OrderStatus::where('status_name',Orders::statusCompleted)->pluck('id')->first();
-        $hold_status = OrderStatus::where('status_name',Orders::statusHold)->pluck('id')->first();
-        $issues = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->pluck('id');
+        // Prepare data for the email template
+        $mailData = [
+            'production_order' => Orders::with(['status', 'station', 'station.worker'])
+                ->where('status_id', '!=', $completed_status)
+                ->get(),
+            'orders_on_hold' => Orders::with(['status', 'station', 'station.worker'])
+                ->where('status_id', $hold_status)
+                ->get(),
+            'order_with_issues' => Orders::with(['status', 'station', 'station.worker'])
+                ->whereIn('status_id', $issues)
+                ->get(),
+            'title' => 'Daily Summary Report'
+        ];
 
-        $mailData['production_order'] = Orders::with(['status','station','station.worker'])
-            ->where('status_id','!=',$completed_status)->get();
-        $mailData['orders_on_hold'] = Orders::with(['status','station','station.worker'])
-            ->where('status_id',$hold_status)->get();
-        $mailData['order_with_issues'] = Orders::with(['status','station','station.worker'])
-            ->whereIn('status_id',$issues)->get();
-
-        $mailData['title']='Daily Summary Report';
-        Mail::to(env('ADMIN_EMAIL'))->send(new \App\Mail\OrderSummaryEmail($mailData));
+        // Send email using the Mail facade
+        Mail::send('admin.email.summary_email', $mailData, function ($message) {
+            $message->to(env('ADMIN_EMAIL'))
+                    ->subject('Daily Summary Report');
+        });
     }
+
 }

@@ -6,8 +6,23 @@
 </head>
 
 <body>
-<div class="mail-template">
-    <h1 style="text-align: center; line-height: normal;">{!! $title !!}</h1>
+<div class="mail-template" style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
+    <h1 style="text-align: center; line-height: normal; margin-bottom: 20px;">{{ $subject }}</h1>
+
+    <div style="padding: 20px; white-space: pre-line;">
+        @if(is_array($content))
+            @foreach($content as $item)
+                @if (strpos($item, $subject) === false)
+                    {!! nl2br(e($item)) !!}
+                @endif
+            @endforeach
+        @else
+            @if (strpos($content, $subject) === false)
+                {!! nl2br(e($content)) !!}
+            @endif
+        @endif
+    </div>
+
 
     @if(isset($production_order) && count($production_order))
         <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;">
