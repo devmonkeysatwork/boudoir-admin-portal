@@ -56,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/email/delete/{id}', [EmailTemplatesController::class, 'deleteEmail'])->name('email.delete');
     Route::get('/send-template-email/{templateId}/{recipientEmail}', [EmailTemplatesController::class, 'sendTemplateEmail']);
     Route::get('/email/get-template/{id}', [EmailTemplatesController::class, 'getTemplateData'])->name('email.get-template');
+    Route::post('/email/update-template/{id}', [EmailTemplatesController::class, 'updateTemplate'])->name('email.update-template');
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

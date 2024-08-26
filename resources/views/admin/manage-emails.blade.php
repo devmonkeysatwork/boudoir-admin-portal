@@ -17,7 +17,7 @@
       </li>
       <li>
         <a href="javascript:void(0);" class="adminSettingsBtn">
-          <img src="{{ asset('icons/settings.png') }}" alt="Email Icon">Admin Settings
+          <img src="{{ asset('icons/settings.png') }}" alt="Settings Icon">Admin Settings
         </a>
       </li>
     </ul>
@@ -47,7 +47,7 @@
                   <input type="checkbox" id="status_{{$template->id}}" value="1" {{$template->status==1?'checked':''}} onchange="updateStatus({{$template->id}},this)">
                   <span class="slider round"></span>
                 </label>
-                <button class="edit-btn" data-open-modal="editEmailModal">
+                <button class="edit-btn" data-template-id="{{$template->id}}" data-open-modal="editEmailModal">
                   <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
                 </button>
                 <button class="delete-btn" onclick="deleteTemplate({{$template->id}})">
@@ -95,16 +95,18 @@
       </x-modal>
 
       <x-modal id="editEmailModal" title="Edit Template">
-        <form>
+        <form id="editTemplateForm" action="{{ url('/email/update-template') }}/{{ $template->id ?? '' }}" method="POST">
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="id" id="template-id">
           <div class="second-top">
             <div class="top">
               <div class="form-group name">
-                <label for="template-name">Template Name:</label>
-                <input type="text" id="template-name" name="template-name">
+                <label for="edit-template-name">Template Name:</label>
+                <input type="text" id="edit-template-name" name="template_name">
               </div>
               <div class="form-group status">
-                <label for="associated-status">Associated Status:</label>
-                <select id="associated-status" name="associated-status">
+                <label for="edit-associated-status">Associated Status:</label>
+                <select id="edit-associated-status" name="status_id">
                   <option value="" disabled selected>Select an option</option>
                     @foreach($statuses??[] as $status)
                         <option value="{{$status->id}}">{{$status->status_name}}</option>
@@ -113,12 +115,12 @@
               </div>
             </div>
             <div class="form-group subject">
-              <label for="subject">Subject:</label>
-              <input type="text" id="subject" name="subject">
+              <label for="edit-subject">Subject:</label>
+              <input type="text" id="edit-subject" name="subject">
             </div>
           </div>
           <div class="form-group text">
-            <textarea id="edit-email-content" name="edit-email-content"></textarea>
+            <textarea id="edit-email-content" name="content">{{ $template->content }}</textarea>
           </div>
           <div class="form-group btn-group">
             <button type="submit" class="btn save-btn">Save Template</button>
@@ -146,6 +148,23 @@
 @endsection
 @section('footer_scripts')
     <script>
+        // Initialize CKEditor for the create and edit modals
+        CKEDITOR.replace('email-content');
+        CKEDITOR.replace('edit-email-content', {
+          // Ensure that CKEditor preserves formatting
+          extraAllowedContent: 'p br',
+          enterMode: CKEDITOR.ENTER_BR,
+          shiftEnterMode: CKEDITOR.ENTER_P,
+          removePlugins: 'elementspath',
+          allowedContent: true,
+          autoParagraph: false,
+          // Enable this to retain line breaks and spaces
+          basicEntities: false,
+          entities: false,
+          fillEmptyBlocks: false
+      });
+
+
         document.addEventListener("DOMContentLoaded", function() {
             $('.adminSettingsBtn').click(function(){
                 $('.settings-menu a').removeClass('active');
@@ -153,6 +172,7 @@
                 $('#adminSettings').toggle();
                 $('#emailContentDiv').toggle();
             });
+
             $('#save_template').click(function(){
                 let data = new FormData($('#emailTemplateForm')[0]);
                 data.append('_token', '{{@csrf_token()}}');
@@ -169,22 +189,91 @@
                     },
                     complete: function (response) {
                         hide_loader();
-
                     },
                     success: function (response) {
                         if (response.status == 200) {
                             show_toast(response.message, 'success');
                             window.location.reload();
-
                         } else {
                             show_toast(response.message, 'error');
                         }
-
                     },
                     error: function (response) {
+                        console.log(response); // Log any errors
                     }
-                })
+                });
             });
+
+            // Handle Edit button click
+            $('.edit-btn').on('click', function() {
+                var templateId = $(this).data('template-id');
+
+                // Get the template data using AJAX
+                $.ajax({
+                    url: '/email/get-template/' + templateId,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.status == 200) {
+                            // Populate modal fields with the template data
+                            $('#edit-template-name').val(response.template.name);
+                            $('#edit-subject').val(response.template.subject);
+                            $('#edit-associated-status').val(response.template.status_id);
+
+                            // Use CKEditor's method to set data while maintaining formatting
+                            CKEDITOR.instances['edit-email-content'].setData(response.template.content.replace(/\n/g, '<br>'));
+
+                            $('#template-id').val(response.template.id);
+
+                            // Display the modal
+                            document.getElementById('editEmailModal').style.display = 'block';
+                        } else {
+                            show_toast('Failed to load template data', 'error');
+                        }
+                    },
+                    error: function(response) {
+                        console.log(response); // This will log the error response to the browser console
+                        show_toast('An error occurred while fetching the template data.', 'error');
+                    }
+                });
+            });
+
+
+
+            // Handle form submission for editing
+            $('#editTemplateForm').on('submit', function(e) {
+                e.preventDefault();
+
+                let data = new FormData($(this)[0]);
+                data.append('_token', '{{@csrf_token()}}');
+                data.append('content', CKEDITOR.instances['edit-email-content'].getData());
+
+                $.ajax({
+                    type: 'post',
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    url: $(this).attr('action'),
+                    data: data,
+                    beforeSend() {
+                        show_loader();
+                    },
+                    complete: function (response) {
+                        hide_loader();
+                    },
+                    success: function (response) {
+                        if (response.status == 200) {
+                            show_toast('Template updated successfully', 'success');
+                            window.location.reload();
+                        } else {
+                            show_toast('Failed to update template', 'error');
+                        }
+                    },
+                    error: function (response) {
+                        show_toast('An error occurred while updating the template.', 'error');
+                    }
+                });
+            });
+
         });
 
         function updateStatus(id,input){
@@ -204,18 +293,16 @@
                 },
                 complete: function (response) {
                     hide_loader();
-
                 },
                 success: function (response) {
                     if (response.status == 200) {
                         show_toast(response.message, 'success');
-
                     } else {
                         show_toast(response.message, 'error');
                     }
-
                 },
                 error: function (response) {
+                    console.log(response); // Log any errors
                 }
             })
         }
@@ -233,24 +320,20 @@
                     },
                     complete: function (response) {
                         hide_loader();
-
                     },
                     success: function (response) {
                         if (response.status == 200) {
                             show_toast(response.message, 'success');
                             window.location.reload();
-
                         } else {
                             show_toast(response.message, 'error');
                         }
-
                     },
                     error: function (response) {
+                        console.log(response); // Log any errors
                     }
                 })
             }
         }
-
-
     </script>
 @endsection

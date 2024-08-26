@@ -130,7 +130,7 @@ class EmailTemplatesController extends Controller
 
     public function getTemplateData($id)
     {
-        $template = EmailTemplate::find($id);
+        $template = EmailTemplates::find($id);
 
         if ($template) {
             return response()->json(['status' => 200, 'template' => $template]);
@@ -138,6 +138,27 @@ class EmailTemplatesController extends Controller
             return response()->json(['status' => 404, 'message' => 'Template not found']);
         }
     }
+
+    public function updateTemplate(Request $request, $id)
+    {
+        // Find the template by ID
+        $template = EmailTemplates::findOrFail($id);
+    
+        // Update the template fields
+        $template->name = $request->input('template_name');
+        $template->subject = $request->input('subject');
+        $template->status_id = $request->input('status_id');
+        $template->content = $request->input('content');
+    
+        // Save the template
+        $template->save();
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Template updated successfully',
+        ]);
+    }
+
 
 
 }

@@ -9,9 +9,14 @@ class EmailTemplates extends Model
 {
     use HasFactory;
 
+    protected $table = 'email_templates';
 
+    protected $fillable = [
+        'name', 'status_id', 'subject', 'content'
+    ];
 
-    function for_status(){
-        return $this->belongsTo(OrderStatus::class,'status_id','id');
+    public function for_status()
+    {
+        return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
     }
 }
