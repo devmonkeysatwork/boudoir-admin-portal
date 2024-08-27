@@ -100,13 +100,10 @@ class AdminController extends Controller
 
     public function areas()
     {
-        $workstations = OrderStatus::with(['orders' => function($query) {
-            $query->with('station.worker'); 
-        }])->paginate(10);
+        $workstations = Workstations::with(['orders'])->paginate(10);
 
         foreach ($workstations as $workstation) {
             $totalTimeInProduction = 0;
-            $assignedWorker = 'Unassigned';
 
             foreach ($workstation->orders as $order) {
                 if ($order->date_started) {
@@ -114,14 +111,9 @@ class AdminController extends Controller
                     $now = \Carbon\Carbon::now();
                     $totalTimeInProduction += $dateStarted->diffInSeconds($now);
                 }
-
-                if ($order->station && $order->station->worker) {
-                    $assignedWorker = $order->station->worker->name;
-                }
             }
 
             $workstation->time_in_production = gmdate('H:i:s', $totalTimeInProduction);
-            $workstation->assigned_to = $assignedWorker;
         }
 
         return view('admin.areas', compact('workstations'));

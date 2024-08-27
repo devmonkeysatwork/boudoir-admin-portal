@@ -15,8 +15,8 @@
     <tbody>
       @foreach($workstations as $workstation)
         <tr>
-          <td>{{ $workstation->status_name }}</td>
-          <td>{{ $workstation->orders->count() }}</td> 
+          <td>{{ $workstation->workstation_name }}</td>
+          <td>{{ $workstation->num_orders }}</td> 
           <td>{{ $workstation->time_in_production }}</td> 
           <!-- <td>{{ $workstation->assigned_to }}</td> -->
         </tr>
