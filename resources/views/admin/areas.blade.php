@@ -9,7 +9,7 @@
         <th>Stations</th>
         <th># of Orders</th>
         <th>Time in Production</th>
-        <th>Assigned To</th>
+        <!-- <th>Assigned To</th> -->
       </tr>
     </thead>
     <tbody>
@@ -18,7 +18,7 @@
           <td>{{ $workstation->status_name }}</td>
           <td>{{ $workstation->orders->count() }}</td> 
           <td>{{ $workstation->time_in_production }}</td> 
-          <td>{{ $workstation->assigned_to }}</td>
+          <!-- <td>{{ $workstation->assigned_to }}</td> -->
         </tr>
       @endforeach
     </tbody>
