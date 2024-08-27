@@ -21,7 +21,10 @@
         </div>
         <div class="filter-item">
         <select class="sort-select" id="filter-product">
-            <option value="" disabled selected>Product</option>
+        <option value="" disabled selected>Product</option>
+            @foreach($products as $product)
+                <option value="{{ $product->product_name }}">{{ $product->product_name }}</option>
+            @endforeach
         </select>
         </div>
         <div class="filter-item">
@@ -541,6 +544,61 @@
                 }
             })
         }
+
+
+        $(document).ready(function() {
+            // Function to perform AJAX search
+            function performSearch(query) {
+                let productFilter = $('#product-filter').val(); // Get selected product
+
+                $.ajax({
+                    url: '{{ route('search.orders') }}', // Replace with your search route
+                    type: 'GET',
+                    data: { 
+                        query: query,
+                        product: productFilter // Pass the selected product to the server
+                    },
+                    success: function(response) {
+                        $('#ordersBody').empty(); // Clear previous results
+
+                        // Append new search results to the table
+                        if (response.orders.length > 0) {
+                            $.each(response.orders, function(index, order) {
+                                var dateStarted = new Date(order.date_started);
+                                var now = new Date();
+                                var timeDiff = now - dateStarted;
+
+                                var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                                var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+                                var timeSpentString = (days > 0 ? days + 'd ' : '') + (hours > 0 ? hours + 'h ' : '') + (minutes > 0 ? minutes + 'm' : '');
+
+                                var row = '<tr>' +
+                                    '<td>' + order.order_id + '</td>' +
+                                    '<td><span class="status" style="background-color: '+order.status.status_color+'">' + (order.status ? order.status.status_name : '') + '</span></td>' +
+                                    '<td>' + (order.station ? order.station.worker.name : '') + '</td>' +
+                                    '<td>' + order.date_started + '</td>' +
+                                    '<td>' + timeSpentString + '</td>' +
+                                    '</tr>';
+
+                                $('#ordersBody').append(row);
+                            });
+                        } else {
+                            $('#ordersBody').append('<tr><td colspan="5">No results found</td></tr>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            // Event listener for search input
+            $('#searchInput, #product-filter').on('change keyup', function() {
+                performSearch($('#searchInput').val());
+            });
+        });
 
 
     </script>

@@ -42,11 +42,12 @@ class OrdersController extends Controller
         $sub_statuses = SubStatus::with('status')->get();
         $users = User::all();
         $order_id = null;
+        $products = \DB::table('order_items')->select('product_name')->distinct()->get();
         if($request->order_id){
             $order_id = Orders::where('order_id',$request->order_id)->pluck('id')->first();
         }
 //        dd($data);
-        return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id','sub_statuses'));
+        return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id','sub_statuses','products'));
     }
 
     /**
@@ -405,7 +406,5 @@ class OrdersController extends Controller
 
         return response()->json($response);
     }
-
-
 
 }
