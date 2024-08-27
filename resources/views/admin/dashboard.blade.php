@@ -180,31 +180,24 @@
         </div>
       </div>
       <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th># of Orders</th>
-            <th>Time Spent</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Jason Price</td>
-            <td>5</td>
-            <td>3h30m</td>
-          </tr>
-          <tr>
-            <td>Duane Dean</td>
-            <td>7</td>
-            <td>5h07m</td>
-          </tr>
-          <tr>
-            <td>Jonathan Barker</td>
-            <td>4</td>
-            <td>2h49m</td>
-          </tr>
-        </tbody>
+          <thead>
+              <tr>
+                  <th>Name</th>
+                  <th># of Orders</th>
+                  <th>Time Spent</th>
+              </tr>
+          </thead>
+          <tbody>
+              @foreach($teamMembers as $teamMember)
+                  <tr>
+                    <td>{{ $teamMember->name }}</td>
+                    <td>{{ $teamMember->total_orders }}</td>
+                    <td>{{ $teamMember->time_spent }}</td>
+                  </tr>
+              @endforeach
+          </tbody>
       </table>
+
     </div>
     <div class="workstations">
       <div class="workstations-top">
@@ -219,34 +212,22 @@
         </div>
       </div>
       <table>
-        <thead>
-          <tr>
-            <th>Workstation #</th>
-            <th># of Orders</th>
-            <th>Time in Production</th>
-            <th>Assigned To</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>5</td>
-            <td>13h39m</td>
-            <td>Jason Price</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>7</td>
-            <td>20h27m</td>
-            <td>Duane Dean</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>4</td>
-            <td>11h15m</td>
-            <td>Jonathan Barker</td>
-          </tr>
-        </tbody>
+          <thead>
+              <tr>
+                  <th>Workstation Name</th>
+                  <th># of Orders</th>
+                  <th>Time in Production</th>
+              </tr>
+          </thead>
+          <tbody>
+              @foreach($workstations as $workstation)
+                  <tr>
+                      <td>{{ $workstation->workstation_name }}</td>
+                      <td>{{ $workstation->num_orders }}</td>
+                      <td>{{ $workstation->time_in_production }}</td> 
+                  </tr>
+              @endforeach
+          </tbody>
       </table>
     </div>
   </div>
@@ -255,20 +236,18 @@
 @section('footer_scripts')
     <script>
         $(document).ready(function() {
-            // Function to perform AJAX search
             function performSearch(query) {
               $.ajax({
-                  url: '{{ route('search.orders') }}', // Replace with your search route
+                  url: '{{ route('search.orders') }}',
                   type: 'GET',
                   data: { query: query },
                   success: function(response) {
-                      $('#ordersBody').empty(); // Clear previous results
+                      $('#ordersBody').empty(); 
 
-                      // Append new search results to the table
                       if (response.orders.length > 0) {
                           $.each(response.orders, function(index, order) {
                               console.log(order);
-                              var dateStarted = new Date(order.date_started); // Assuming order.date_started is a valid date string or Date object
+                              var dateStarted = new Date(order.date_started);
                               var now = new Date();
                               var timeDiff = now - dateStarted;
 
@@ -313,7 +292,7 @@
                               $('#ordersBody').append(row);
                           });
                       } else {
-                          $('#ordersBody').append('<tr><td colspan="8">No results found</td></tr>'); // Adjust colspan to match your table
+                          $('#ordersBody').append('<tr><td colspan="8">No results found</td></tr>');
                       }
                   },
                   error: function(xhr, status, error) {
@@ -322,8 +301,6 @@
               });
           }
 
-
-            // Event listener for search input
             $('#searchInput').on('keyup', function() {
                 var query = $(this).val();
                 performSearch(query);

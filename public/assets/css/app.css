@@ -488,14 +488,12 @@ button {
     gap: 30px;
 }
 
-.team-workstations .team {
-    width: 40%;
-}
-
+.team-workstations .team,
 .team-workstations .workstations {
-    width: 60%;
+    width: 50%;
+    max-height: 400px; 
+    overflow-y: auto;
 }
-
 
 /* ORDERS */
 .filters {

@@ -23,24 +23,41 @@ class AdminController extends Controller
         $onHoldStatusIds = [7, 9, 10];
         $readyToShipStatusId = 8;
         $qualityControlStatusId = 6;
-    
+
         // Dynamic counts for each category
         $inProductionOrdersCount = Orders::whereIn('status_id', $inProductionStatusIds)->count();
         $onHoldOrdersCount = Orders::whereIn('status_id', $onHoldStatusIds)->count();
         $readyToShipOrdersCount = Orders::where('status_id', $readyToShipStatusId)->count();
         $qualityControlOrdersCount = Orders::where('status_id', $qualityControlStatusId)->count();
-    
+
         // Fetch orders with pagination
         $orders = Orders::with(['items', 'status', 'last_log', 'last_log.status', 'last_log.sub_status', 'addresses', 'station', 'station.worker'])
-                         ->where('orderType', Orders::parentType)
-                         ->paginate(10);
-    
+                        ->where('orderType', Orders::parentType)
+                        ->paginate(10);
+
+        $teamMembers = User::with(['workstations'])->get();
+
+        foreach ($teamMembers as $teamMember) {
+            $totalOrders = 0;
+
+            foreach ($teamMember->workstations as $workstation) {
+                $totalOrders += Orders::where('workstation_id', $workstation->id)->count();
+            }
+
+            $teamMember->total_orders = $totalOrders;
+            $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
+        }
+
+        $workstations = Workstations::with(['orders'])->get();
+
         return view('admin.dashboard', compact(
             'inProductionOrdersCount',
             'onHoldOrdersCount',
             'readyToShipOrdersCount',
             'qualityControlOrdersCount',
-            'orders'
+            'orders',
+            'teamMembers', 
+            'workstations'
         ));
     }
 
@@ -223,12 +240,10 @@ class AdminController extends Controller
 
     public function sendSummaryEmail()
     {
-        // Fetch the status IDs based on names
         $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
         $hold_status = OrderStatus::where('status_name', Orders::statusHold)->pluck('id')->first();
         $issues = OrderStatus::whereIn('status_name', OrderStatus::adminStatuses)->pluck('id');
 
-        // Prepare data for the email template
         $mailData = [
             'production_order' => Orders::with(['status', 'station', 'station.worker'])
                 ->where('status_id', '!=', $completed_status)
@@ -242,7 +257,6 @@ class AdminController extends Controller
             'title' => 'Daily Summary Report'
         ];
 
-        // Send email using the Mail facade
         Mail::send('admin.email.summary_email', $mailData, function ($message) {
             $message->to(env('ADMIN_EMAIL'))
                     ->subject('Daily Summary Report');
