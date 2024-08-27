@@ -257,46 +257,71 @@
         $(document).ready(function() {
             // Function to perform AJAX search
             function performSearch(query) {
-                $.ajax({
-                    url: '{{ route('search.orders') }}', // Replace with your search route
-                    type: 'GET',
-                    data: { query: query },
-                    success: function(response) {
-                        $('#ordersBody').empty(); // Clear previous results
+              $.ajax({
+                  url: '{{ route('search.orders') }}', // Replace with your search route
+                  type: 'GET',
+                  data: { query: query },
+                  success: function(response) {
+                      $('#ordersBody').empty(); // Clear previous results
 
-                        // Append new search results to the table
-                        if (response.orders.length > 0) {
-                            $.each(response.orders, function(index, order) {
-                                console.log(order);
-                                var dateStarted = new Date(order.date_started); // Assuming order.date_started is a valid date string or Date object
-                                var now = new Date();
-                                var timeDiff = now - dateStarted;
+                      // Append new search results to the table
+                      if (response.orders.length > 0) {
+                          $.each(response.orders, function(index, order) {
+                              console.log(order);
+                              var dateStarted = new Date(order.date_started); // Assuming order.date_started is a valid date string or Date object
+                              var now = new Date();
+                              var timeDiff = now - dateStarted;
 
-                                var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                                var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                              var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                              var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                              var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
-                                var timeSpentString = (days > 0 ? days + 'd ' : '') + (hours > 0 ? hours + 'h ' : '') + (minutes > 0 ? minutes + 'm' : '');
+                              var timeSpentString = (days > 0 ? days + 'd ' : '') + (hours > 0 ? hours + 'h ' : '') + (minutes > 0 ? minutes + 'm' : '');
 
-                                var row = '<tr>' +
-                                    '<td>' + order.order_id + '</td>' +
-                                    '<td><span class="status" style="background-color: '+order.status.status_color+'">' + (order.status ? order.status.status_name : '') + '</span></td>' +
-                                    '<td>' + (order.station ? order.station.worker.name : '') + '</td>' +
-                                    '<td>' + order.date_started + '</td>' +
-                                    '<td>' + timeSpentString + '</td>' +
-                                    '</tr>';
+                              var priority = order.priority === 'rush' ? '<img src="{{asset('icons/rush.svg')}}" alt="Rush">' : '-';
 
-                                $('#ordersBody').append(row);
-                            });
-                        } else {
-                            $('#ordersBody').append('<tr><td colspan="5">No results found</td></tr>');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                    }
-                });
-            }
+                              var late = '';
+                              if (order.deadline) {
+                                  var deadline = new Date(order.deadline);
+                                  if (now >= deadline) {
+                                      late = '<img src="{{asset('icons/exclaimatio.svg')}}" alt="Late">';
+                                  } else if (now >= deadline.setDate(deadline.getDate() - 2)) {
+                                      late = '<span class="fw-bold text-danger">' + Math.round((deadline - now) / (1000 * 60 * 60)) + ' hours left</span>';
+                                  } else {
+                                      late = '-';
+                                  }
+                              } else {
+                                  late = '-';
+                              }
+
+                              var row = '<tr>' +
+                                  '<td>' + order.order_id + '</td>' +
+                                  '<td>' + priority + '</td>' +
+                                  '<td><span class="status" style="background-color: '+order.status.status_color+'">' + (order.status ? order.status.status_name : '') + '</span></td>' +
+                                  '<td>' + (order.station ? order.station.worker.name : '') + '</td>' +
+                                  '<td>' + order.date_started + '</td>' +
+                                  '<td>' + timeSpentString + '</td>' +
+                                  '<td>' + late + '</td>' +
+                                  '<td>' +
+                                      '<button class="edit-btn" onclick="editStatus(this)" data-id="' + order.id + '" data-status="' + order.status_id + '" data-workstation="' + order.workstation_id + '">' +
+                                          '<img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">' +
+                                      '</button>' +
+                                      '<button class="edit-btn" onclick="viewDetails(\'' + order.id + '\',\'' + order.order_id + '\')">View details</button>' +
+                                  '</td>' +
+                                  '</tr>';
+
+                              $('#ordersBody').append(row);
+                          });
+                      } else {
+                          $('#ordersBody').append('<tr><td colspan="8">No results found</td></tr>'); // Adjust colspan to match your table
+                      }
+                  },
+                  error: function(xhr, status, error) {
+                      console.error('Error:', error);
+                  }
+              });
+          }
+
 
             // Event listener for search input
             $('#searchInput').on('keyup', function() {
