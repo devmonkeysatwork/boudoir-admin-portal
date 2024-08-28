@@ -1076,7 +1076,7 @@ input:checked+.slider:before {
 
 .modal-content {
     position: relative;
-    background-color: #fff;
+    background-color: #F5F6FA;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -1106,25 +1106,34 @@ input:checked+.slider:before {
 #orderModal #modal_status_text{
     position: absolute;
     right: 70px;
-    top: 22px;
+    top: -42px;
 }
 
 #orderModal .orderModal-flex {
     display: flex;
+    gap: 30px;
 }
 
-#orderModal .activity-log,
+#orderModal .activity-log {
+    background-color: #fff;
+    border-radius: 10px;
+    border: 1px solid #D5D5D5;
+    height: auto;
+    padding: 20px;
+}
+
+#orderModal .activity-logs,
 #orderModal .comments {
     width: 50%;
     padding: 20px;
     position: relative;
 }
 
-#orderModal .activity-log .log-entry {
+#orderModal .activity-logs .log-entry {
     margin-bottom: 5px;
 }
 
-#orderModal .activity-log .log-desc {
+#orderModal .activity-logs .log-desc {
     display: inline-block;
     max-width: 300px;
     word-wrap: break-word;
@@ -1133,13 +1142,42 @@ input:checked+.slider:before {
 #orderModal .log-date,
 #orderModal .comment-date {
     position: absolute;
-    right: 40px;
+    right: 0;
+}
+
+#orderModal #child_order {
+    position: absolute;
+    bottom: -215px; /* Adjust as needed */
+    left: 20px; /* Align with the modal's padding */
+    right: 20px; /* Align with the modal's padding */
+    background-color: #fff;
+    border-radius: 10px;
+    border: 1px solid #D5D5D5;
+    padding: 20px;
+    width: calc(100% - 40px); /* Ensure full width minus the padding */
+}
+
+#orderModal #child_order table {
+    width: 100%; /* Ensures the table takes up the full width of its container */
+}
+
+#orderModal #child_order table th {
+    border-radius: none;
+    background-color: #fff;
+    color: #202224;
+    border-bottom: 2px solid #202224;
+}
+
+.sub-orders .status-icon {
+    width: 20px;
+    height: 20px;
 }
 
 #orderModal .comment {
     border: 1px solid #D5D5D5;
     border-radius: 10px;
     margin-bottom: 10px;
+    background-color: #fff;
 }
 
 #orderModal .comment .comment-body {
@@ -1205,22 +1243,22 @@ input:checked+.slider:before {
     align-items: center;
     justify-content: center;
 
-    background-color: transparent;
+    background-color: #fff;
     color: #000;
     border: 1px solid #D5D5D5;
     padding: 15px 50px;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s;
 
     position: absolute;
     bottom: 30px;
-    left: 30px;
+    left: 50px;
 }
 
 
 #orderModal .pdf-btn img {
-    width: 50px;
+    width: 40px;
     margin-right: 10px;
 }
 
@@ -1228,6 +1266,7 @@ input:checked+.slider:before {
     position: absolute;
     bottom: 30px;
     right: 30px;
+    background-color: #fff;
 }
 
 #orderModal .new-comment {
@@ -1668,6 +1707,11 @@ input:checked+.slider:before {
     max-height: 500px;
     overflow-y: auto;
 }
+
+#order_logs{
+    padding-left: 1rem;
+}
+
 #order_logs li > * {
     vertical-align: text-top;
 }

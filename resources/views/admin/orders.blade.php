@@ -194,31 +194,46 @@
 
   <x-modal id="orderModal" title="Order #00001">
     <span class="status" id="modal_status_text">Completed</span>
-    <div class="orderModal-flex h-100 pb-3 pb-lg-5">
-      <div class="activity-log d-flex flex-column gap-3 justify-content-between h-100">
-        <div>
-            <h2>Activity Log</h2>
+    <div class="orderModal-flex">
+      <div class="activity-logs">
+        <div class="activity-log">
+            <h3>Activity Log</h3>
             <ul id="order_logs">
             </ul>
         </div>
-        <div id="child_order">
-              <table class="border-1 border-dark">
-                  <thead>
+        <div class="sub-orders">
+            <div id="child_order">
+                <h3>Sub-Orders</h3>
+                <table class="border-1 border-dark">
+                <thead>
                     <tr>
-                        <th>Order Id</th>
+                        <th>Order #</th>
                         <th>Status</th>
-                        <th>Team member</th>
-                        <th>Time</th>
+                        <th>Completion</th>
                     </tr>
-                  </thead>
-                  <tbody>
+                </thead>
+                <tbody>
+                    @foreach($order->children as $child_order)
+                        <tr>
+                            <td>{{ $child_order->order_id }}</td>
+                            <td>{{ $child_order->status->status_name }}</td>
+                            <td>
+                                @if($child_order->status->status_name === 'Completed')
+                                    <img src="{{ asset('icons/green-checkmark.png') }}" alt="Completed" class="status-icon">
+                                @else
+                                    <img src="{{ asset('icons/grey-checkmark.png') }}" alt="Incomplete" class="status-icon">
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+                </table>
+            </div>
 
-                  </tbody>
-              </table>
-          </div>
+        </div>
       </div>
       <div class="comments">
-        <h2>Comments</h2>
+        <h3>Comments</h3>
         <div id="comments_container">
             <div class="comment">
                 <div class="comment-body">
@@ -398,7 +413,7 @@
             })
         }
 
-        function viewDetails(orderId,title) {
+        function viewDetails(orderId, title) {
             activeOrder = orderId;
             show_loader();
 
@@ -417,7 +432,6 @@
                 },
                 complete: function (response) {
                     hide_loader();
-
                 },
                 success: function (response) {
                     console.log(response);
@@ -426,11 +440,12 @@
                         let logs = response.order.logs;
                         let comments = response.order.comments;
                         let child_orders = response.order.children;
+
+                        // Populate the Activity Log
                         $('#order_logs').empty();
-                        $('#comments_container').empty();
-                        $.each(logs, function( index, value ) {
+                        $.each(logs, function(index, value) {
                             let html = `<li class="log-entry">
-                                        <span class="log-desc">${value.user.name} update the status to <span class="fw-bold">${value.status.status_name}</span>`;
+                                <span class="log-desc">${value.user.name} updated the status to <span class="fw-bold">${value.status.status_name}</span>`;
                                 if(value.sub_status){
                                     html += ` because of ${value.sub_status.name}`;
                                 }
@@ -438,11 +453,34 @@
                                     html += `<br><b>Notes: </b><i>${value.notes}</i>`;
                                 }
                             html += `</span>
-                                        <span class="log-date">${value.time_started}</span>
-                                      </li>`;
+                                <span class="log-date">${value.time_started}</span>
+                            </li>`;
                             $('#order_logs').append(html);
                         });
-                        $.each(comments, function( index, value ) {
+
+                        // Populate the Sub-orders Table
+                        if(child_orders && child_orders.length > 0){
+                            $('#child_order').show();
+                            $('#child_order table tbody').empty();
+                            $.each(child_orders, function(index, value) {
+                                let html = `<tr>
+                                    <td>${value.order_id}</td>
+                                    <td>${value.status.status_name}</td>`;
+                                if(value.status.status_name === 'Completed'){
+                                    html += `<td><img src="{{ asset('icons/green-checkmark.png') }}" alt="Completed" class="status-icon"></td>`;
+                                } else {
+                                    html += `<td><img src="{{ asset('icons/grey-checkmark.png') }}" alt="Incomplete" class="status-icon"></td>`;
+                                }
+                                html += `</tr>`;
+                                $('#child_order table tbody').append(html);
+                            });
+                        } else {
+                            $('#child_order').hide();
+                        }
+
+                        // Populate the Comments Section
+                        $('#comments_container').empty();
+                        $.each(comments, function(index, value) {
                             var originalDate = value.created_at.trim();
                             var formattedDate = formatDate(originalDate);
                             var initial = value.user.name.charAt(0);
@@ -460,6 +498,8 @@
                                         </div>`;
                             $('#comments_container').append(html);
                         });
+
+                        // Set the status in the modal
                         if(status){
                             if(status.sub_status){
                                 $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
@@ -469,34 +509,20 @@
                         }else{
                             $('#modal_status_text').empty().html(response.order.status.status_name).css('background-color',response.order.status.status_color);
                         }
-                        if(child_orders && child_orders.length > 0){
-                            $('#child_order').show();
-                            $('#child_order table tbody');
-                            $.each(child_orders, function( index, value ) {
-                                let html = `<tr>
-                                                <td>${value.order_id}</td>
-                                                <td>${value.status.status_name}</td>
-                                                <td>${value.station.worker.name}</td>
-                                                <td>${value.date_started}</td>
-                                            </tr>`;
-                                $('#child_order table tbody').append(html);
-                            });
-                        }else{
-                            $('#child_order').hide();
-                        }
+
+                        // Show the modal
                         $('#orderModal').show();
                         $('#orderModal > div > h2').text('Order #' + title);
-
-
-                    }else{
+                    } else {
                         show_toast(response.message,'error');
                     }
-
                 },
                 error: function (response) {
+                    // Handle the error
                 }
-            })
+            });
         }
+
 
         function addComment(){
             let data  = new FormData($('#editStatusForm')[0]);
