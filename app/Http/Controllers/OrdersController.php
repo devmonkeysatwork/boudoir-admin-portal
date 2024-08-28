@@ -242,31 +242,62 @@ class OrdersController extends Controller
     public function addComment(Request $request)
     {
         try {
-            DB::beginTransaction();
-            $orderComment = new OrderComments();
-            $orderComment->order_id = $request->order_id;
-            $orderComment->user_id = Auth::user()->id;
-            $orderComment->comment = $request->comment;
-            $orderComment->save();
 
-            $comment = OrderComments::whereId($orderComment->id)->with('user')->first();
-            $order_id = Orders::find($request->order_id)->pluck('order_id')->first();
+            if(isset($request->reply_to)){
+                DB::beginTransaction();
+                $orderComment = new OrderComments();
+                $orderComment->order_id = $request->order_id;
+                $orderComment->user_id = Auth::user()->id;
+                $orderComment->comment = $request->comment;
+                $orderComment->parent_id = $request->reply_to;
+                $orderComment->save();
 
-            $notification = new Notifications();
-            $notification->type = Notifications::typeComment;
-            $notification->comment_id = $comment->id;
-            $notification->save();
+                $comment = OrderComments::whereId($orderComment->id)->with('user')->first();
+                $order_id = Orders::find($request->order_id)->pluck('order_id')->first();
 
-            $message = ['message'=>'A comment was added on order id '.$order_id,'comment'=>$comment,'order_id'=>$order_id];
-            event(new NewMessage($message));
+                $notification = new Notifications();
+                $notification->type = Notifications::typeComment;
+                $notification->comment_id = $comment->id;
+                $notification->save();
+
+                $message = ['message'=>'A reply to a comment was added on order id '.$order_id,'comment'=>$comment,'order_id'=>$order_id];
+                event(new NewMessage($message));
 
 
-            DB::commit();
-            $response = [
-                'status' => 200,
-                'message' => 'Comment added successfully.',
-                'comment' => $comment,
-            ];
+                DB::commit();
+                $response = [
+                    'status' => 200,
+                    'message' => 'Comment added successfully.',
+                    'comment' => $comment,
+                ];
+            }else{
+                DB::beginTransaction();
+                $orderComment = new OrderComments();
+                $orderComment->order_id = $request->order_id;
+                $orderComment->user_id = Auth::user()->id;
+                $orderComment->comment = $request->comment;
+                $orderComment->save();
+
+                $comment = OrderComments::whereId($orderComment->id)->with('user')->first();
+                $order_id = Orders::find($request->order_id)->pluck('order_id')->first();
+
+                $notification = new Notifications();
+                $notification->type = Notifications::typeComment;
+                $notification->comment_id = $comment->id;
+                $notification->save();
+
+                $message = ['message'=>'A comment was added on order id '.$order_id,'comment'=>$comment,'order_id'=>$order_id];
+                event(new NewMessage($message));
+
+
+                DB::commit();
+                $response = [
+                    'status' => 200,
+                    'message' => 'Comment added successfully.',
+                    'comment' => $comment,
+                ];
+            }
+
         }catch (\Exception $e){
             DB::rollBack();
             return response()->json([
@@ -282,14 +313,21 @@ class OrdersController extends Controller
     {
         $id = $request->id;
 
-        $order = Orders::with(['children','children.status','children.station','children.station.worker','status','logs','logs.user','logs.status','logs.sub_status','comments','comments.replies','comments.user'])
+        $order = Orders::with(['children','children.status','children.station',
+            'children.station.worker','status','logs','logs.user','logs.status',
+            'logs.sub_status','comments','comments.replies','comments.replies.user','comments.user'])
             ->whereId($id)->first();
 
         $status_log = OrderLogs::with(['user','status','sub_status'])
             ->where('order_id',$order->order_id)->latest('time_started')
             ->first();
 
-        return response()->json(['status' => 200,'order' => $order,'status_log' => $status_log]);
+
+        $comments_vew = view('admin.partials.comments',['comments'=>$order->comments])->render();
+
+
+
+        return response()->json(['status' => 200,'order' => $order,'status_log' => $status_log,'comments_vew' => $comments_vew]);
 
     }
 

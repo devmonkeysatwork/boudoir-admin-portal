@@ -414,7 +414,7 @@
                     if(response.status == 200){
                         let status = response.status_log;
                         let logs = response.order.logs;
-                        let comments = response.order.comments;
+                        let comments = response.comments_vew;
                         let child_orders = response.order.children;
                         $('#order_logs').empty();
                         $('#comments_container').empty();
@@ -432,24 +432,50 @@
                                       </li>`;
                             $('#order_logs').append(html);
                         });
-                        $.each(comments, function( index, value ) {
-                            var originalDate = value.created_at.trim();
-                            var formattedDate = formatDate(originalDate);
-                            var initial = value.user.name.charAt(0);
-                            let html = `<div class="comment">
-                                            <div class="comment-body">
-                                                <div class="d-flex justify-content-between align-items-center flex-row">
-                                                    <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
-                                                    <span class="">${formattedDate}</span>
-                                                </div>
-                                                <p class="comment-text">${value.comment}</p>
-                                            </div>
-                                            <div class="comment-footer">
-                                                <button class="btn">Reply</button>
-                                            </div>
-                                        </div>`;
-                            $('#comments_container').append(html);
-                        });
+                        if(comments){
+                            $('#comments_container').append(comments);
+                        }
+                        // $.each(comments, function( index, value ) {
+                        //     var originalDate = value.created_at.trim();
+                        //     var formattedDate = formatDate(originalDate);
+                        //     var initial = value.user.name.charAt(0);
+                        //     let html = `<div class="comment">
+                        //                     <div class="comment-body">
+                        //                         <div class="d-flex justify-content-between align-items-center flex-row">
+                        //                             <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
+                        //                             <span class="">${formattedDate}</span>
+                        //                         </div>
+                        //                         <p class="comment-text">${value.comment}</p>
+                        //                     </div>
+                        //                     <div class="comment-footer">
+                        //                         <button class="btn reply-btn" data-comment="${value.id}">Reply</button>
+                        //                     </div>
+                        //                     <div class="reply-form" style="display:none;">
+                        //                         <input placeholder="Write a reply..."/>
+                        //                         <button class="btn submit-reply">Submit</button>
+                        //                     </div>`;
+                        //
+                        //     if(value.replies){
+                        //         html += `<div class="replies">`;
+                        //         $.each(value.replies, function( index, reply ) {
+                        //             var originalDate = reply.created_at.trim();
+                        //             var formattedDate = formatDate(originalDate);
+                        //             var initial = reply.user.name.charAt(0);
+                        //             html +=`<div class="reply">
+                        //                         <div class="reply-body">
+                        //                             <div class="d-flex justify-content-between align-items-center flex-row">
+                        //                                 <span class="comment-user" data-initial="${initial}">${reply.user.name}</span>
+                        //                                 <span class="">${formattedDate}</span>
+                        //                             </div>
+                        //                             <p class="reply-text">${reply.comment}</p>
+                        //                         </div>
+                        //                     </div>`;
+                        //         });
+                        //         html += `</div>`;
+                        //     }
+                        //     html += `</div>`;
+                        //     $('#comments_container').append(html);
+                        // });
                         if(status){
                             if(status.sub_status){
                                 $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
@@ -521,7 +547,11 @@
                                                 <p class="comment-text">${comment.comment}</p>
                                             </div>
                                             <div class="comment-footer">
-                                                <button class="btn">Reply</button>
+                                                <button class="btn reply-btn" data-comment="${comment.id}">Reply</button>
+                                            </div>
+                                            <div class="reply-form" style="display:none;">
+                                                <input placeholder="Write a reply..."/>
+                                                <button class="btn submit-reply">Submit</button>
                                             </div>
                                         </div>`;
                         $('#comments_container').append(html);
@@ -534,7 +564,59 @@
                 }
             })
         }
+        let commentId=0;
+        $(document).on('click', '.reply-btn', function(){
+            var $replyForm = $(this).closest('.comment').find('.reply-form');
+            $replyForm.toggle();
+            commentId = $(this).data('comment');
+        });
+        $(document).on('click', '.submit-reply', function(){
+            var $comment = $(this).closest('.comment');
+            var replyText = $(this).closest('.reply-form').find('input').val();
+            let data  = new FormData($('#editStatusForm')[0]);
+            data.append('_token','{{@csrf_token()}}');
+            data.append('comment',replyText);
+            data.append('order_id',activeOrder);
+            data.append('reply_to',commentId);
 
+            if (replyText !== '') {
+                $.ajax({
+                    url: '{{route('order.add_reply')}}',
+                    type: 'post',
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    data: data,
+                    success: function(reply) {
+                        if(reply.comment){
+                            var originalDate = reply.comment.created_at.trim();
+                            var formattedDate = formatDate(originalDate);
+                            var initial = reply.comment.user.name.charAt(0);
+                            var $repliesContainer = $comment.find('.replies');
+                            var replyHtml = `<div class="reply">
+                                                    <div class="reply-body">
+                                                        <div class="d-flex justify-content-between align-items-center flex-row mb-2">
+                                                            <span class="comment-user" data-initial="${initial}">${reply.comment.user.name}</span>
+                                                            <span class="">${formattedDate}</span>
+                                                        </div>
+                                                        <p class="reply-text">${reply.comment.comment}</p>
+                                                    </div>
+                                                </div>`;
+                            $repliesContainer.append(replyHtml);
+                            $comment.find('textarea').val('');
+                            $comment.find('.reply-form').hide();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+
+        function toggleReplies(id){
+            $('.'+id).toggleClass('open');
+        }
 
     </script>
 @endsection
