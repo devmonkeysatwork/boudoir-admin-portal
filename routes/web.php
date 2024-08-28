@@ -40,9 +40,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
     Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
-
     
     Route::get('/team', [AdminController::class, 'team'])->name('admin.team');
+    Route::get('/team/{id}', [AdminController::class, 'getTeamDetails']);
 
     Route::get('/settings', function () {
         return redirect()->route('admin.manage-statuses');

@@ -179,6 +179,32 @@ class AdminController extends Controller
         return view('admin.team', compact('teamMembers'));
     }
 
+    public function getTeamDetails($id)
+    {
+        $teamMember = User::with('workstations.orders')->find($id);
+
+        if (!$teamMember) {
+            return response()->json(['message' => 'Team member not found'], 404);
+        }
+
+        $ordersHtml = '';
+        $counter = 1;
+        foreach ($teamMember->workstations as $workstation) {
+            foreach ($workstation->orders as $order) {
+                $ordersHtml .= '
+                <tr>
+                    <td>' . $counter++ . '</td>
+                    <td>Order #' . $order->order_id . '</td>
+                    <td>' . gmdate('H:i', strtotime($order->time_in_production)) . '</td>
+                </tr>';
+            }
+        }
+
+        return response()->json([
+            'ordersHtml' => $ordersHtml,
+            'orderCount' => count($teamMember->workstations->pluck('orders')->flatten())
+        ]);
+    }
 
 
     private function calculateTimeSpent($workstationIds)

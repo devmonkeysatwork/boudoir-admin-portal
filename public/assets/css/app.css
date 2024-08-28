@@ -726,8 +726,9 @@ table td {
 
 }
 
-.areas table tbody td,
-.team table tbody td {
+.areas table tbody tr,
+.workstations table tbody tr,
+.team table tbody tr {
     cursor: pointer;
 }
 
