@@ -136,6 +136,30 @@ class AdminController extends Controller
         return view('admin.areas', compact('workstations'));
     }
 
+    public function getWorkstationDetails($id)
+    {
+        $workstation = Workstations::with('orders')->find($id);
+
+        if ($workstation) {
+            $ordersHtml = '';
+            $counter = 1;
+            foreach ($workstation->orders as $order) {
+                $ordersHtml .= '
+                <tr>
+                    <td>' . $counter++ . '</td>
+                    <td>Order #' . $order->order_id . '</td>
+                    <td>' . gmdate('H:i', strtotime($order->time_in_production)) . '</td>
+                </tr>';
+            }
+
+            return response()->json([
+                'ordersHtml' => $ordersHtml,
+                'orderCount' => count($workstation->orders)
+            ]);
+        } else {
+            return response()->json(['message' => 'Workstation not found'], 404);
+        }
+    }
 
     public function team()
     {

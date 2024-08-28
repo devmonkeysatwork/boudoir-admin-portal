@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css" />
     <!-- choices.js -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{asset('assets/css/bootstrap.min.css')}}">
     <!-- vite -->
     <link rel="stylesheet" href="{{ asset('assets/css/notyf.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/bootstrap.min.css')}}">
@@ -38,7 +40,13 @@
 </body>
 
 </html>
+<!-- jQuery -->
+<script src="{{asset('assets/js/jquery.js')}}"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Pusher JS -->
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<!-- Pickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {

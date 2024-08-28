@@ -39,6 +39,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
 
     Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
+    Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
+
     
     Route::get('/team', [AdminController::class, 'team'])->name('admin.team');
 

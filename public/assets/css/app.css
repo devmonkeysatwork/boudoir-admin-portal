@@ -717,18 +717,17 @@ table td {
 }
 
 .orders table tbody th,
-.orders table tbody td {
-    padding: 20px 20px;
-    cursor: pointer;
-}
-
+.orders table tbody td,
+.areas table tbody th,
+.areas table tbody td,
 .team table tbody th,
 .team table tbody td {
-    padding: 20px 20px;
+    padding: 20px;
+
 }
 
-.content .orders table tbody td,
-.content .workstations table tbody td {
+.areas table tbody td,
+.team table tbody td {
     cursor: pointer;
 }
 
@@ -1196,6 +1195,10 @@ input:checked+.slider:before {
     border-top: none;
 }
 
+#workstationModal .modal-footer {
+    border-top: none;
+}
+
 #orderModal .pdf-btn {
     display: flex;
     align-items: center;
@@ -1296,7 +1299,12 @@ input:checked+.slider:before {
 
 
 #workstationModal .modal-content {
-    max-width: 450px;
+    max-width: 500px;
+}
+
+#workstationModal .modal-body .table-responsive {
+    max-height: 400px; 
+    overflow-y: auto;
 }
 
 #workstationModal .search-container input {
@@ -1390,6 +1398,12 @@ input:checked+.slider:before {
 #createStatusModal .modal-footer,
 #editStatusModal .modal-footer {
     float: left;
+}
+
+#orderCount {
+    position: absolute;
+    left: 15px;
+    bottom: -45px;
 }
 
 /* color picker */
