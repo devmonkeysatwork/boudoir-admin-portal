@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Picqer\Barcode\BarcodeGeneratorJPG;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class AdminController extends Controller
 {
@@ -173,5 +175,15 @@ class AdminController extends Controller
 
         $mailData['title']='Daily Summary Report';
         Mail::to(env('ADMIN_EMAIL'))->send(new \App\Mail\OrderSummaryEmail($mailData));
+    }
+
+    public function generateBarcode($status_name)
+    {
+        $generator = new BarcodeGeneratorJPG();
+        $barcode = $generator->getBarcode($status_name, $generator::TYPE_CODE_128);
+
+        return response($barcode)
+            ->header('Content-Type', 'image/jpeg')
+            ->header('Content-Disposition', 'inline; filename="'.strtolower($status_name).'_barcode.jpg"');
     }
 }
