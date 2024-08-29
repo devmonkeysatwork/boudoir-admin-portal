@@ -1234,10 +1234,6 @@ input:checked+.slider:before {
     border-top: none;
 }
 
-#workstationModal .modal-footer {
-    border-top: none;
-}
-
 #orderModal .pdf-btn {
     display: flex;
     align-items: center;
@@ -1340,6 +1336,7 @@ input:checked+.slider:before {
 
 #workstationModal .modal-content {
     max-width: 500px;
+    background-color: #fff;
 }
 
 #workstationModal .modal-body .table-responsive {
@@ -1376,6 +1373,10 @@ input:checked+.slider:before {
     padding: 10px 20px;
     border-bottom: 0.5px solid #D5D5D5;
     cursor: default;
+}
+
+#workstationModal .modal-footer {
+    border-top: none;
 }
 
 #workstationModal .modal-content .pagination {

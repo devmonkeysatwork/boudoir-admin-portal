@@ -72,7 +72,13 @@
         @foreach($orders as $order)
           <tr>
             <td>{{$order->order_id}}</td>
-            <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
+            <td>
+                @if($order->is_rush == 1)
+                    <img src="{{asset('icons/rush.svg')}}" alt="Rush">
+                @else
+                    -
+                @endif
+            </td>
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
                     @if(isset($order->last_log->sub_status))
                         {{$order->last_log?->sub_status?->name ?? null}}
@@ -111,7 +117,7 @@
                   </button>
                   @if(isset($order->children) && count($order->children))
                       <button class="edit-btn" onclick="viewChildren('children_{{$order->id}}')">
-                          <img src="{{ asset('icons/chevron-down.svg') }}" alt="Edit Icon">
+                          <img src="{{ asset('icons/chevron-down.svg') }}" alt="Expand Icon">
                       </button>
                   @endif
               </td>
@@ -133,23 +139,27 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($order->children as $order)
+                            @foreach($order->children as $child_order)
                                 <tr>
-                                    <td>{{$order->order_id}}</td>
-                                    <td><img src="{{asset('icons/rush.svg')}}" alt=""></td>
-                                    <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
-                    @if(isset($order->last_log->sub_status))
-                                                {{$order->last_log?->sub_status?->name ?? null}}
-                                            @else
-                                                {{$order->last_log?->status?->status_name ?? null}}
-                                            @endif
-                </span>
+                                    <td>{{$child_order->order_id}}</td>
+                                    <td>
+                                        @if($child_order->is_rush == 1)
+                                            <img src="{{asset('icons/rush.svg')}}" alt="Rush">
+                                        @endif
                                     </td>
-                                    <td>{{$order->station?->worker?->name ?? null}}</td>
-                                    <td>{{$order->date_started}}</td>
+                                    <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">
+                                        @if(isset($child_order->last_log->sub_status))
+                                            {{$child_order->last_log?->sub_status?->name ?? null}}
+                                        @else
+                                            {{$child_order->last_log?->status?->status_name ?? null}}
+                                        @endif
+                                    </span>
+                                    </td>
+                                    <td>{{$child_order->station?->worker?->name ?? null}}</td>
+                                    <td>{{$child_order->date_started}}</td>
                                     <td>
                                         @php
-                                            $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                                            $dateStarted = \Carbon\Carbon::parse($child_order->created_at);
                                             $now = \Carbon\Carbon::now();
                                             $timeSpent = $dateStarted->diff($now);
                                         @endphp
@@ -158,19 +168,19 @@
                                         {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
                                     </td>
                                     <td>
-                                        @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                                        @if(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)))
                                             <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
-                                        @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
-                                            <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
+                                        @elseif(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)->subDays(2)))
+                                            <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($child_order->deadline)),0)}} hours left</span>
                                         @else
                                             -
                                         @endif
                                     </td>
                                     <td>
-                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">
                                             <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
                                         </button>
-                                        <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
+                                        <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">
                                             View details
                                         </button>
                                     </td>
@@ -235,39 +245,21 @@
       <div class="comments">
         <h3>Comments</h3>
         <div id="comments_container">
-            <div class="comment">
-                <div class="comment-body">
-                    <span class="comment-user" data-initial="D">Danielle</span>
-                    <span class="comment-date">Apr 16 at 3:29 pm</span>
-                    <p class="comment-text">I noticed a slight color mismatch in the print. I'll recheck the printer settings.</p>
+            @foreach($order->comments as $comment)
+                <div class="comment">
+                    <div class="comment-body">
+                        <span class="comment-user" data-initial="{{ $comment->user->name[0] }}">{{ $comment->user->name }}</span>
+                        <span class="comment-date">{{ \Carbon\Carbon::parse($comment->created_at)->format('M d \a\t g:i a') }}</span>
+                        <p class="comment-text">{{ $comment->comment }}</p>
+                    </div>
+                    <div class="comment-footer">
+                        <button class="btn">Reply</button>
+                    </div>
                 </div>
-                <div class="comment-footer">
-                    <button class="btn">Reply</button>
-                </div>
-            </div>
-            <div class="comment">
-                <div class="comment-body">
-                    <span class="comment-user" data-initial="D">Dora</span>
-                    <span class="comment-date">Apr 16 at 3:29 pm</span>
-                    <p class="comment-text">The album cover material seems off. Need to confirm with the client.</p>
-                </div>
-                <div class="comment-footer">
-                    <button class="btn">Reply</button>
-                </div>
-            </div>
-            <div class="comment">
-                <div class="comment-body">
-                    <span class="comment-user" data-initial="S">Sarah</span>
-                    <span class="comment-date">Apr 17 at 9:45 am</span>
-                    <p class="comment-text">Added new layout design based on client's feedback. Looks good!</p>
-                </div>
-                <div class="comment-footer">
-                    <button class="btn">Reply</button>
-                </div>
+            @endforeach
         </div>
-        </div>
-
       </div>
+
       <x-slot name="footer">
         <button class="btn pdf-btn">
           <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
@@ -357,7 +349,6 @@
                         $(this).hide();
                     }
                 });
-                // Show or hide the sub-status div based on whether there are visible options
                 $('#sub_status_div').toggle(hasVisibleOptions);
             });
 
@@ -441,7 +432,6 @@
                         let comments = response.order.comments;
                         let child_orders = response.order.children;
 
-                        // Populate the Activity Log
                         $('#order_logs').empty();
                         $.each(logs, function(index, value) {
                             let html = `<li class="log-entry">
@@ -458,7 +448,6 @@
                             $('#order_logs').append(html);
                         });
 
-                        // Populate the Sub-orders Table
                         if(child_orders && child_orders.length > 0){
                             $('#child_order').show();
                             $('#child_order table tbody').empty();
@@ -478,7 +467,6 @@
                             $('#child_order').hide();
                         }
 
-                        // Populate the Comments Section
                         $('#comments_container').empty();
                         $.each(comments, function(index, value) {
                             var originalDate = value.created_at.trim();
@@ -499,7 +487,6 @@
                             $('#comments_container').append(html);
                         });
 
-                        // Set the status in the modal
                         if(status){
                             if(status.sub_status){
                                 $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
@@ -510,7 +497,6 @@
                             $('#modal_status_text').empty().html(response.order.status.status_name).css('background-color',response.order.status.status_color);
                         }
 
-                        // Show the modal
                         $('#orderModal').show();
                         $('#orderModal > div > h2').text('Order #' + title);
                     } else {
@@ -518,7 +504,6 @@
                     }
                 },
                 error: function (response) {
-                    // Handle the error
                 }
             });
         }
@@ -573,21 +558,19 @@
 
 
         $(document).ready(function() {
-            // Function to perform AJAX search
             function performSearch(query) {
-                let productFilter = $('#product-filter').val(); // Get selected product
+                let productFilter = $('#product-filter').val(); 
 
                 $.ajax({
-                    url: '{{ route('search.orders') }}', // Replace with your search route
+                    url: '{{ route('search.orders') }}',
                     type: 'GET',
                     data: { 
                         query: query,
-                        product: productFilter // Pass the selected product to the server
+                        product: productFilter
                     },
                     success: function(response) {
-                        $('#ordersBody').empty(); // Clear previous results
+                        $('#ordersBody').empty();
 
-                        // Append new search results to the table
                         if (response.orders.length > 0) {
                             $.each(response.orders, function(index, order) {
                                 var dateStarted = new Date(order.date_started);
@@ -620,7 +603,6 @@
                 });
             }
 
-            // Event listener for search input
             $('#searchInput, #product-filter').on('change keyup', function() {
                 performSearch($('#searchInput').val());
             });
