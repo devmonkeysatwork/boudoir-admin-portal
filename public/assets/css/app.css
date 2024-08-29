@@ -1550,13 +1550,48 @@ input:checked+.slider:before {
     border-bottom: none;
     margin-bottom: 0;
     padding: 20px 15px;
+    background-color: #F5F6FA;
 }
 
 #createEmailModal .modal-content,
-#editEmailModal .modal-content{
-    width: 800px;
+#editEmailModal .modal-content {
+    width: 900px;
+    max-width: 100%;
     height: auto;
     padding: 40px;
+    background-color: #fff;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    z-index: 1000;
+}
+
+#createEmailModal .modal,
+#editEmailModal .modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#createEmailModal #cke_2_top,
+#editEmailModal #cke_2_top,
+#createEmailModal #cke_2_bottom,
+#editEmailModal #cke_2_bottom {
+    background-color: #F5F6FA;
+}
+
+#createEmailModal .modal-body,
+#editEmailModal .modal-body{
+    padding: 0;
+}
+
+#createEmailModal .modal-footer,
+#editEmailModal .modal-footer{
+    border-top: none;
 }
 
 #createEmailModal .form-group,
@@ -1601,7 +1636,7 @@ input:checked+.slider:before {
 
 #createEmailModal .top .name label,
 #editEmailModal .top .name label{
-    width: 35%;
+    width: 25%;
 }
 
 #createEmailModal .top .form-group.status,
@@ -1612,7 +1647,7 @@ input:checked+.slider:before {
 
 #createEmailModal .top .status label,
 #editEmailModal .top .status label {
-    width: 65%;
+    width: 55%;
 }
 
 
