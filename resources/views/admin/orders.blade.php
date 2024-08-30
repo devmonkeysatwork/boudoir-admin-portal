@@ -431,9 +431,10 @@
                     if(response.status == 200){
                         let status = response.status_log;
                         let logs = response.order.logs;
-                        let comments = response.comments_vew;
+                        let commentsHtml = response.comments_vew; // This is an HTML string now
                         let child_orders = response.order.children;
 
+                        // Populate the Activity Log
                         $('#order_logs').empty();
                         $.each(logs, function(index, value) {
                             let html = `<li class="log-entry">
@@ -450,6 +451,7 @@
                             $('#order_logs').append(html);
                         });
 
+                        // Populate the Sub-orders Table
                         if(child_orders && child_orders.length > 0){
                             $('#child_order').show();
                             $('#child_order table tbody').empty();
@@ -469,26 +471,10 @@
                             $('#child_order').hide();
                         }
 
-                        $('#comments_container').empty();
-                        $.each(comments, function(index, value) {
-                            var originalDate = value.created_at.trim();
-                            var formattedDate = formatDate(originalDate);
-                            var initial = value.user.name.charAt(0);
-                            let html = `<div class="comment">
-                                            <div class="comment-body">
-                                                <div class="d-flex justify-content-between align-items-center flex-row">
-                                                    <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
-                                                    <span class="">${formattedDate}</span>
-                                                </div>
-                                                <p class="comment-text">${value.comment}</p>
-                                            </div>
-                                            <div class="comment-footer">
-                                                <button class="btn">Reply</button>
-                                            </div>
-                                        </div>`;
-                            $('#comments_container').append(html);
-                        });
+                        // Directly append the HTML string to the comments container
+                        $('#comments_container').html(commentsHtml);
 
+                        // Set the status in the modal
                         if(status){
                             if(status.sub_status){
                                 $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
@@ -499,6 +485,7 @@
                             $('#modal_status_text').empty().html(response.order.status.status_name).css('background-color',response.order.status.status_color);
                         }
 
+                        // Show the modal
                         $('#orderModal').show();
                         $('#orderModal > div > h2').text('Order #' + title);
                     } else {
@@ -506,9 +493,11 @@
                     }
                 },
                 error: function (response) {
+                    console.error('Error:', response);
                 }
             });
         }
+
 
 
         function addComment(){
@@ -528,7 +517,6 @@
                 },
                 complete: function (response) {
                     hide_loader();
-
                 },
                 success: function (response) {
                     if(response.status == 200){
@@ -552,15 +540,17 @@
                                             </div>
                                         </div>`;
                         $('#comments_container').append(html);
+                        $('#comment_input').val(''); // Clear the input
                     }else{
                         show_toast(response.message,'error');
                     }
-
                 },
                 error: function (response) {
+                    console.error('Error:', response);
                 }
-            })
+            });
         }
+
         let commentId=0;
         $(document).on('click', '.reply-btn', function(){
             var $replyForm = $(this).closest('.comment').find('.reply-form');
