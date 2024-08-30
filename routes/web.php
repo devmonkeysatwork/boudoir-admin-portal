@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/update_order_status', [AdminController::class, 'updateOrderStatus'])->name('admin.update_order_status');
     Route::post('/get_order_details', [OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
+    Route::post('/comment_add_reply', [OrdersController::class, 'addComment'])->name('order.add_reply');
 
     Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
     Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
@@ -51,6 +52,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/add_status', [AdminController::class, 'addStatuses'])->name('admin.add_status');
     Route::post('/delete_status', [AdminController::class, 'deleteStatus'])->name('admin.delete_status');
     Route::post('/update_status', [AdminController::class, 'updateStatus'])->name('admin.update_status');
+    Route::get('/barcode/{status_name}', [AdminController::class, 'generateBarcode'])->name('barcode.generate');
+
 
     Route::get('/settings/manage-emails', [EmailTemplatesController::class, 'manageEmails'])->name('admin.manage-emails');
     Route::post('/email/add', [EmailTemplatesController::class, 'addEmailTemplate'])->name('email.add');

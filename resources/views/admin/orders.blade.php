@@ -82,8 +82,10 @@
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
                     @if(isset($order->last_log->sub_status))
                         {{$order->last_log?->sub_status?->name ?? null}}
-                    @else
+                    @elseif(isset($order->last_log->status))
                         {{$order->last_log?->status?->status_name ?? null}}
+                    @else
+                        {{$order->status?->status_name ?? null}}
                     @endif
                 </span>
             </td>
@@ -429,7 +431,7 @@
                     if(response.status == 200){
                         let status = response.status_log;
                         let logs = response.order.logs;
-                        let comments = response.order.comments;
+                        let comments = response.comments_vew;
                         let child_orders = response.order.children;
 
                         $('#order_logs').empty();
@@ -542,7 +544,11 @@
                                                 <p class="comment-text">${comment.comment}</p>
                                             </div>
                                             <div class="comment-footer">
-                                                <button class="btn">Reply</button>
+                                                <button class="btn reply-btn" data-comment="${comment.id}">Reply</button>
+                                            </div>
+                                            <div class="reply-form" style="display:none;">
+                                                <input placeholder="Write a reply..."/>
+                                                <button class="btn submit-reply">Submit</button>
                                             </div>
                                         </div>`;
                         $('#comments_container').append(html);
@@ -555,7 +561,59 @@
                 }
             })
         }
+        let commentId=0;
+        $(document).on('click', '.reply-btn', function(){
+            var $replyForm = $(this).closest('.comment').find('.reply-form');
+            $replyForm.toggle();
+            commentId = $(this).data('comment');
+        });
+        $(document).on('click', '.submit-reply', function(){
+            var $comment = $(this).closest('.comment');
+            var replyText = $(this).closest('.reply-form').find('input').val();
+            let data  = new FormData($('#editStatusForm')[0]);
+            data.append('_token','{{@csrf_token()}}');
+            data.append('comment',replyText);
+            data.append('order_id',activeOrder);
+            data.append('reply_to',commentId);
 
+            if (replyText !== '') {
+                $.ajax({
+                    url: '{{route('order.add_reply')}}',
+                    type: 'post',
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    data: data,
+                    success: function(reply) {
+                        if(reply.comment){
+                            var originalDate = reply.comment.created_at.trim();
+                            var formattedDate = formatDate(originalDate);
+                            var initial = reply.comment.user.name.charAt(0);
+                            var $repliesContainer = $comment.find('.replies');
+                            var replyHtml = `<div class="reply">
+                                                    <div class="reply-body">
+                                                        <div class="d-flex justify-content-between align-items-center flex-row mb-2">
+                                                            <span class="comment-user" data-initial="${initial}">${reply.comment.user.name}</span>
+                                                            <span class="">${formattedDate}</span>
+                                                        </div>
+                                                        <p class="reply-text">${reply.comment.comment}</p>
+                                                    </div>
+                                                </div>`;
+                            $repliesContainer.append(replyHtml);
+                            $comment.find('textarea').val('');
+                            $comment.find('.reply-form').hide();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+
+        function toggleReplies(id){
+            $('.'+id).toggleClass('open');
+        }
 
         $(document).ready(function() {
             function performSearch(query) {
