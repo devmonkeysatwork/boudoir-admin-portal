@@ -3,7 +3,7 @@
 @section('content')
 <div class="areas">
   <h1>Areas</h1>
-  <table>
+  <table id="areasTable" class="tablesorter">
     <thead>
       <tr>
         <th>Stations</th>
@@ -98,3 +98,11 @@
     });
   </script>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $("#areasTable").tablesorter();
+    });
+</script>
+@endpush

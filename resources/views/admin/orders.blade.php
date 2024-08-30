@@ -55,7 +55,7 @@
   </div>  
         
 
-  <table>
+  <table id="ordersTable" class="tablesorter">
     <thead>
       <tr>
         <th>Order #</th>
@@ -659,3 +659,11 @@
 
     </script>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $("#ordersTable").tablesorter();
+    });
+</script>
+@endpush

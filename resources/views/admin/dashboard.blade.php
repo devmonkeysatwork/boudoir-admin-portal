@@ -88,7 +88,7 @@
       </div>
     </div>
     <div id="orders_table_container">
-        <table>
+        <table id="dashboardOrdersTable" class="tablesorter">
             <thead>
               <tr>
                   <th>Order #</th>
@@ -177,7 +177,7 @@
           </select>
         </div>
       </div>
-      <table>
+      <table id="dashboardTeamTable" class="tablesorter">
           <thead>
               <tr>
                   <th>Name</th>
@@ -209,7 +209,7 @@
           </select>
         </div>
       </div>
-      <table>
+      <table id="dashboardWorkstationsTable" class="tablesorter">
           <thead>
               <tr>
                   <th>Workstation Name</th>
@@ -306,3 +306,13 @@
         });
     </script>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $("#dashboardOrdersTable").tablesorter();
+        $("#dashboardTeamTable").tablesorter();
+        $("#dashboardWorkstationsTable").tablesorter();
+    });
+</script>
+@endpush

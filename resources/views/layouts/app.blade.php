@@ -17,9 +17,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{asset('assets/css/bootstrap.min.css')}}">
-    <!-- vite -->
+    <!-- tablesorter CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.default.min.css">
+    <!-- notyf -->
     <link rel="stylesheet" href="{{ asset('assets/css/notyf.css')}}" />
-    <link rel="stylesheet" href="{{asset('assets/css/bootstrap.min.css')}}">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
 {{--    @vite(['resources/css/app.css', 'resources/js/app.js'])--}}
 </head>
@@ -41,13 +43,20 @@
 
 </html>
 <!-- jQuery -->
-<script src="{{asset('assets/js/jquery.js')}}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- tablesorter JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Pusher JS -->
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <!-- Pickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+<!-- notyf JS -->
+<script src="{{asset('assets/js/notyf.js')}}"></script>
+<!-- Custom JS -->
+<script src="{{asset('assets/js/app.js')}}"></script>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Initialize Pickr for create status modal
@@ -222,8 +231,6 @@
 
     }
 </script>
-<script src="{{asset('assets/js/app.js')}}"></script>
-<script src="{{asset('assets/js/jquery.js')}}"></script>
 <script>
     Pusher.logToConsole = true;
 

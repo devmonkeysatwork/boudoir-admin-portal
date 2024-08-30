@@ -709,7 +709,7 @@ table td {
     border: 1px solid #dee2e6;
 }
 
-.dashboard .orders table td,
+/* .dashboard .orders table td,
 .dashboard .team table td,
 .workstations table tbody th,
 .workstations table tbody td {
@@ -733,6 +733,30 @@ table td {
 }
 
 table th {
+    background-color: #BD7F7F;
+    color: #fff;
+    text-align: left;
+*/
+
+.orders table tbody th,
+.orders table tbody td {
+    padding: 20px;
+}
+
+.areas table tbody th,
+.areas table tbody td,
+.team table tbody th,
+.team table tbody td {
+    padding: 25px 20px;
+}
+
+.areas table tbody tr,
+.workstations table tbody tr,
+.team table tbody tr {
+    cursor: pointer;
+}
+
+table.tablesorter th {
     background-color: #BD7F7F;
     color: #fff;
     text-align: left;
@@ -1843,4 +1867,17 @@ input:checked+.slider:before {
     position: absolute;
     top: 0px;
     right: -10px;
+}
+
+.tablesorter-default .header, .tablesorter-default .tablesorter-header {
+    padding: 15px 20px;
+}
+
+.tablesorter-default thead .headerSortUp, .tablesorter-default thead .tablesorter-headerAsc, .tablesorter-default thead .tablesorter-headerSortUp,
+.tablesorter-default thead .headerSortDown, .tablesorter-default thead .tablesorter-headerDesc, .tablesorter-default thead .tablesorter-headerSortDown {
+    border-bottom: none;
+}
+
+.tablesorter-default td {
+    vertical-align: middle;
 }

@@ -61,3 +61,13 @@ function hide_loader(){
 
 }
 
+
+// TABLESORTER
+$(document).ready(function() {
+    $("#dashboardOrdersTable").tablesorter();
+    $("#dashboardTeamTable").tablesorter();
+    $("#dashboardWorkstationsTable").tablesorter();
+    $("#ordersTable").tablesorter();
+    $("#areasTable").tablesorter();
+    $("#teamTable").tablesorter();
+});

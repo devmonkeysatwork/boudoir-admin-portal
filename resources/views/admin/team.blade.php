@@ -3,7 +3,7 @@
 @section('content')
 <div class="team">
   <h1>Production Team</h1>
-  <table>
+  <table id="teamTable" class="tablesorter">
     <thead>
       <tr>
         <th>Team</th>
@@ -90,3 +90,12 @@
     });
   </script>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $("#teamTable").tablesorter();
+    });
+</script>
+@endpush
+
