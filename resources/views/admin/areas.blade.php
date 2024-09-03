@@ -79,7 +79,7 @@
           success: function(response) {
               // Populate the modal with the response
               $('#workstationOrders').html(response.ordersHtml); // Assuming response has ordersHtml as HTML structure
-              $('#orderCount').text('Showing 1-08 of 08'); // Update count dynamically as needed
+              $('#orderCount').text('Showing 1-' + response.orderCount + ' of ' + response.orderCount); // Update count dynamically as needed
 
               // Show the modal
               $('#workstationModal').show();

@@ -317,13 +317,11 @@
 
       <x-modal id="workstationModal" title="Team">
         <div class="modal-body">
-            <!-- Search Bar -->
             <div class="search-bar orders-search mb-3">
                 <input type="text" id="searchOrders" placeholder="Search" class="form-control" />
                 <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
             </div>
 
-            <!-- Scrollable Workstation Orders Table -->
             <div class="table-responsive">
                 <table class="table">
                     <thead>
@@ -334,12 +332,10 @@
                         </tr>
                     </thead>
                     <tbody id="workstationOrders">
-                        <!-- Orders will be dynamically loaded here -->
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination or footer for showing number of results -->
             <div class="pagination">
                 <p id="orderCount">Showing 1-08 of 08</p>
             </div>
@@ -384,13 +380,11 @@
   </div>
   <x-modal id="workstationModal" title="Workstation">
     <div class="modal-body">
-        <!-- Search Bar -->
         <div class="search-bar orders-search mb-3">
             <input type="text" id="searchOrders" placeholder="Search" class="form-control" />
             <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
         </div>
 
-        <!-- Scrollable Workstation Orders Table -->
         <div class="table-responsive">
             <table class="table">
                 <thead>
@@ -401,12 +395,10 @@
                     </tr>
                 </thead>
                 <tbody id="workstationOrders">
-                    <!-- Orders will be dynamically loaded here -->
                 </tbody>
             </table>
         </div>
 
-        <!-- Pagination or footer for showing number of results -->
         <div class="pagination">
             <p id="orderCount">Showing 1-08 of 08</p>
         </div>
@@ -808,8 +800,8 @@
                   method: 'GET',
                   success: function(response) {
                       // Populate the modal with the response
-                      $('#workstationOrders').html(response.ordersHtml); // Assuming response has ordersHtml as HTML structure
-                      $('#orderCount').text('Showing 1-08 of 08'); // Update count dynamically as needed
+                      $('#workstationOrders').html(response.ordersHtml); 
+                      $('#orderCount').text('Showing 1-' + response.orderCount + ' of ' + response.orderCount); 
 
                       // Show the modal
                       $('#workstationModal').show();
