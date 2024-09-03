@@ -248,32 +248,50 @@ button {
 /* DASHBOARD */
 .dashboard .stats {
     display: flex;
+    /* flex-wrap: wrap; */
     justify-content: space-between;
-    gap: 30px;
+    gap: 20px;
 }
 
 .dashboard .stat {
+    flex: 1 1 23%; /* Default 4 cards per row */
     background-color: #fff;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 23%;
-    position: relative;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.dashboard .stat:hover {
+    transform: translateY(-5px);
 }
 
 .dashboard .stat-top {
     display: flex;
-    justify-content: center;
-    gap: 30px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
 }
 
 .dashboard .stat-info {
     text-align: right;
 }
 
-.dashboard .stat-btm {
+.dashboard .stat-info h3 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.dashboard .stat-info p {
+    font-size: 1rem;
+    margin: 0;
+    color: #666;
+}
+
+.stat-btm {
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: flex-end;
     gap: 5px;
 }
 
@@ -289,9 +307,9 @@ button {
     color: #dc3545;
 }
 
-.dashboard .stat p {
+/* .dashboard .stat p {
     margin: 0 0 20px 0;
-}
+} */
 
 .dashboard .stat-top img {
     width: 60px;
@@ -1870,7 +1888,7 @@ input:checked+.slider:before {
 }
 
 .tablesorter-default .header, .tablesorter-default .tablesorter-header {
-    padding: 15px 20px;
+    padding: 20px;
 }
 
 .tablesorter-default thead .headerSortUp, .tablesorter-default thead .tablesorter-headerAsc, .tablesorter-default thead .tablesorter-headerSortUp,

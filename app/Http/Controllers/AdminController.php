@@ -21,12 +21,14 @@ class AdminController extends Controller
     public function dashboard()
     {
         // Status IDs based on your categorization
+        $readyForPrintStatusId = 18;
         $inProductionStatusIds = [1, 2, 3, 4, 5, 12, 13, 14, 15, 16];
         $onHoldStatusIds = [7, 9, 10];
         $readyToShipStatusId = 8;
         $qualityControlStatusId = 6;
 
         // Dynamic counts for each category
+        $readyForPrintOrdersCount = Orders::where('status_id', $readyForPrintStatusId)->count();
         $inProductionOrdersCount = Orders::whereIn('status_id', $inProductionStatusIds)->count();
         $onHoldOrdersCount = Orders::whereIn('status_id', $onHoldStatusIds)->count();
         $readyToShipOrdersCount = Orders::where('status_id', $readyToShipStatusId)->count();
@@ -51,15 +53,21 @@ class AdminController extends Controller
         }
 
         $workstations = Workstations::with(['orders'])->get();
+        $edit_statuses = OrderStatus::all();
+        $sub_statuses = OrderStatus::with('sub_status')->get();
 
         return view('admin.dashboard', compact(
+            'readyForPrintOrdersCount',
             'inProductionOrdersCount',
             'onHoldOrdersCount',
             'readyToShipOrdersCount',
             'qualityControlOrdersCount',
             'orders',
             'teamMembers', 
-            'workstations'
+            'workstations',
+            'edit_statuses',
+            'sub_statuses'
+
         ));
     }
 
