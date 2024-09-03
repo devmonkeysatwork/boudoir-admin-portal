@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Picqer\Barcode\BarcodeGeneratorJPG;
-use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class AdminController extends Controller
 {
@@ -110,6 +109,11 @@ class AdminController extends Controller
 
 
             DB::commit();
+
+            if ($order->status_id == 10) {
+                $this->sendIssueWithPrintEmail($order);
+            }
+
             $response = [
                 'status' => 200,
                 'message' => 'Status updated successfully.',
@@ -124,6 +128,40 @@ class AdminController extends Controller
 
         return response()->json($response);
     }
+
+    public function sendIssueWithPrintEmail($order)
+    {
+        \Log::info('Sending email for order status "Issue with print"', ['order_id' => $order->id]);
+
+        $template = \DB::table('email_templates')->where('status_id', 10)->first();
+
+        if ($template) {
+            $content = str_replace(
+                ['{{ customer_name }}', '{{ order_number }}', '{{ support_email }}'],
+                [$order->customer_name, $order->order_id, 'support@boudoir.com'],
+                $template->content
+            );
+
+            $data = [
+                'subject' => $template->subject,
+                'content' => $content,
+                'production_order' => [],
+                'orders_on_hold' => [],
+                'order_with_issues' => [$order],
+            ];
+
+            Mail::send('admin.email.summary_email', $data, function ($message) use ($order, $template) {
+                $message->to('test@example.com'); 
+                $message->subject($template->subject);
+            });
+
+            \Log::info('Email sent successfully', ['order_id' => $order->id]);
+        } else {
+            \Log::error('No email template found for status "Issue with print".');
+        }
+    }
+
+
 
     public function areas()
     {

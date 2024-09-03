@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Order Summary</title>
+    <title>{{ $subject }}</title>
 </head>
 
 <body>
@@ -24,7 +24,7 @@
     </div>
 
 
-    @if(isset($production_order) && count($production_order))
+    <!-- @if(isset($production_order) && count($production_order))
         <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;">
             <thead>
             <tr>
@@ -107,12 +107,7 @@
             </tbody>
         </table>
         <br><br><br>
-    @endif
-
-
-
-
-
+    @endif -->
 </div>
 <div style="padding: 26px 40px 0;">
     <div
