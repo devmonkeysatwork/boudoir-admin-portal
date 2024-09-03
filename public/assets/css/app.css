@@ -763,6 +763,8 @@ table th {
 
 .areas table tbody th,
 .areas table tbody td,
+.workstations table tbody th,
+.workstations table tbody td,
 .team table tbody th,
 .team table tbody td {
     padding: 25px 20px;
