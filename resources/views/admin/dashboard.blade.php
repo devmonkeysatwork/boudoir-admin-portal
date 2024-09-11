@@ -60,13 +60,13 @@
       <div class="stat-top">
         <img src="{{ asset('icons/quality-control.png') }}" alt="Quality Control">
         <div class="stat-info">
-          <h3>{{ $qualityControlOrdersCount }}</h3> 
+          <h3>{{ $qualityControlOrdersCount }}</h3>
           <p>in Quality Control</p>
         </div>
       </div>
       <div class="stat-btm">
         <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-        <p><span class="stat-up">0%</span> Up from yesterday</p> 
+        <p><span class="stat-up">0%</span> Up from yesterday</p>
       </div>
     </div>
   </div>
@@ -98,7 +98,7 @@
                   <th>Date Started</th>
                   <th>Time in Production</th>
                   <th>Late</th>
-                  <th></th> 
+                  <th></th>
               </tr>
             </thead>
 
@@ -123,7 +123,13 @@
                                   @endif
                               </span>
                           </td>
-                          <td>{{ $order->station?->worker?->name }}</td>
+                          <td>
+                              @if(isset($order->last_log->user))
+                                  {{$order->last_log?->user?->name ?? null}}
+                              @else
+                                  {{$order->station?->worker?->name ?? null}}
+                              @endif
+                          </td>
                           <td>{{ $order->date_started }}</td>
                           <td>
                               @php
@@ -222,7 +228,7 @@
                   <tr>
                       <td>{{ $workstation->workstation_name }}</td>
                       <td>{{ $workstation->num_orders }}</td>
-                      <td>{{ $workstation->time_in_production }}</td> 
+                      <td>{{ $workstation->time_in_production }}</td>
                   </tr>
               @endforeach
           </tbody>
@@ -240,7 +246,7 @@
                   type: 'GET',
                   data: { query: query },
                   success: function(response) {
-                      $('#ordersBody').empty(); 
+                      $('#ordersBody').empty();
 
                       if (response.orders.length > 0) {
                           $.each(response.orders, function(index, order) {

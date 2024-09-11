@@ -69,7 +69,7 @@ class OrdersController extends Controller
             $production_days = 0;
             if($request->has('order_id')){
                 $order_data = $request->all();
-                Log::info($request->all());
+//                Log::info($request->all());
                 $existingOrder = Orders::where('order_id', $order_data['order_number'])->first();
                 if ($existingOrder) {
                     // Order already exists, handle accordingly (e.g., return a response or log a message)
@@ -96,6 +96,7 @@ class OrdersController extends Controller
                 }
 
                 $order->order_id = $order_number;
+                $order->order_unique_id = $order_data['order_unique_id']??null;
                 $order->customer_name = $order_data['customer_name']??null;
                 $order->customer_email = $order_data['customer_email']??null;
                 $order->date_started = Carbon::now()->format('Y-m-d h:i:s')??null;
@@ -320,7 +321,9 @@ class OrdersController extends Controller
             ->whereId($id)->first();
 
         $status_log = OrderLogs::with(['user','status','sub_status'])
-            ->where('order_id',$order->order_id)->latest('time_started')
+            ->where('order_id',$order->order_id)
+            ->where('status_id','!=',null)
+            ->latest('time_started')
             ->first();
 
 
