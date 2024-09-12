@@ -52,8 +52,8 @@
       <input type="text" id="searchInput" placeholder="Search">
       <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
     </div>
-  </div>  
-        
+  </div>
+
 
   <table id="ordersTable" class="tablesorter">
     <thead>
@@ -89,7 +89,13 @@
                     @endif
                 </span>
             </td>
-            <td>{{$order->station?->worker?->name ?? null}}</td>
+            <td>
+                @if(isset($order->last_log->user))
+                    {{$order->last_log?->user?->name ?? null}}
+                @else
+                    {{$order->station?->worker?->name ?? null}}
+                @endif
+            </td>
             <td>{{$order->date_started}}</td>
             <td>
                 @php
@@ -437,7 +443,8 @@
                         // Populate the Activity Log
                         $('#order_logs').empty();
                         $.each(logs, function(index, value) {
-                            let html = `<li class="log-entry">
+                            if(value.status){
+                                let html = `<li class="log-entry">
                                 <span class="log-desc">${value.user.name} updated the status to <span class="fw-bold">${value.status.status_name}</span>`;
                                 if(value.sub_status){
                                     html += ` because of ${value.sub_status.name}`;
@@ -445,10 +452,11 @@
                                 if(value.notes){
                                     html += `<br><b>Notes: </b><i>${value.notes}</i>`;
                                 }
-                            html += `</span>
+                                html += `</span>
                                 <span class="log-date">${value.time_started}</span>
                             </li>`;
-                            $('#order_logs').append(html);
+                                $('#order_logs').append(html);
+                            }
                         });
 
                         // Populate the Sub-orders Table
@@ -470,11 +478,26 @@
                         } else {
                             $('#child_order').hide();
                         }
-
                         // Directly append the HTML string to the comments container
-                        $('#comments_container').html(commentsHtml);
-
-                        // Set the status in the modal
+                        $('#comments_container').empty().html(commentsHtml);
+                        // $.each(comments, function(index, value) {
+                        //     var originalDate = value.created_at.trim();
+                        //     var formattedDate = formatDate(originalDate);
+                        //     var initial = value.user.name.charAt(0);
+                        //     let html = `<div class="comment">
+                        //                     <div class="comment-body">
+                        //                         <div class="d-flex justify-content-between align-items-center flex-row">
+                        //                             <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
+                        //                             <span class="">${formattedDate}</span>
+                        //                         </div>
+                        //                         <p class="comment-text">${value.comment}</p>
+                        //                     </div>
+                        //                     <div class="comment-footer">
+                        //                         <button class="btn">Reply</button>
+                        //                     </div>
+                        //                 </div>`;
+                        //     $('#comments_container').append(html);
+                        // });// Set the status in the modal
                         if(status){
                             if(status.sub_status){
                                 $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
@@ -607,12 +630,12 @@
 
         $(document).ready(function() {
             function performSearch(query) {
-                let productFilter = $('#product-filter').val(); 
+                let productFilter = $('#product-filter').val();
 
                 $.ajax({
                     url: '{{ route('search.orders') }}',
                     type: 'GET',
-                    data: { 
+                    data: {
                         query: query,
                         product: productFilter
                     },
