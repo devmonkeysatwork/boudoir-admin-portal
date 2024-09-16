@@ -5,49 +5,49 @@
   <h1>Order List</h1>
 
   <div class="filters">
-    <div class="filter-bar">
-        <div class="filter-item">
-        <button class="filter-btn">
-            <img src="{{ asset('icons/filter.png') }}" alt="Filter Icon">
-            <span>Filter By</span>
-        </button>
-        </div>
-        <div class="filter-item">
-        <select class="sort-select" id="filter-date">
-            <option value="" disabled selected>Date</option>
-            <option value="oldest">Oldest</option>
-            <option value="newest">Newest</option>
-        </select>
-        </div>
-        <div class="filter-item">
-        <select class="sort-select" id="filter-product">
-        <option value="" disabled selected>Product</option>
-            @foreach($products as $product)
-                <option value="{{ $product->product_name }}">{{ $product->product_name }}</option>
-            @endforeach
-        </select>
-        </div>
-        <div class="filter-item">
-        <select class="sort-select" id="filter-status">
-            <option value="" disabled selected>Order Status</option>
-            @foreach($statuses??[] as $status)
-                <option value="{{$status->id}}">{{$status->status_name}}</option>
-            @endforeach
-        </select>
-        </div>
-        <div class="filter-item">
-        <select class="sort-select" id="filter-priority">
-            <option value="" disabled selected>Priority</option>
-            <option value="normal">Normal</option>
-            <option value="rush">Rush</option>
-        </select>
-        </div>
-        <div class="filter-item">
-        <button class="reset-btn">
-            <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
-        </button>
-        </div>
-    </div>
+      <form class="filter-bar" action="">
+          <div class="filter-item">
+              <button class="filter-btn">
+                  <img src="{{ asset('icons/filter.png') }}" alt="Filter Icon">
+                  <span>Filter By</span>
+              </button>
+          </div>
+          <div class="filter-item">
+              <select class="sort-select" id="filter-date" name="filter_date">
+                  <option value="" disabled selected>Date</option>
+                  <option value="oldest" {{$filter_date && $filter_date == 'oldest'?'Selected':''}}>Oldest</option>
+                  <option value="newest" {{$filter_date && $filter_date == 'newest'?'Selected':''}}>Newest</option>
+              </select>
+          </div>
+          <div class="filter-item">
+              <select class="sort-select" id="filter-product" name="filter_product">
+                  <option value="" disabled selected>Product</option>
+                  @foreach($products as $product)
+                      <option value="{{ $product->product_name }}" {{$filter_product && $filter_product == $product->product_name?'Selected':''}}>{{ $product->product_name }}</option>
+                  @endforeach
+              </select>
+          </div>
+          <div class="filter-item">
+              <select class="sort-select" id="filter-status" name="filter_status">
+                  <option value="" disabled selected>Order Status</option>
+                  @foreach($statuses??[] as $status)
+                      <option value="{{$status->id}}" {{$filter_status && $filter_status == $status->id?'Selected':''}}>{{$status->status_name}}</option>
+                  @endforeach
+              </select>
+          </div>
+          <div class="filter-item">
+              <select class="sort-select" id="filter-priority" name="filter_priority">
+                  <option value="" disabled selected>Priority</option>
+                  <option value="2" {{$filter_priority && $filter_priority == '2'?'Selected':''}}>Normal</option>
+                  <option value="1" {{$filter_priority && $filter_priority == '1'?'Selected':''}}>Rush</option>
+              </select>
+          </div>
+          <div class="filter-item">
+              <button class="reset-btn" type="button">
+                  <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
+              </button>
+          </div>
+      </form>
     <div class="orders-search">
       <input type="text" id="searchInput" placeholder="Search">
       <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
@@ -289,7 +289,7 @@
     </div>
   </x-modal>
 
-    <x-modal id="editStatusModal" title="Update Status">
+  <x-modal id="editStatusModal" title="Update Status">
         <form id="editStatusForm" action="javascript:void(0);" method="post" class="d-block">
             <div class="row">
                 <div class="col-6">
@@ -361,6 +361,21 @@
             });
 
             $('#edit_status').trigger('change');
+
+
+            $('#filter-date,#filter-product,#filter-status,#filter-priority').on('change',function () {
+                $('.filter-bar').submit();
+            })
+
+            $('.reset-btn').on('click', function(){
+                window.location.href = '{{route('admin.orders')}}';
+            });
+
+            $('#searchInput').on('keyup', function() {
+                var query = $(this).val();
+
+            });
+
 
         });
 

@@ -30,10 +30,33 @@ class OrdersController extends Controller
      */
     public function index(Request $request)
     {
+        $filter_product = $request->input('filter_product');
+        $filter_date = $request->input('filter_date');
+        $filter_status = $request->input('filter_status');
+        $filter_priority = $request->input('filter_priority');
+
+
+
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
             ->orderBy('is_rush','DESC')
             ->orderBy('deadline','DESC')
-            ->orderBy('date_started','DESC')
+            ->when($filter_product,function ($q) use ($filter_product){
+                $q->whereHas('items', function ($query) use ($filter_product) {
+                    $query->where('product_name', $filter_product);
+                });
+            })
+            ->when($filter_priority,function ($q) use ($filter_priority){
+                    $q->where('is_rush', $filter_priority);
+            })
+            ->when($filter_date, function ($q) use ($filter_date) {
+                if ($filter_date == 'oldest') {
+                    $q->orderBy('date_started', 'ASC');
+                } elseif ($filter_date == 'newest') {
+                    $q->orderBy('date_started', 'DESC');
+                }
+            }, function ($q) {
+                $q->orderBy('date_started', 'DESC');
+            })
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 //        dd($orders);
@@ -48,7 +71,8 @@ class OrdersController extends Controller
             $order_id = Orders::where('order_id',$request->order_id)->pluck('id')->first();
         }
 //        dd($data);
-        return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id','sub_statuses','products'));
+        return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id',
+            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority'));
     }
 
     /**

@@ -418,7 +418,7 @@
 @section('footer_scripts')
     <script>
         $(document).ready(function() {
-        function performSearch(query) {
+            function performSearch(query) {
               $.ajax({
                   url: '{{ route('search.orders') }}',
                   type: 'GET',
