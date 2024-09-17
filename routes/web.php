@@ -29,6 +29,10 @@ Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
+    Route::post('/add_worker', [\App\Http\Controllers\Auth\RegisteredUserController::class, 'createUser'])->name('admin.add_worker');
+
+
+
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/notification', [AdminController::class, 'notification'])->name('admin.notification');
 
@@ -41,7 +45,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
     Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
-    
+
     Route::get('/team', [AdminController::class, 'team'])->name('admin.team');
     Route::get('/team/{id}', [AdminController::class, 'getTeamDetails']);
 

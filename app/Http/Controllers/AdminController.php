@@ -8,6 +8,7 @@ use App\Models\Notifications;
 use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
+use App\Models\Roles;
 use App\Models\User;
 use App\Models\Workstations;
 use Illuminate\Http\Request;
@@ -208,6 +209,7 @@ class AdminController extends Controller
     public function team()
     {
         $teamMembers = User::with(['workstations'])->get();
+        $roles = Roles::all();
 
         foreach ($teamMembers as $teamMember) {
             $totalOrders = 0;
@@ -220,7 +222,7 @@ class AdminController extends Controller
             $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
         }
 
-        return view('admin.team', compact('teamMembers'));
+        return view('admin.team', compact(['teamMembers','roles']));
     }
 
     public function getTeamDetails($id)

@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -47,4 +48,44 @@ class RegisteredUserController extends Controller
 
         return redirect(route('dashboard', absolute: false));
     }
+
+    public function createUser(Request $request)
+    {
+        // Validate request data
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'role_id' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422); // 422 Unprocessable Entity
+        }
+
+        // Create user
+        try {
+            $user = User::create([
+                'name' => $request->input('name'),
+                'email' => str_replace(' ','_',$request->input('name')).'@theboudoiralbum.com',
+                'password' => Hash::make(str()->random()),
+                'role_id' => $request->input('role_id'), // Assign role
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully.',
+                'user' => $user
+            ], 201); // 201 Created
+        } catch (\Exception $e) {
+            // Handle unexpected errors
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while creating the user.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
