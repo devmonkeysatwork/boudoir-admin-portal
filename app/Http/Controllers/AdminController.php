@@ -34,9 +34,12 @@ class AdminController extends Controller
         $qualityControlOrdersCount = Orders::where('status_id', $qualityControlStatusId)->count();
 
         // Fetch orders with pagination
-        $orders = Orders::with(['items', 'status', 'last_log', 'last_log.status', 'last_log.sub_status', 'addresses', 'station', 'station.worker'])
-                        ->where('orderType', Orders::parentType)
-                        ->paginate(10);
+        $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
+            ->orderBy('is_rush','DESC')
+            ->orderBy('deadline','DESC')
+            ->orderBy('date_started', 'DESC')
+            ->where('orderType','=',Orders::parentType);
+        $orders = $query->paginate(10);
 
         $teamMembers = User::with(['workstations'])->get();
 
@@ -62,7 +65,7 @@ class AdminController extends Controller
             'readyToShipOrdersCount',
             'qualityControlOrdersCount',
             'orders',
-            'teamMembers', 
+            'teamMembers',
             'workstations',
             'edit_statuses',
             'sub_statuses'
@@ -151,7 +154,7 @@ class AdminController extends Controller
             ];
 
             Mail::send('admin.email.summary_email', $data, function ($message) use ($order, $template) {
-                $message->to('test@example.com'); 
+                $message->to('test@example.com');
                 $message->subject($template->subject);
             });
 
@@ -300,7 +303,7 @@ class AdminController extends Controller
     public function updateStatus(Request $request){
         $request->validate([
             'edit-status-name' => 'required|string|max:255',
-            'edit-status-color' => 'required|string|max:10', 
+            'edit-status-color' => 'required|string|max:10',
         ]);
         $status = OrderStatus::findOrFail($request->id);
         $status->status_name = $request->input('edit-status-name');

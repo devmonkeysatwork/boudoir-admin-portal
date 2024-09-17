@@ -536,25 +536,7 @@
                 success: function (response) {
                     if(response.status == 200){
                         show_toast(response.message,'success');
-                        let comment = response.comment;
-                        var originalDate = comment.created_at.trim();
-                        var formattedDate = formatDate(originalDate);
-                        var initial = comment.user.name.charAt(0);
-                        let html = `<div class="comment">
-                                            <div class="comment-body">
-                                                <span class="comment-user" data-initial="${initial}">${comment.user.name}</span>
-                                                <span class="comment-date">${formattedDate}</span>
-                                                <p class="comment-text">${comment.comment}</p>
-                                            </div>
-                                            <div class="comment-footer">
-                                                <button class="btn reply-btn" data-comment="${comment.id}">Reply</button>
-                                            </div>
-                                            <div class="reply-form" style="display:none;">
-                                                <input placeholder="Write a reply..."/>
-                                                <button class="btn submit-reply">Submit</button>
-                                            </div>
-                                        </div>`;
-                        $('#comments_container').append(html);
+                        $('#comments_container').append(response.comment_view);
                         $('#comment_input').val(''); // Clear the input
                     }else{
                         show_toast(response.message,'error');
@@ -590,23 +572,8 @@
                     cache: false,
                     data: data,
                     success: function(reply) {
-                        if(reply.comment){
-                            var originalDate = reply.comment.created_at.trim();
-                            var formattedDate = formatDate(originalDate);
-                            var initial = reply.comment.user.name.charAt(0);
-                            var $repliesContainer = $comment.find('.replies');
-                            var replyHtml = `<div class="reply">
-                                                    <div class="reply-body">
-                                                        <div class="d-flex justify-content-between align-items-center flex-row mb-2">
-                                                            <span class="comment-user" data-initial="${initial}">${reply.comment.user.name}</span>
-                                                            <span class="">${formattedDate}</span>
-                                                        </div>
-                                                        <p class="reply-text">${reply.comment.comment}</p>
-                                                    </div>
-                                                </div>`;
-                            $repliesContainer.append(replyHtml);
-                            $comment.find('textarea').val('');
-                            $comment.find('.reply-form').hide();
+                        if(reply.status == 200){
+                            $comment.replaceWith(reply.comment_view);
                         }
                     },
                     error: function(xhr, status, error) {

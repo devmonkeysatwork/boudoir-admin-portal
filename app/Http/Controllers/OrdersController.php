@@ -286,23 +286,23 @@ class OrdersController extends Controller
                 $orderComment->parent_id = $request->reply_to;
                 $orderComment->save();
 
-                $comment = OrderComments::whereId($orderComment->id)->with('user')->first();
+                $comment = OrderComments::whereId($orderComment->parent_id)->with(['user','replies'])->get();
                 $order_id = Orders::find($request->order_id)->pluck('order_id')->first();
 
                 $notification = new Notifications();
                 $notification->type = Notifications::typeComment;
-                $notification->comment_id = $comment->id;
+                $notification->comment_id = $comment[0]->id;
                 $notification->save();
 
-                $message = ['message'=>'A reply to a comment was added on order id '.$order_id,'comment'=>$comment,'order_id'=>$order_id];
+                $message = ['message'=>'A reply to a comment was added on order id '.$order_id,'comment'=>$comment[0],'order_id'=>$order_id];
                 event(new NewMessage($message));
 
-
+                $comments_vew = view('admin.partials.comments',['comments'=>$comment])->render();
                 DB::commit();
                 $response = [
                     'status' => 200,
                     'message' => 'Comment added successfully.',
-                    'comment' => $comment,
+                    'comment_view' => $comments_vew,
                 ];
             }else{
                 DB::beginTransaction();
@@ -312,23 +312,24 @@ class OrdersController extends Controller
                 $orderComment->comment = $request->comment;
                 $orderComment->save();
 
-                $comment = OrderComments::whereId($orderComment->id)->with('user')->first();
+                $comment = OrderComments::whereId($orderComment->id)->with('user')->get();
                 $order_id = Orders::find($request->order_id)->pluck('order_id')->first();
 
                 $notification = new Notifications();
                 $notification->type = Notifications::typeComment;
-                $notification->comment_id = $comment->id;
+                $notification->comment_id = $comment[0]->id;
                 $notification->save();
 
-                $message = ['message'=>'A comment was added on order id '.$order_id,'comment'=>$comment,'order_id'=>$order_id];
+                $message = ['message'=>'A comment was added on order id '.$order_id,'comment'=>$comment[0],'order_id'=>$order_id];
                 event(new NewMessage($message));
 
+                $comments_vew = view('admin.partials.comments',['comments'=>$comment])->render();
 
                 DB::commit();
                 $response = [
                     'status' => 200,
                     'message' => 'Comment added successfully.',
-                    'comment' => $comment,
+                    'comment_view' => $comments_vew,
                 ];
             }
 
@@ -372,17 +373,29 @@ class OrdersController extends Controller
         $term = $request->input('query');
 
         // Perform search based on your logic
-        $orders = Orders::where('order_id', 'like', '%' . $term . '%')
-            ->with(['status','station','station.worker'])
+        $term = '%'. $term .'%'; // assuming $term is already sanitized and defined
+        $query = Orders::with([
+            'status',
+            'station',
+            'station.worker'
+        ])
+            ->where('order_id', 'like', $term)
             ->orWhereHas('status', function ($query) use ($term) {
-                $query->where('status_name', 'like', '%' . $term . '%');
+                $query->where('status_name', 'like', $term);
             })
             ->orWhereHas('station.worker', function ($query) use ($term) {
-                $query->where('name', 'like', '%' . $term . '%');
+                $query->where('name', 'like', $term);
             })
-            ->get();
+            ->orderBy('is_rush', 'DESC')
+            ->orderBy('deadline', 'DESC')
+            ->orderBy('date_started', 'DESC')
+            ->where('orderType', '=', Orders::parentType);
+        $orders = $query->paginate(10);
+
+
+        $order_vew = view('admin.partials.order_table',['orders'=>$orders])->render();
         // Return JSON response
-        return response()->json(['orders' => $orders]);
+        return response()->json(['status'=>200,'orders_view' => $order_vew]);
     }
 
     public function addOrUpdateOrderStatusRow(Request $request)
