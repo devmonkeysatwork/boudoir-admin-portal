@@ -38,8 +38,17 @@ class OrdersController extends Controller
 
 
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
-            ->orderBy('is_rush','DESC')
-            ->orderBy('deadline','DESC')
+            ->when($filter_date, function ($q) use ($filter_date) {
+                if ($filter_date == 'oldest') {
+                    $q->orderBy('date_started', 'ASC');
+                } elseif ($filter_date == 'newest') {
+                    $q->orderBy('date_started', 'DESC');
+                }
+            }, function ($q) {
+                $q->orderBy('is_rush','DESC')
+                  ->orderBy('deadline','DESC')
+                ->orderBy('date_started', 'DESC');
+            })
             ->when($filter_product,function ($q) use ($filter_product){
                 $q->whereHas('items', function ($query) use ($filter_product) {
                     $query->where('product_name', $filter_product);
@@ -50,15 +59,6 @@ class OrdersController extends Controller
             })
             ->when($filter_status,function ($q) use ($filter_status){
                     $q->where('status_id', $filter_status);
-            })
-            ->when($filter_date, function ($q) use ($filter_date) {
-                if ($filter_date == 'oldest') {
-                    $q->orderBy('date_started', 'ASC');
-                } elseif ($filter_date == 'newest') {
-                    $q->orderBy('date_started', 'DESC');
-                }
-            }, function ($q) {
-                $q->orderBy('date_started', 'DESC');
             })
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
