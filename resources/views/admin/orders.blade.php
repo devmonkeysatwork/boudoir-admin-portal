@@ -472,24 +472,6 @@
                         }
                         // Directly append the HTML string to the comments container
                         $('#comments_container').empty().html(commentsHtml);
-                        // $.each(comments, function(index, value) {
-                        //     var originalDate = value.created_at.trim();
-                        //     var formattedDate = formatDate(originalDate);
-                        //     var initial = value.user.name.charAt(0);
-                        //     let html = `<div class="comment">
-                        //                     <div class="comment-body">
-                        //                         <div class="d-flex justify-content-between align-items-center flex-row">
-                        //                             <span class="comment-user" data-initial="${initial}">${value.user.name}</span>
-                        //                             <span class="">${formattedDate}</span>
-                        //                         </div>
-                        //                         <p class="comment-text">${value.comment}</p>
-                        //                     </div>
-                        //                     <div class="comment-footer">
-                        //                         <button class="btn">Reply</button>
-                        //                     </div>
-                        //                 </div>`;
-                        //     $('#comments_container').append(html);
-                        // });// Set the status in the modal
                         if(status){
                             if(status.sub_status){
                                 $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);

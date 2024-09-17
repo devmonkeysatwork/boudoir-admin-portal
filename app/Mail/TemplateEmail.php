@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
 use Illuminate\Queue\SerializesModels;
 
 class TemplateEmail extends Mailable
@@ -32,11 +33,18 @@ class TemplateEmail extends Mailable
      */
     public function build()
     {
-        return $this->view('admin.email.summary_email')
+        return $this->view('admin.email.status_update')
                     ->subject($this->subject)
                     ->with([
                         'subject' => $this->subject,
                         'content' => $this->content,
                     ]);
+    }
+
+    public function content(): Content
+    {
+        return new Content(
+            view: 'admin.email.status_update',
+        );
     }
 }

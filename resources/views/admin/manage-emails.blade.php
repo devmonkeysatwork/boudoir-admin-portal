@@ -95,7 +95,7 @@
       </x-modal>
 
       <x-modal id="editEmailModal" title="Edit Template">
-        <form id="editTemplateForm" action="{{ url('/email/update-template') }}/{{ $template->id ?? '' }}" method="POST">
+        <form id="editTemplateForm" action="#" method="POST">
         <input type="hidden" name="_token" value="{{ csrf_token() }}">
         <input type="hidden" name="id" id="template-id">
           <div class="second-top">
@@ -242,7 +242,7 @@
             // Handle form submission for editing
             $('#editTemplateForm').on('submit', function(e) {
                 e.preventDefault();
-
+                var templateId = $('#template-id').val();
                 let data = new FormData($(this)[0]);
                 data.append('_token', '{{@csrf_token()}}');
                 data.append('content', CKEDITOR.instances['edit-email-content'].getData());
@@ -252,7 +252,7 @@
                     processData: false,
                     contentType: false,
                     cache: false,
-                    url: $(this).attr('action'),
+                    url: '/email/update-template/' + templateId,
                     data: data,
                     beforeSend() {
                         show_loader();

@@ -38,9 +38,9 @@ class EmailTemplatesController extends Controller
             $email->save();
             DB::commit();
 
-            // Send test email
-            $recipient = 'your_test_email@example.com'; // Replace with your test email address
-            Mail::to($recipient)->send(new TemplateEmail($email->subject, $email->content));
+//            // Send test email
+//            $recipient = 'your_test_email@example.com'; // Replace with your test email address
+//            Mail::to($recipient)->send(new TemplateEmail($email->subject, $email->content));
 
             // Prepare response data
             $response = [
@@ -143,16 +143,16 @@ class EmailTemplatesController extends Controller
     {
         // Find the template by ID
         $template = EmailTemplates::findOrFail($id);
-    
+
         // Update the template fields
         $template->name = $request->input('template_name');
         $template->subject = $request->input('subject');
         $template->status_id = $request->input('status_id');
         $template->content = $request->input('content');
-    
+
         // Save the template
         $template->save();
-    
+
         return response()->json([
             'status' => 200,
             'message' => 'Template updated successfully',

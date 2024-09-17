@@ -258,9 +258,10 @@
         }
         else if(data.message.log){
             let log = data.message.log;
+            console.log(log);
             let date = formatDate(log.created_at);
             let html = `<a href="/orders?order_id=${log.order_id}&tab=open" class="d-flex flex-column gap-1 notification">
-                    <p class="m-0">${log.updated_by.name} changed the status to ${log.status.status_name} for order id ${log.order_id}</p>
+                    <p class="m-0">${log.user.name} changed the status to ${log.status.status_name} for order id ${log.order_id}</p>
                     <p class="p12 m-0">on ${date}</p>
                 </a>`;
             $('#notifications').append(`${html}`);

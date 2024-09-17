@@ -453,6 +453,12 @@ class OrdersController extends Controller
                                     $order->status_id = $status_id;
                                     $order->save();
                                 }
+                                $log = OrderLogs::with(['user','status'])
+                                    ->where('id', $orderStatus->id)
+                                    ->first();
+
+                                $message = ['message'=>'A status was updated for order id '.$orderStatus->order_id,'log'=>$log];
+                                event(new NewMessage($message));
 
                                 $response = [
                                     'status' => 200,
