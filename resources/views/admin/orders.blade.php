@@ -130,7 +130,7 @@
                   @endif
               </td>
           </tr>
-            @if(isset($order->children) && count($order->children))
+            @if(isset($order) && isset($order->children) && count($order->children))
                 <tr style="display: none;border: 1px solid #191919;" id="children_{{$order->id}}">
                     <td colspan="8" style="border: 1px solid #191919;">
                         <table>
@@ -147,7 +147,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($order->children as $child_order)
+                            @foreach($order?->children as $child_order)
                                 <tr>
                                     <td>{{$child_order->order_id}}</td>
                                     <td>
@@ -231,19 +231,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($order->children as $child_order)
-                        <tr>
-                            <td>{{ $child_order->order_id }}</td>
-                            <td>{{ $child_order->status->status_name }}</td>
-                            <td>
-                                @if($child_order->status->status_name === 'Completed')
-                                    <img src="{{ asset('icons/green-checkmark.png') }}" alt="Completed" class="status-icon">
-                                @else
-                                    <img src="{{ asset('icons/grey-checkmark.png') }}" alt="Incomplete" class="status-icon">
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
+
                 </tbody>
                 </table>
             </div>
@@ -253,18 +241,7 @@
       <div class="comments">
         <h3>Comments</h3>
         <div id="comments_container">
-            @foreach($order->comments as $comment)
-                <div class="comment">
-                    <div class="comment-body">
-                        <span class="comment-user" data-initial="{{ $comment->user->name[0] }}">{{ $comment->user->name }}</span>
-                        <span class="comment-date">{{ \Carbon\Carbon::parse($comment->created_at)->format('M d \a\t g:i a') }}</span>
-                        <p class="comment-text">{{ $comment->comment }}</p>
-                    </div>
-                    <div class="comment-footer">
-                        <button class="btn">Reply</button>
-                    </div>
-                </div>
-            @endforeach
+
         </div>
       </div>
 

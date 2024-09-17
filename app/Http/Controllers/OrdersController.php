@@ -48,6 +48,9 @@ class OrdersController extends Controller
             ->when($filter_priority,function ($q) use ($filter_priority){
                     $q->where('is_rush', $filter_priority);
             })
+            ->when($filter_status,function ($q) use ($filter_status){
+                    $q->where('status_id', $filter_status);
+            })
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
                     $q->orderBy('date_started', 'ASC');
@@ -201,9 +204,14 @@ class OrdersController extends Controller
                 $address2->order_id = $order->id;
                 $address2->save();
 
-                $startDate = Carbon::now();
-                $deadline = $this->addBusinessDays($startDate, $production_days);
-                $order->deadline = $deadline->format('Y-m-d');
+                if($order->is_rush){
+                    $order->deadline = $order_data['rush_delivery_date'];
+                }else{
+                    $startDate = Carbon::now();
+                    $deadline = $this->addBusinessDays($startDate, $production_days);
+                    $order->deadline = $deadline->format('Y-m-d');
+                }
+
                 $order->save();
 
                 DB::commit();
