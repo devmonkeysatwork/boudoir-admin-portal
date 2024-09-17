@@ -143,9 +143,9 @@
                           </td>
                           <td>
                               @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
-                                  <img src="{{asset('icons/exclaimatio.svg')}}" alt="Late">
+                                  <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
                               @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
-                                  <span class="fw-bold text-danger">{{ round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)), 0) }} hours left</span>
+                                  <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
                               @else
                                   -
                               @endif
