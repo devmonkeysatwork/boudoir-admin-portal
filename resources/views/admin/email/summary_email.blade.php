@@ -2,29 +2,15 @@
 <html>
 
 <head>
-    <title>{{ $subject }}</title>
+    <title>{{ $title }}</title>
 </head>
 
 <body>
 <div class="mail-template" style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
-    <h1 style="text-align: center; line-height: normal; margin-bottom: 20px;">{{ $subject }}</h1>
-
-    <div style="padding: 20px; white-space: pre-line;">
-        @if(is_array($content))
-            @foreach($content as $item)
-                @if (strpos($item, $subject) === false)
-                    {!! nl2br(e($item)) !!}
-                @endif
-            @endforeach
-        @else
-            @if (strpos($content, $subject) === false)
-                {!! nl2br(e($content)) !!}
-            @endif
-        @endif
-    </div>
+    <h1 style="text-align: center; line-height: normal; margin-bottom: 20px;">{{ $title }}</h1>
 
 
-    <!-- @if(isset($production_order) && count($production_order))
+    @if(isset($production_order) && count($production_order))
         <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;">
             <thead>
             <tr>
@@ -36,7 +22,8 @@
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Order #</th>
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Status</th>
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Team Member</th>
-                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Push to production</th>
+                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Time In production</th>
+                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Remarks</th>
             </tr>
             </thead>
             <tbody>
@@ -46,6 +33,13 @@
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{$order->status?->status_name}}</td>
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{$order->station?->worker?->name}}</td>
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{\Illuminate\Support\Carbon::parse($order->date_started)->diffForHumans()}}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                        @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                            <br>Order is late
+                        @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
+                            <br><span>Order is due in {{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hrs</span>
+                        @endif
+                    </td>
                 </tr>
             @endforeach
             </tbody>
@@ -64,7 +58,8 @@
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Order #</th>
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Status</th>
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Team Member</th>
-                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Push to production</th>
+                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Time In production</th>
+                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Remarks</th>
             </tr>
             </thead>
             <tbody>
@@ -74,6 +69,13 @@
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{$order->status?->status_name}}</td>
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{$order->station?->worker?->name}}</td>
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{\Illuminate\Support\Carbon::parse($order->date_started)->diffForHumans()}}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                        @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                            <br>Order is late
+                        @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
+                            <br><span>Order is due in {{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hrs</span>
+                        @endif
+                    </td>
                 </tr>
             @endforeach
             </tbody>
@@ -92,7 +94,8 @@
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Order #</th>
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Status</th>
                 <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Team Member</th>
-                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Push to production</th>
+                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Time In production</th>
+                <th style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: left;">Remarks</th>
             </tr>
             </thead>
             <tbody>
@@ -102,12 +105,19 @@
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{$order->status?->status_name}}</td>
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{$order->station?->worker?->name}}</td>
                     <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{\Illuminate\Support\Carbon::parse($order->date_started)->diffForHumans()}}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                        @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                            <br>Order is late
+                        @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
+                            <br><span>Order is due in {{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hrs</span>
+                        @endif
+                    </td>
                 </tr>
             @endforeach
             </tbody>
         </table>
         <br><br><br>
-    @endif -->
+    @endif
 </div>
 <div style="padding: 26px 40px 0;">
     <div
