@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
 use App\Models\CostumerAddress;
+use App\Models\EmailTemplates;
 use App\Models\ItemAttributes;
 use App\Models\Notifications;
 use App\Models\OrderComments;
@@ -22,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class OrdersController extends Controller
 {
@@ -459,7 +461,7 @@ class OrdersController extends Controller
 
                                 $message = ['message'=>'A status was updated for order id '.$orderStatus->order_id,'log'=>$log];
                                 event(new NewMessage($message));
-
+                                $this->sendIssueWithPrintEmail($order,$log->status->status_name);
                                 $response = [
                                     'status' => 200,
                                     'message' => 'Status log updated successfully.',
@@ -498,4 +500,30 @@ class OrdersController extends Controller
         return response()->json($response);
     }
 
+
+    public function sendIssueWithPrintEmail($order,$status)
+    {
+        \Log::info('Sending email for order status '.$status, ['order_id' => $order->id]);
+        $template = EmailTemplates::where('status_id', $order->status_id)->where('status', 1)->first();
+        if ($template) {
+            $content = str_replace(
+                ['{{ customer_name }}', '{{ order_number }}', '{{ support_email }}'],
+                [$order->customer_name, $order->order_id, 'support@boudoir.com'],
+                $template->content
+            );
+
+            $mailData = [
+                'subject' => $template->subject,
+                'content' => $content,
+            ];
+            Mail::send('admin.email.status_update', $mailData, function ($message) {
+                $message->to('testingBoudoir@yopmail.com')
+                    ->subject('Order Status Updated');
+            });
+
+            \Log::info('Email sent successfully', ['order_id' => $order->id]);
+        } else {
+            \Log::error('No email template found for status '.$status.'.');
+        }
+    }
 }
