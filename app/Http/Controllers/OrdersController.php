@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
+use App\Mail\TemplateEmail;
 use App\Models\CostumerAddress;
 use App\Models\EmailTemplates;
 use App\Models\ItemAttributes;
@@ -511,15 +512,9 @@ class OrdersController extends Controller
                 [$order->customer_name, $order->order_id, 'support@boudoir.com'],
                 $template->content
             );
+            $address = DB::table('costumer_address')->where('order_id',$order->id)->where('type','=','billing_address')->first();
 
-            $mailData = [
-                'subject' => $template->subject,
-                'content' => $content,
-            ];
-            Mail::send('admin.email.status_update', $mailData, function ($message) {
-                $message->to('testingBoudoir@yopmail.com')
-                    ->subject('Order Status Updated');
-            });
+            Mail::to($address->email)->send(new TemplateEmail($template->subject, $content));
 
             \Log::info('Email sent successfully', ['order_id' => $order->id]);
         } else {

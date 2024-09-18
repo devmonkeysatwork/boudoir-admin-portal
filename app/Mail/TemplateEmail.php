@@ -33,12 +33,8 @@ class TemplateEmail extends Mailable
      */
     public function build()
     {
-        return $this->view('admin.email.status_update')
-                    ->subject($this->subject)
-                    ->with([
-                        'subject' => $this->subject,
-                        'content' => $this->content,
-                    ]);
+        return $this->view('admin.email.status_update',['subject' => $this->subject,'content' => $this->content])
+                    ->subject($this->subject);
     }
 
     public function content(): Content
