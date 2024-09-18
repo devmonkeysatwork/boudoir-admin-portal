@@ -2,10 +2,11 @@
 
 @section('content')
 <div class="team">
-  <h1>Production Team</h1>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
-        Add User
-    </button>
+  <h1 class="d-flex justify-content-between">Production Team
+      <button type="button" class="btn btn-primary create-btn" data-bs-toggle="modal" data-bs-target="#createUserModal">
+          Add User
+      </button>
+  </h1>
   <table id="teamTable" class="tablesorter">
     <thead>
       <tr>
