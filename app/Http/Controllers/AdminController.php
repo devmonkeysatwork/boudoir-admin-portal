@@ -138,7 +138,7 @@ class AdminController extends Controller
         $template = EmailTemplates::where('status_id', $order->status_id)->first();
         if ($template) {
             $content = str_replace(
-                ['[username]', '[order_id]', '{{ support_email }}'],
+                ['{{ customer_name }}', '{{ order_number }}', '{{ support_email }}'],
                 [$order->customer_name, $order->order_id, 'support@boudoir.com'],
                 $template->content
             );
