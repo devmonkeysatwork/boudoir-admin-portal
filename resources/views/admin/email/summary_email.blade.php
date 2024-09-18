@@ -14,7 +14,7 @@
         <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;">
             <thead>
             <tr>
-                <td colspan="4" style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: center; font-weight: bold;">
+                <td colspan="5" style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: center; font-weight: bold;">
                     Orders in production: {{ count($production_order) }}
                 </td>
             </tr>
@@ -50,7 +50,7 @@
         <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;">
             <thead>
             <tr>
-                <td colspan="4" style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: center; font-weight: bold;">
+                <td colspan="5" style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: center; font-weight: bold;">
                     Orders on hold : {{ count($orders_on_hold) }}
                 </td>
             </tr>
@@ -86,7 +86,7 @@
         <table style="border-collapse: collapse; width: 100%; border: 1px solid #ddd;">
             <thead>
             <tr>
-                <td colspan="4" style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: center; font-weight: bold;">
+                <td colspan="5" style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4; text-align: center; font-weight: bold;">
                     Orders with issues : {{ count($order_with_issues) }}
                 </td>
             </tr>
