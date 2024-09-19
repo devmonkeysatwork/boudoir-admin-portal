@@ -99,7 +99,7 @@
             <td>{{$order->date_started}}</td>
             <td>
                 @php
-                    $dateStarted = \Carbon\Carbon::parse($order->date_started);
+                    $dateStarted = \Carbon\Carbon::parse($order->created_at);
                     $now = \Carbon\Carbon::now();
                     $timeSpent = $dateStarted->diff($now);
                 @endphp
