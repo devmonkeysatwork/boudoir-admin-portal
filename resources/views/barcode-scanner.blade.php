@@ -38,6 +38,7 @@
                         },
                         success: function(response) {
                             console.log('Success:', response);
+                            $('#barcode_input').val('');
                             $('#barcode_result').empty().html(response.message);
                         },
                         error: function(xhr) {
