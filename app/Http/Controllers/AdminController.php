@@ -20,7 +20,7 @@ use Picqer\Barcode\BarcodeGeneratorJPG;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         // Status IDs based on your categorization
         $readyForPrintStatusId = 18;
@@ -37,10 +37,19 @@ class AdminController extends Controller
         $qualityControlOrdersCount = Orders::where('status_id', $qualityControlStatusId)->count();
 
         // Fetch orders with pagination
+        $filter_date = $request->input('filter_date');
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
-            ->orderBy('is_rush','DESC')
-            ->orderBy('deadline','DESC')
-            ->orderBy('date_started', 'DESC')
+            ->when($filter_date, function ($q) use ($filter_date) {
+                if ($filter_date == 'oldest') {
+                    $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');
+                } elseif ($filter_date == 'newest') {
+                    $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+                }
+            }, function ($q) {
+                $q->orderBy('is_rush','DESC')
+                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
+                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+            })
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 

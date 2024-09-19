@@ -419,6 +419,9 @@
 @endsection
 @section('footer_scripts')
     <script>
+        $('#order-sort').on('change',function() {
+            window.location.href = '{{route('dashboard')}}?filter_date='+ $(this).val();
+        })
         $(document).ready(function() {
             function performSearch(query) {
                 $.ajax({
@@ -444,9 +447,6 @@
                 performSearch(query);
             });
         });
-    </script>
-
-    <script>
         const order_id = '{{$order_id??null}}';
         $(document).ready(function() {
             var url = window.location.href;
@@ -685,9 +685,6 @@
             $('.'+id).toggleClass('open');
         }
 
-    </script>
-
-    <script>
         function loadTeamDetails(teamMemberId) {
             // Update the modal title
             $('#workstationModal .modal-title').text('Team #' + teamMemberId);
@@ -709,9 +706,7 @@
                 }
             });
         }
-    </script>
 
-    <script>
         function loadWorkstationDetails(workstationId) {
             // Update the modal title
             $('#workstationModal .modal-title').text('Workstation #' + workstationId);

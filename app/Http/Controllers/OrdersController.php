@@ -47,12 +47,10 @@ class OrdersController extends Controller
                 } elseif ($filter_date == 'newest') {
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
                 }
-                Log::info($filter_date);
             }, function ($q) {
                 $q->orderBy('is_rush','DESC')
-                  ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'),'DESC')
+                  ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
                 ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
-                Log::info('no Filter');
             })
             ->when($filter_product,function ($q) use ($filter_product){
                 $q->whereHas('items', function ($query) use ($filter_product) {
