@@ -99,11 +99,12 @@
             <td>{{$order->date_started}}</td>
             <td>
                 @php
-                    $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                    $dateStarted = \Carbon\Carbon::parse($order->date_started);
                     $now = \Carbon\Carbon::now();
                     $timeSpent = $dateStarted->diff($now);
                 @endphp
-                {{ $timeSpent->days > 0 ? $timeSpent->days . 'd ' : '' }}
+                {{ $timeSpent->m > 0 ? $timeSpent->m . 'm ' : '' }}
+                {{ $timeSpent->d > 0 ? $timeSpent->d . 'd ' : '' }}
                 {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
                 {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
             </td>
@@ -171,7 +172,8 @@
                                             $now = \Carbon\Carbon::now();
                                             $timeSpent = $dateStarted->diff($now);
                                         @endphp
-                                        {{ $timeSpent->days > 0 ? $timeSpent->days . 'd ' : '' }}
+                                        {{ $timeSpent->m > 0 ? $timeSpent->m . 'm ' : '' }}
+                                        {{ $timeSpent->d > 0 ? $timeSpent->d . 'd ' : '' }}
                                         {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
                                         {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
                                     </td>

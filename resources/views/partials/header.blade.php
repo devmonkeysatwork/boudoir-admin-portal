@@ -13,7 +13,7 @@
                 <p class="p12 m-0 text-white">Notifications</p>
             </div>
             <div id="notifications">
-                <p class="p12 no_notif p-3">Not notifications to show</p>
+                <p class="p12 no_notif p-3">No notifications to show</p>
             </div>
             <div class="notification_footer d-flex py-3 px-2 justify-content-center align-items-center bg-white d-none">
                 <a href="{{route('admin.notification')}}" class="p12 text-dark">See all notification</a>

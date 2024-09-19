@@ -43,14 +43,16 @@ class OrdersController extends Controller
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
-                    $q->orderBy('date_started', 'ASC');
+                    $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');
                 } elseif ($filter_date == 'newest') {
-                    $q->orderBy('date_started', 'DESC');
+                    $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
                 }
+                Log::info($filter_date);
             }, function ($q) {
                 $q->orderBy('is_rush','DESC')
-                  ->orderBy('deadline','DESC')
-                ->orderBy('date_started', 'DESC');
+                  ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'),'DESC')
+                ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+                Log::info('no Filter');
             })
             ->when($filter_product,function ($q) use ($filter_product){
                 $q->whereHas('items', function ($query) use ($filter_product) {
