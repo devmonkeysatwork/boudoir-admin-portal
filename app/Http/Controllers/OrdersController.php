@@ -462,6 +462,11 @@ class OrdersController extends Controller
                                     ->where('id', $orderStatus->id)
                                     ->first();
 
+                                $notification = new Notifications();
+                                $notification->type = Notifications::typestatus;
+                                $notification->log_id = $log->id;
+                                $notification->save();
+
                                 $message = ['message'=>'A status was updated for order id '.$orderStatus->order_id,'log'=>$log];
                                 event(new NewMessage($message));
                                 $this->sendIssueWithPrintEmail($order,$log->status->status_name);
