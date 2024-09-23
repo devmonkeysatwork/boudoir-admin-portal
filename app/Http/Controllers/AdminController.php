@@ -10,6 +10,7 @@ use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
 use App\Models\Roles;
+use App\Models\SubStatus;
 use App\Models\User;
 use App\Models\Workstations;
 use Illuminate\Http\Request;
@@ -67,8 +68,8 @@ class AdminController extends Controller
         }
 
         $workstations = Workstations::with(['orders'])->get();
-        $edit_statuses = OrderStatus::all();
-        $sub_statuses = OrderStatus::with('sub_status')->get();
+        $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
+        $sub_statuses = SubStatus::with('status')->get();
 
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',
