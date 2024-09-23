@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
-
+*{
+    font-family: 'Nunito Sans', sans-serif;
+}
 body {
     background-color: #F5F6FA;
     font-family: 'Nunito Sans', sans-serif;
@@ -416,18 +418,18 @@ button {
 }
 
 .choices__list--dropdown {
-    width: 100%; 
+    width: 100%;
     min-width: max-content;
 }
 
 .choices__list--dropdown .choices__list {
-    width: 100%; 
-    min-width: max-content; 
+    width: 100%;
+    min-width: max-content;
 }
 
 .choices__list--dropdown .choices__list .choices__item--selectable {
-    width: auto; 
-    white-space: nowrap; 
+    width: auto;
+    white-space: nowrap;
 }
 
 .choices__list--dropdown .choices__item--choice {
@@ -509,7 +511,7 @@ button {
 .team-workstations .team,
 .team-workstations .workstations {
     width: 50%;
-    max-height: 400px; 
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -1385,7 +1387,7 @@ input:checked+.slider:before {
 }
 
 #workstationModal .modal-body .table-responsive {
-    max-height: 400px; 
+    max-height: 400px;
     overflow-y: auto;
 }
 
