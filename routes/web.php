@@ -43,6 +43,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
     Route::post('/comment_add_reply', [OrdersController::class, 'addComment'])->name('order.add_reply');
 
+    Route::get('/orders/{id}/download-pdf', [OrdersController::class, 'packing_slip'])->name('orders.downloadPDF');
+
     Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
     Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
 

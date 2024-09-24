@@ -248,7 +248,7 @@
       </div>
 
       <x-slot name="footer">
-        <button class="btn pdf-btn">
+        <button class="btn pdf-btn" id="download-pdf">
           <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
         </button>
         <div class="new-comment">
@@ -589,6 +589,10 @@
         function toggleReplies(id){
             $('.'+id).toggleClass('open');
         }
+
+        $('#download-pdf').on('click', function() {
+            window.location.href = '/orders/' + activeOrder + '/download-pdf';
+        });
 
 
     </script>

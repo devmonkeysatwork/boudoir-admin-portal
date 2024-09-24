@@ -19,6 +19,7 @@ use App\Models\SubStatus;
 use App\Models\TimelinePool;
 use App\Models\User;
 use App\Models\Workstations;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -525,5 +526,15 @@ class OrdersController extends Controller
         } else {
             \Log::error('No email template found for status '.$status.'.');
         }
+    }
+
+    public function packing_slip($orderId)
+    {
+        $order = Orders::with(['items','status','addresses','items.attributes'])->findOrFail($orderId);
+
+        $pdf = Pdf::loadView('admin.pdf.packing-slip', compact('order'));
+
+        // Return the PDF file as a download
+        return $pdf->download('order_' . $orderId . '.pdf');
     }
 }
