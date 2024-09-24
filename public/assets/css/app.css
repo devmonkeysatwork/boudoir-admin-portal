@@ -1158,6 +1158,7 @@ input:checked+.slider:before {
 #orderModal .orderModal-flex {
     display: flex;
     gap: 30px;
+    height: 100%;
 }
 
 #orderModal .activity-log {
@@ -1166,15 +1167,21 @@ input:checked+.slider:before {
     border: 1px solid #D5D5D5;
     height: auto;
     padding: 20px;
+    overflow: auto;
+    max-height: 300px;
 }
 
 #orderModal .activity-logs,
 #orderModal .comments {
     width: 50%;
-    padding: 20px;
+    /*padding: 20px;*/
     position: relative;
 }
-
+#orderModal .activity-logs{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
 #orderModal .activity-logs .log-entry {
     margin-bottom: 5px;
 }
@@ -1192,15 +1199,13 @@ input:checked+.slider:before {
 }
 
 #orderModal #child_order {
-    position: absolute;
-    bottom: -215px; /* Adjust as needed */
-    left: 20px; /* Align with the modal's padding */
-    right: 20px; /* Align with the modal's padding */
     background-color: #fff;
     border-radius: 10px;
     border: 1px solid #D5D5D5;
     padding: 20px;
-    width: calc(100% - 40px); /* Ensure full width minus the padding */
+    margin-top: 20px;
+    overflow: auto;
+    max-height: 250px;
 }
 
 #orderModal #child_order table {
@@ -1275,7 +1280,7 @@ input:checked+.slider:before {
 
 #orderModal .modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     padding-top: 10px;
     border-top: none;
 }
@@ -1292,10 +1297,6 @@ input:checked+.slider:before {
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s;
-
-    position: absolute;
-    bottom: 30px;
-    left: 50px;
 }
 
 
@@ -1305,9 +1306,6 @@ input:checked+.slider:before {
 }
 
 #orderModal .new-comment {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
     background-color: #fff;
 }
 
