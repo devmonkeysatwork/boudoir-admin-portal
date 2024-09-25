@@ -294,7 +294,7 @@ class AdminController extends Controller
 
     public function manageStatuses()
     {
-        $data['statuses'] = OrderStatus::paginate(10);
+        $data['statuses'] = OrderStatus::all();
         return view('admin.manage-statuses', $data);
     }
 
