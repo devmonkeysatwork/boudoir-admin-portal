@@ -79,8 +79,8 @@ class AdminController extends Controller
         foreach ($workstations as $workstation) {
             $workstation->time_spent = 0;
             foreach ($workstation->logs as $log) {
-                if ($log->time_started && $log->time_end) {
-                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end));
+                if ($log->time_started) {
+                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end??Carbon::now()));
                     $workstation->time_spent += $timeDiff;
                 }
             }
