@@ -438,8 +438,10 @@ class OrdersController extends Controller
                                     ->whereNotNull('status_id')
                                     ->orderBy('created_at', 'desc')
                                     ->first();
-                                $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
-                                $lastOrderStatus->save();
+                                if($lastOrderStatus){
+                                    $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
+                                    $lastOrderStatus->save();
+                                }
 
                                 $orderStatus = new OrderLogs();
                                 $orderStatus->order_id = $content;
