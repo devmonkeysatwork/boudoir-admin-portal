@@ -101,12 +101,13 @@
                 @php
                     $dateStarted = \Carbon\Carbon::parse($order->created_at);
                     $now = \Carbon\Carbon::now();
-                    $timeSpent = $dateStarted->diff($now);
+                    $workingTime = calculateWorkingTime($dateStarted, $now);
                 @endphp
-                {{ $timeSpent->m > 0 ? $timeSpent->m . 'm ' : '' }}
-                {{ $timeSpent->d > 0 ? $timeSpent->d . 'd ' : '' }}
-                {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
-                {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
+
+                {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
+                {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
+                {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
+                {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
             </td>
               <td>
                   @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
@@ -168,14 +169,15 @@
                                     <td>{{$child_order->date_started}}</td>
                                     <td>
                                         @php
-                                            $dateStarted = \Carbon\Carbon::parse($child_order->created_at);
+                                            $dateStarted = \Carbon\Carbon::parse($order->created_at);
                                             $now = \Carbon\Carbon::now();
-                                            $timeSpent = $dateStarted->diff($now);
+                                            $workingTime = calculateWorkingTime($dateStarted, $now);
                                         @endphp
-                                        {{ $timeSpent->m > 0 ? $timeSpent->m . 'm ' : '' }}
-                                        {{ $timeSpent->d > 0 ? $timeSpent->d . 'd ' : '' }}
-                                        {{ $timeSpent->h > 0 ? $timeSpent->h . 'h ' : '' }}
-                                        {{ $timeSpent->i > 0 ? $timeSpent->i . 'm' : '' }}
+
+                                        {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
+                                        {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
+                                        {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
+                                        {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
                                     </td>
                                     <td>
                                         @if(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)))
