@@ -415,7 +415,11 @@ class OrdersController extends Controller
                         DB::beginTransaction();
 
                         $userId = User::where('name', $text[0])->pluck('id')->first();
-                        $content = $text[1];
+                        if(count($text)>2){
+                            $content = $text[1].$text[2];
+                        }else{
+                            $content = $text[1];
+                        }
 
                         if (is_numeric($text[1])) {
                             $content = $text[1];
