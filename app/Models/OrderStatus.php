@@ -21,9 +21,18 @@ class OrderStatus extends Model
         return $this->hasMany(Orders::class, 'status_id', 'id');
     }
 
+    public function orders_count()
+    {
+        return $this->hasMany(OrderLogs::class, 'status_id', 'id')->select('order_id')->distinct()->count('order_id');
+    }
+
     public function workstation()
     {
         return $this->belongsTo(Workstations::class, 'id', 'id');
+    }
+
+    function logs(){
+        return $this->hasMany(OrderLogs::class, 'status_id', 'id');
     }
 
     function first_log(){

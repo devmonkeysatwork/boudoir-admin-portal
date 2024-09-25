@@ -14,6 +14,7 @@ use App\Models\SubStatus;
 use App\Models\User;
 use App\Models\Workstations;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -73,7 +74,19 @@ class AdminController extends Controller
             $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
         }
 
-        $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','orders'])->get();
+        $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs'])->get();
+
+        foreach ($workstations as $workstation) {
+            $workstation->time_spent = 0;
+            foreach ($workstation->logs as $log) {
+                if ($log->time_started && $log->time_end) {
+                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end));
+                    $workstation->time_spent += $timeDiff;
+                }
+            }
+        }
+
+
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
 
@@ -193,23 +206,22 @@ class AdminController extends Controller
 
     public function getWorkstationDetails($id)
     {
-        $workstation = Workstations::with('orders')->find($id);
-
-        if ($workstation) {
+        $areas = OrderLogs::where('status_id',$id)->get();
+        if ($areas) {
             $ordersHtml = '';
             $counter = 1;
-            foreach ($workstation->orders as $order) {
+            foreach ($areas as $order) {
                 $ordersHtml .= '
                 <tr>
                     <td>' . $counter++ . '</td>
                     <td>Order #' . $order->order_id . '</td>
-                    <td>' . gmdate('H:i', strtotime($order->time_in_production)) . '</td>
+                    <td>' . round(Carbon::parse($order->time_started)->diffInHours(Carbon::parse($order->time_end)),2) . '</td>
                 </tr>';
             }
 
             return response()->json([
                 'ordersHtml' => $ordersHtml,
-                'orderCount' => count($workstation->orders)
+                'orderCount' => count($areas)
             ]);
         } else {
             return response()->json(['message' => 'Workstation not found'], 404);

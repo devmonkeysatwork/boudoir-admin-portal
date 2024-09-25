@@ -211,36 +211,6 @@
                     @endforeach
                     </tbody>
                 </table>
-
-                <x-modal id="workstationModal" title="Team">
-                    <div class="modal-body">
-                        <div class="search-bar orders-search mb-3">
-                            <input type="text" id="searchOrders" placeholder="Search" class="form-control" />
-                            <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Order #</th>
-                                    <th>Time in Production</th>
-                                </tr>
-                                </thead>
-                                <tbody id="workstationOrders">
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="pagination">
-                            <p id="orderCount">Showing 1-08 of 08</p>
-                        </div>
-                    </div>
-                    <x-slot name="footer">
-                        <button class="btn btn-secondary" onclick="document.getElementById('workstationModal').style.display='none'">Cancel</button>
-                    </x-slot>
-                </x-modal>
             </div>
 
             <div class="workstations">
@@ -267,8 +237,9 @@
                     @foreach($workstations as $workstation)
                         <tr onclick="loadWorkstationDetails({{ $workstation->id }})">
                             <td>{{ $workstation->status_name }}</td>
-                            <td>{{ count($workstation->orders) }}</td>
-                            <td>{{ round(\Carbon\Carbon::parse($workstation->first_log?->time_started)->diffInUTCHours(\Carbon\Carbon::parse($workstation->last_log?->time_end)),2) }}</td>
+                            <td>{{ $workstation->orders_count() }}</td>
+                            <td>{{ round($workstation->time_spent,2) }}</td>
+{{--                            <td>{{ round(\Carbon\Carbon::parse($workstation->first_log?->time_started)->diffInUTCHours(\Carbon\Carbon::parse($workstation->last_log?->time_end)),2) }}</td>--}}
                         </tr>
                     @endforeach
                     </tbody>
@@ -288,7 +259,7 @@
                         <tr>
                             <th>#</th>
                             <th>Order #</th>
-                            <th>Time in Production</th>
+                            <th>Time spent(hours)</th>
                         </tr>
                         </thead>
                         <tbody id="workstationOrders">
