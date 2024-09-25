@@ -167,8 +167,15 @@
                     </tbody>
                 </table>
             </div>
-            <div class="row justify-content-end d-flex">
-                <div class="col-12 col-sm-3">
+            <div class="row">
+                <div class="col-6 text-start">
+                    @if($orders->count())
+                        <p class="py-4 mb-0">
+                            Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }}
+                        </p>
+                    @endif
+                </div>
+                <div class="col-6 text-end">
                     {{ $orders->links() }}
                 </div>
             </div>
@@ -238,7 +245,7 @@
 
             <div class="workstations">
                 <div class="workstations-top">
-                    <h2>Workstations</h2>
+                    <h2>Areas</h2>
                     <div class="sort-dropdown">
                         <select class="sort-select" id="workstation-sort">
                             <option value="week" selected>Week</option>
@@ -251,17 +258,17 @@
                 <table id="dashboardWorkstationsTable" class="tablesorter">
                     <thead>
                     <tr>
-                        <th>Workstation Name</th>
+                        <th>Area Name</th>
                         <th># of Orders</th>
-                        <th>Time in Production</th>
+                        <th>Total time(hours)</th>
                     </tr>
                     </thead>
                     <tbody>
                     @foreach($workstations as $workstation)
                         <tr onclick="loadWorkstationDetails({{ $workstation->id }})">
-                            <td>{{ $workstation->workstation_name }}</td>
-                            <td>{{ $workstation->num_orders }}</td>
-                            <td>{{ $workstation->time_in_production }}</td>
+                            <td>{{ $workstation->status_name }}</td>
+                            <td>{{ count($workstation->orders) }}</td>
+                            <td>{{ round(\Carbon\Carbon::parse($workstation->first_log?->time_started)->diffInUTCHours(\Carbon\Carbon::parse($workstation->last_log?->time_end)),2) }}</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -356,7 +363,7 @@
                 </div>
 
                 <x-slot name="footer">
-                    <button class="btn pdf-btn">
+                    <button class="btn pdf-btn" id="download-pdf">
                         <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
                     </button>
                     <div class="new-comment">
@@ -557,7 +564,7 @@
                         $('#order_logs').empty();
                         $.each(logs, function(index, value) {
                             let html = `<li class="log-entry">
-                                    <span class="log-desc">${value.user.name} updated the status to <span class="fw-bold">${value.status.status_name}</span>`;
+                                    <span class="log-desc">${value.user.name} updated the status to <span class="fw-bold">${value?.status?.status_name}</span>`;
                             if(value.sub_status){
                                 html += ` because of ${value.sub_status.name}`;
                             }
@@ -595,7 +602,7 @@
                             if(status.sub_status){
                                 $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
                             }else{
-                                $('#modal_status_text').empty().html(status.status.status_name).css('background-color',status.status.status_color);
+                                $('#modal_status_text').empty().html(status?.status?.status_name).css('background-color',status?.status?.status_color);
                             }
                         }else{
                             $('#modal_status_text').empty().html(response.order.status.status_name).css('background-color',response.order.status.status_color);
@@ -735,6 +742,9 @@
         //         $(this).toggle($(this).text().toLowerCase().indexOf(searchValue) > -1);
         //     });
         // });
+        $('#download-pdf').on('click', function() {
+            window.location.href = '/orders/' + activeOrder + '/download-pdf';
+        });
     </script>
 
 @endsection

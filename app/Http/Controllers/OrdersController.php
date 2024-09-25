@@ -429,6 +429,14 @@ class OrdersController extends Controller
                                     'message' => 'Order log row already exists.',
                                 ];
                             } else {
+
+                                $lastOrderStatus = OrderLogs::where('order_id', $content)
+                                    ->whereNotNull('status_id')
+                                    ->orderBy('created_at', 'desc')
+                                    ->first();
+                                $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
+                                $lastOrderStatus->save();
+
                                 $orderStatus = new OrderLogs();
                                 $orderStatus->order_id = $content;
                                 $orderStatus->user_id = $userId;

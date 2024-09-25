@@ -25,4 +25,13 @@ class OrderStatus extends Model
     {
         return $this->belongsTo(Workstations::class, 'id', 'id');
     }
+
+    function first_log(){
+        return $this->hasOne(OrderLogs::class, 'status_id', 'id')
+            ->oldest('time_started');
+    }
+    function last_log(){
+        return $this->hasOne(OrderLogs::class, 'status_id', 'id')
+            ->latest('time_started');
+    }
 }

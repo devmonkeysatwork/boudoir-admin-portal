@@ -24,18 +24,24 @@ class AdminController extends Controller
     public function dashboard(Request $request)
     {
         // Status IDs based on your categorization
-        $readyForPrintStatusId = 18;
-        $inProductionStatusIds = [1, 2, 3, 4, 5, 12, 13, 14, 15, 16];
-        $onHoldStatusIds = [7, 9, 10];
-        $readyToShipStatusId = 8;
-        $qualityControlStatusId = 6;
+        $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
+        $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
+        $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
+        $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
+        $excludedStatusIds = array_merge(
+            $readyForPrintStatusId,
+            $onHoldStatusIds,
+            $readyToShipStatusId,
+            $qualityControlStatusId
+        );
+        $inProductionStatusIds = OrderStatus::whereNotIn('status_name',$excludedStatusIds)->pluck('id');
 
         // Dynamic counts for each category
-        $readyForPrintOrdersCount = Orders::where('status_id', $readyForPrintStatusId)->count();
+        $readyForPrintOrdersCount = Orders::whereIn('status_id', $readyForPrintStatusId)->count();
         $inProductionOrdersCount = Orders::whereIn('status_id', $inProductionStatusIds)->count();
         $onHoldOrdersCount = Orders::whereIn('status_id', $onHoldStatusIds)->count();
-        $readyToShipOrdersCount = Orders::where('status_id', $readyToShipStatusId)->count();
-        $qualityControlOrdersCount = Orders::where('status_id', $qualityControlStatusId)->count();
+        $readyToShipOrdersCount = Orders::whereIn('status_id', $readyToShipStatusId)->count();
+        $qualityControlOrdersCount = Orders::whereIn('status_id', $qualityControlStatusId)->count();
 
         // Fetch orders with pagination
         $filter_date = $request->input('filter_date');
@@ -67,7 +73,7 @@ class AdminController extends Controller
             $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
         }
 
-        $workstations = Workstations::with(['orders'])->get();
+        $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','orders'])->get();
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
 

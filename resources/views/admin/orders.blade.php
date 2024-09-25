@@ -205,7 +205,14 @@
     </tbody>
   </table>
     <div class="row justify-content-end d-flex">
-        <div class="col-12 col-sm-3">
+        <div class="col-6 text-start">
+            @if($orders->count())
+                <p class="py-4 mb-0">
+                    Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }}
+                </p>
+            @endif
+        </div>
+        <div class="col-6 text-end">
             {{ $orders->links() }}
         </div>
     </div>

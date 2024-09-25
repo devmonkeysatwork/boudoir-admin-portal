@@ -1901,3 +1901,17 @@ input:checked+.slider:before {
 .tablesorter-default td {
     vertical-align: middle;
 }
+.page-item .page-link{
+    color: #202224;
+}
+.page-item.active .page-link{
+    color: #fff;
+    background-color: #FAFBFD;
+    border-color: #D5D5D5;
+}
+.page-item.active .page-link{
+    background-color: #BD7F7F;
+}
+.page-item.disabled .page-link{
+    color: #202224;
+}
