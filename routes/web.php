@@ -78,6 +78,9 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/barcode-scanner', function () {
     return view('barcode-scanner');
 });
+Route::get('/barcode-scanner-mobile', function () {
+    return view('barcode-scanner-mobile');
+});
 Route::get('/send_email', [AdminController::class,'sendSummaryEmail'])->name('send-summary-email');
 
 
