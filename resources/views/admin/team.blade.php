@@ -19,8 +19,8 @@
       @foreach($teamMembers as $teamMember)
         <tr onclick="loadTeamDetails({{ $teamMember->id }})">
           <td>{{ $teamMember->name }}</td>
-          <td>{{ $teamMember->total_orders }}</td>
-          <td>{{ $teamMember->time_spent }}</td>
+          <td>{{ $teamMember->order_count }}</td>
+          <td>{{ $teamMember->total_time }}</td>
         </tr>
       @endforeach
     </tbody>
@@ -48,11 +48,6 @@
                 <!-- Orders will be dynamically loaded here -->
                 </tbody>
             </table>
-        </div>
-
-        <!-- Pagination or footer for showing number of results -->
-        <div class="pagination">
-            <p id="orderCount">Showing 1-08 of 08</p>
         </div>
     </div>
     <x-slot name="footer">

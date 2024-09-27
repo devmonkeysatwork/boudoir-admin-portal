@@ -15,11 +15,11 @@
           <img src="{{ asset('icons/email.png') }}" alt="Email Icon">Manage Emails
         </a>
       </li>
-      <li>
-        <a href="javascript:void(0);" class="adminSettingsBtn">
-          <img src="{{ asset('icons/settings.png') }}" alt="Settings Icon">Admin Settings
-        </a>
-      </li>
+{{--      <li>--}}
+{{--        <a href="javascript:void(0);" class="adminSettingsBtn">--}}
+{{--          <img src="{{ asset('icons/settings.png') }}" alt="Settings Icon">Admin Settings--}}
+{{--        </a>--}}
+{{--      </li>--}}
     </ul>
   </div>
   <div class="settings-content" id="emailContentDiv">
@@ -133,16 +133,16 @@
     </div>
     @include('partials.footer')
   </div>
-    <div id="adminSettings" style="display: none;"  class="settings-content">
-        <div class="manage-top">
-            <h2>Admin settings</h2>
-            <button class="create-btn" id="updateAdminSettings">Update</button>
-        </div>
-        <div class="manage-btm">
+{{--    <div id="adminSettings" style="display: none;"  class="settings-content">--}}
+{{--        <div class="manage-top">--}}
+{{--            <h2>Admin settings</h2>--}}
+{{--            <button class="create-btn" id="updateAdminSettings">Update</button>--}}
+{{--        </div>--}}
+{{--        <div class="manage-btm">--}}
 
-        </div>
-        @include('partials.footer')
-    </div>
+{{--        </div>--}}
+{{--        @include('partials.footer')--}}
+{{--    </div>--}}
 
 </div>
 @endsection

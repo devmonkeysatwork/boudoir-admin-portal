@@ -61,18 +61,27 @@ class AdminController extends Controller
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 
-        $teamMembers = User::with(['workstations'])->get();
+        $teamMembersResult = OrderLogs::select(
+            'order_logs.user_id',
+            'users.name as user_name', // Select user name
+            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
+            DB::raw('SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)) AS total_time_seconds')
+        )
+            ->join('users', 'order_logs.user_id', '=', 'users.id') // Join with users table
+            ->whereNotNull('order_logs.time_started')
+            ->whereNotNull('order_logs.time_end')
+            ->groupBy('order_logs.user_id', 'users.name')
+            ->get();
 
-        foreach ($teamMembers as $teamMember) {
-            $totalOrders = 0;
-
-            foreach ($teamMember->workstations as $workstation) {
-                $totalOrders += Orders::where('workstation_id', $workstation->id)->count();
-            }
-
-            $teamMember->total_orders = $totalOrders;
-            $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
-        }
+        // If you want to further aggregate for total time across all orders
+        $teamMembers = $teamMembersResult->groupBy('user_id')->map(function ($items, $userId) {
+            return [
+                'id' => $userId,
+                'user_name' => $items->first()->user_name,
+                'order_count' => $items->sum('order_count'),
+                'total_time' => $items->sum('total_time_seconds'),
+            ];
+        });
 
         $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs'])->get();
 
@@ -185,20 +194,26 @@ class AdminController extends Controller
 
     public function areas()
     {
-        $workstations = Workstations::with(['orders'])->paginate(10);
+        $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
+        $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
+        $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
+        $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
+        $excludedStatusIds = array_merge(
+            $readyForPrintStatusId,
+            $onHoldStatusIds,
+            $readyToShipStatusId,
+            $qualityControlStatusId
+        );
+        $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs'])->paginate(10);
 
         foreach ($workstations as $workstation) {
-            $totalTimeInProduction = 0;
-
-            foreach ($workstation->orders as $order) {
-                if ($order->date_started) {
-                    $dateStarted = \Carbon\Carbon::parse($order->date_started);
-                    $now = \Carbon\Carbon::now();
-                    $totalTimeInProduction += $dateStarted->diffInSeconds($now);
+            $workstation->time_spent = 0;
+            foreach ($workstation->logs as $log) {
+                if ($log->time_started) {
+                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end??Carbon::now()));
+                    $workstation->time_spent += $timeDiff;
                 }
             }
-
-            $workstation->time_in_production = gmdate('H:i:s', $totalTimeInProduction);
         }
 
         return view('admin.areas', compact('workstations'));
@@ -230,47 +245,51 @@ class AdminController extends Controller
 
     public function team()
     {
-        $teamMembers = User::with(['workstations'])->get();
         $roles = Roles::all();
 
-        foreach ($teamMembers as $teamMember) {
-            $totalOrders = 0;
-
-            foreach ($teamMember->workstations as $workstation) {
-                $totalOrders += Orders::where('workstation_id', $workstation->id)->count();
-            }
-
-            $teamMember->total_orders = $totalOrders;
-            $teamMember->time_spent = $this->calculateTimeSpent($teamMember->workstations->pluck('id'));
-        }
+        $teamMembers = User::select(
+            'users.id',
+            'users.name',
+            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
+            DB::raw('IFNULL(SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)), 0) AS total_time')
+        )
+            ->leftJoin('order_logs', 'users.id', '=', 'order_logs.user_id')
+            ->groupBy('users.id','users.name')
+            ->get();
 
         return view('admin.team', compact(['teamMembers','roles']));
     }
 
     public function getTeamDetails($id)
     {
-        $teamMember = User::with('workstations.orders')->find($id);
+        $teamMembersResult = OrderLogs::select(
+            'order_id',
+            DB::raw('SUM(TIMESTAMPDIFF(HOUR, time_started, time_end)) AS total_time')
+        )
+            ->where('user_id', $id)
+            ->whereNotNull('time_started')
+            ->whereNotNull('time_end')
+            ->groupBy('order_id')
+            ->get();
 
-        if (!$teamMember) {
+        if (!$teamMembersResult) {
             return response()->json(['message' => 'Team member not found'], 404);
         }
 
         $ordersHtml = '';
         $counter = 1;
-        foreach ($teamMember->workstations as $workstation) {
-            foreach ($workstation->orders as $order) {
-                $ordersHtml .= '
+        foreach ($teamMembersResult as $member) {
+            $ordersHtml .= '
                 <tr>
                     <td>' . $counter++ . '</td>
-                    <td>Order #' . $order->order_id . '</td>
-                    <td>' . gmdate('H:i', strtotime($order->time_in_production)) . '</td>
+                    <td>Order #' . $member['order_id'] . '</td>
+                    <td>' . $member['total_time'] . '</td>
                 </tr>';
-            }
         }
 
         return response()->json([
             'ordersHtml' => $ordersHtml,
-            'orderCount' => count($teamMember->workstations->pluck('orders')->flatten())
+            'orderCount' => count($teamMembersResult)
         ]);
     }
 

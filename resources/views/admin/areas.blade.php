@@ -8,20 +8,20 @@
       <tr>
         <th>Stations</th>
         <th># of Orders</th>
-        <th>Time in Production</th>
+        <th>Total time(hours)</th>
       </tr>
     </thead>
     <tbody>
       @foreach($workstations as $workstation)
         <tr onclick="loadWorkstationDetails({{ $workstation->id }})">
-          <td>{{ $workstation->workstation_name }}</td>
-          <td>{{ $workstation->num_orders }}</td> 
-          <td>{{ $workstation->time_in_production }}</td>
+            <td>{{ $workstation->status_name }}</td>
+            <td>{{ $workstation->orders_count() }}</td>
+            <td>{{ round($workstation->time_spent,2) }}</td>
         </tr>
       @endforeach
     </tbody>
   </table>
-  
+
   <!-- Pagination -->
   <div class="row justify-content-end d-flex">
       <div class="col-12 col-sm-3">
@@ -46,18 +46,13 @@
                     <tr>
                         <th>#</th>
                         <th>Order #</th>
-                        <th>Time in Production</th>
+                        <th>Total time(hours)</th>
                     </tr>
                 </thead>
                 <tbody id="workstationOrders">
                     <!-- Orders will be dynamically loaded here -->
                 </tbody>
             </table>
-        </div>
-
-        <!-- Pagination or footer for showing number of results -->
-        <div class="pagination">
-            <p id="orderCount">Showing 1-08 of 08</p>
         </div>
     </div>
     <x-slot name="footer">
