@@ -3,12 +3,12 @@
 @section('content')
 <div class="workstations">
   <h1>Notifications</h1>
-  <table>
+  <table id="notification_list">
     <tbody>
         @foreach($notifications as $notification)
           <tr>
               <td>
-                  <p class="p12 position-relative fw-normal">
+                  <p class="p14 position-relative fw-normal mb-0">
                       @if($notification->type == \App\Models\Notifications::typeComment)
                            {{$notification->comment?->user?->name}} added a comment on order id <span class="fw-bold">{{$notification->comment?->order?->order_id}}</span>
                           @php

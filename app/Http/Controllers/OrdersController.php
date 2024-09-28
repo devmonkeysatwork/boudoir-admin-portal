@@ -61,7 +61,7 @@ class OrdersController extends Controller
                 });
             })
             ->when($filter_priority,function ($q) use ($filter_priority){
-                    $q->where('is_rush', $filter_priority);
+                    $q->where('is_rush', $filter_priority==1?1:0);
             })
             ->when($filter_status,function ($q) use ($filter_status){
                     $q->where('status_id', $filter_status);

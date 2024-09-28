@@ -1833,6 +1833,13 @@ input:checked+.slider:before {
     line-height: 16.37px;
     text-align: left;
 }
+.p14{
+    font-family: Nunito Sans;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 18.37px;
+    text-align: left;
+}
 #notifications_div{
     display: none;
     position: absolute;
@@ -1914,4 +1921,13 @@ input:checked+.slider:before {
 }
 .page-item.disabled .page-link{
     color: #202224;
+}
+#notification_list p > a{
+    margin-top: 15px;
+    display: inline-block;
+    font-weight: 700;
+    background-color: #BD7F7F;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
 }
