@@ -54,7 +54,9 @@
     </div>
   </div>
 
-
+    <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('export.pdf')}}">
+        <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as PDF
+    </a>
   <table id="ordersTable" class="tablesorter">
     <thead>
       <tr>
@@ -603,7 +605,15 @@
             window.location.href = '/orders/' + activeOrder + '/download-pdf';
         });
 
+        document.addEventListener('DOMContentLoaded', function () {
+            var link = document.getElementById('pdf-export');
+            var queryString = window.location.search; // Get the query string from the URL
 
+            // If there's a query string, append it to the link's href
+            if (queryString) {
+                link.href += queryString; // Append query string to the link
+            }
+        });
     </script>
 @endsection
 

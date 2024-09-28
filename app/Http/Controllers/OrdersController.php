@@ -21,11 +21,13 @@ use App\Models\User;
 use App\Models\Workstations;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
 
 class OrdersController extends Controller
 {
@@ -401,6 +403,77 @@ class OrdersController extends Controller
         // Return JSON response
         return response()->json(['status'=>200,'orders_view' => $order_vew]);
     }
+    public function exportPDF(Request $request)
+    {
+        $filter_product = $request->input('filter_product');
+        $filter_date = $request->input('filter_date');
+        $filter_status = $request->input('filter_status');
+        $filter_priority = $request->input('filter_priority');
+        $orders = Orders::with(['status','last_log','last_log.status','last_log.sub_status','station','station.worker'])
+            ->when($filter_date, function ($q) use ($filter_date) {
+                if ($filter_date == 'oldest') {
+                    $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');
+                } elseif ($filter_date == 'newest') {
+                    $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+                }
+            }, function ($q) {
+                $q->orderBy('is_rush','DESC')
+                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
+                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+            })
+            ->when($filter_product,function ($q) use ($filter_product){
+                $q->whereHas('items', function ($query) use ($filter_product) {
+                    $query->where('product_name', $filter_product);
+                });
+            })
+            ->when($filter_priority,function ($q) use ($filter_priority){
+                $q->where('is_rush', $filter_priority);
+            })
+            ->when($filter_status,function ($q) use ($filter_status){
+                $q->where('status_id', $filter_status);
+            })
+            ->where('orderType','=',Orders::parentType)
+            ->get();
+        try{
+            //        $view = view('admin.partials.order_table_pdf', ['orders'=>$orders])->render();
+            // Initialize Dompdf
+            $dompdf = new Dompdf();
+            $dompdf = Pdf::loadView('admin.partials.order_table_pdf', ['orders'=>$orders]);
+            $dompdf->setPaper('A4', 'landscape');
+            // Stream the PDF file
+            return $dompdf->download('orders.pdf');
+        }catch (\Exception $e){
+            echo 'Error ' . $e->getMessage();
+        }
+    }
+
+//    public function exportCSV(Request $request)
+//    {
+//        $orders = Orders::with(['status', 'station', 'station.worker'])
+//            ->where('orderType', '=', Orders::parentType)
+//            ->get();
+//
+//        $csv = Writer::createFromString('');
+//        $csv->insertOne(['ID', 'Status', 'Station', 'Worker', 'Date Started', 'Deadline']); // Column headers
+//
+//        foreach ($orders as $order) {
+//            $csv->insertOne([
+//                $order->id,
+//                $order->status->name,
+//                $order->station->name,
+//                $order->station->worker->name,
+//                $order->date_started,
+//                $order->deadline,
+//            ]);
+//        }
+//
+//        return response()->stream(function() use ($csv) {
+//            echo $csv;
+//        }, 200, [
+//            'Content-Type' => 'text/csv',
+//            'Content-Disposition' => 'attachment; filename="orders.csv"',
+//        ]);
+//    }
 
     public function addOrUpdateOrderStatusRow(Request $request)
     {
