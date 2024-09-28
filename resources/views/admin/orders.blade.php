@@ -616,11 +616,3 @@
         });
     </script>
 @endsection
-
-@push('scripts')
-<script>
-    $(document).ready(function() {
-        $("#ordersTable").tablesorter();
-    });
-</script>
-@endpush
