@@ -35,6 +35,9 @@ class SendDailySummary extends Command
             $hold_status = OrderStatus::where('status_name',Orders::statusHold)->pluck('id')->first();
             $issues = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->pluck('id');
 
+            $mailData['rush_orders'] = Orders::with(['status','station','station.worker'])
+                ->where('is_rush','=',1)
+                ->where('status_id','!=',$completed_status)->get();
             $mailData['production_order'] = Orders::with(['status','station','station.worker'])
                 ->where('status_id','!=',$completed_status)->get();
             $mailData['orders_on_hold'] = Orders::with(['status','station','station.worker'])

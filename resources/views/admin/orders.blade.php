@@ -157,13 +157,17 @@
                                     <td>
                                         @if($child_order->is_rush == 1)
                                             <img src="{{asset('icons/rush.svg')}}" alt="Rush">
+                                        @else
+                                            -
                                         @endif
                                     </td>
                                     <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">
                                         @if(isset($child_order->last_log->sub_status))
                                             {{$child_order->last_log?->sub_status?->name ?? null}}
-                                        @else
+                                        @elseif(isset($child_order->last_log->status))
                                             {{$child_order->last_log?->status?->status_name ?? null}}
+                                        @else
+                                            {{$child_order->status?->status_name ?? null}}
                                         @endif
                                     </span>
                                     </td>

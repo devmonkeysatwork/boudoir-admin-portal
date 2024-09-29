@@ -44,9 +44,9 @@
                                     <button class="delete-btn" onclick="deleteStatus({{$status->id}})">
                                         <img src="{{ asset('icons/delete.png') }}" alt="Delete Icon">
                                     </button>
-                                    <a href="{{ route('barcode.generate', ['status_name' => urlencode($status->status_name)]) }}" class="download-btn" download="{{ $status->status_name }}_barcode.png">
-                                        <img src="{{ asset('icons/barcode_icon.png') }}" alt="Download Barcode">
-                                    </a>
+{{--                                    <a href="{{ route('barcode.generate', ['status_name' => urlencode($status->status_name)]) }}" class="download-btn" download="{{ $status->status_name }}_barcode.png">--}}
+{{--                                        <img src="{{ asset('icons/barcode_icon.png') }}" alt="Download Barcode">--}}
+{{--                                    </a>--}}
                                 </td>
                             </tr>
                         @endforeach

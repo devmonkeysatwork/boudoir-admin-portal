@@ -29,11 +29,13 @@ class AdminController extends Controller
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
         $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
         $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
+        $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->toArray();
         $excludedStatusIds = array_merge(
-            $readyForPrintStatusId,
-            $onHoldStatusIds,
-            $readyToShipStatusId,
-            $qualityControlStatusId
+//            $readyForPrintStatusId,
+//            $onHoldStatusIds,
+//            $readyToShipStatusId,
+//            $qualityControlStatusId,
+            $completedStatusId
         );
         $inProductionStatusIds = OrderStatus::whereNotIn('status_name',$excludedStatusIds)->pluck('id');
 
@@ -109,8 +111,8 @@ class AdminController extends Controller
             'teamMembers',
             'workstations',
             'edit_statuses',
-            'sub_statuses'
-
+            'sub_statuses',
+            'filter_date'
         ));
     }
 
@@ -391,6 +393,9 @@ class AdminController extends Controller
             'order_with_issues' => Orders::with(['status', 'station', 'station.worker'])
                 ->whereIn('status_id', $issues)
                 ->get(),
+            'rush_orders' => Orders::with(['status','station','station.worker'])
+                ->where('is_rush','=',1)
+                ->where('status_id','!=',$completed_status)->get(),
             'title' => 'Daily Summary Report'
         ];
 

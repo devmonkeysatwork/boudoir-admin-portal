@@ -64,7 +64,12 @@ function hide_loader(){
 
 // TABLESORTER
 $(document).ready(function() {
-    $("#dashboardOrdersTable").tablesorter();
+    $("#dashboardOrdersTable").tablesorter({
+        headers: {
+            1: { sorter: false }, // Exclude the first column (Order ID)
+            6: { sorter: false }  // Exclude the third column (Order Date)
+        }
+    });
     $("#dashboardTeamTable").tablesorter();
     $("#dashboardWorkstationsTable").tablesorter();
     $("#ordersTable").tablesorter({

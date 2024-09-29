@@ -81,8 +81,8 @@
                     <div class="sort-dropdown">
                         <select class="sort-select" id="order-sort">
                             <option value="" disabled selected>Sort By</option>
-                            <option value="oldest">Oldest</option>
-                            <option value="newest">Newest</option>
+                            <option {{$filter_date && $filter_date =='oldest'?'selected':''}} value="oldest">Oldest</option>
+                            <option {{$filter_date && $filter_date =='newest'?'selected':''}} value="newest">Newest</option>
                         </select>
                     </div>
                 </div>
@@ -204,7 +204,7 @@
                     </thead>
                     <tbody>
                     @foreach($teamMembers as $teamMember)
-                        <tr onclick="loadTeamDetails({{ $teamMember['id'] }})">
+                        <tr onclick="loadTeamDetails({{ $teamMember['id'] }},'{{$teamMember['user_name']}}')">
                             <td>{{ $teamMember['user_name'] }}</td>
                             <td>{{ $teamMember['order_count'] }}</td>
                             <td>{{ $teamMember['total_time'] }}</td>
@@ -236,7 +236,7 @@
                     </thead>
                     <tbody>
                     @foreach($workstations as $workstation)
-                        <tr onclick="loadWorkstationDetails({{ $workstation->id }})">
+                        <tr onclick="loadWorkstationDetails({{ $workstation->id }},'{{$workstation->status_name}}')">
                             <td>{{ $workstation->status_name }}</td>
                             <td>{{ $workstation->orders_count() }}</td>
                             <td>{{ round($workstation->time_spent,2) }}</td>
@@ -660,10 +660,7 @@
             $('.'+id).toggleClass('open');
         }
 
-        function loadTeamDetails(teamMemberId) {
-            // Update the modal title
-            $('#workstationModal .modal-title').text('Team #' + teamMemberId);
-
+        function loadTeamDetails(teamMemberId,title) {
             // Make an AJAX request to fetch team details
             $.ajax({
                 url: '/team/' + teamMemberId,
@@ -675,6 +672,7 @@
 
                     // Show the modal
                     $('#workstationModal').show();
+                    $('#workstationModal .modal-content > h2').text(title);
                 },
                 error: function() {
                     $('#workstationOrders').html('<tr><td colspan="3">Failed to load team details.</td></tr>');
@@ -682,9 +680,7 @@
             });
         }
 
-        function loadWorkstationDetails(workstationId) {
-            // Update the modal title
-            $('#workstationModal .modal-title').text('Workstation #' + workstationId);
+        function loadWorkstationDetails(workstationId,title) {
 
             // Make an AJAX request to fetch workstation details
             $.ajax({
@@ -697,6 +693,7 @@
 
                     // Show the modal
                     $('#workstationModal').show();
+                    $('#workstationModal .modal-content > h2').text(title);
                 },
                 error: function() {
                     $('#workstationOrders').html('<tr><td colspan="3">Failed to load workstation details.</td></tr>');
