@@ -212,7 +212,7 @@
         @endforeach
     </tbody>
   </table>
-    <div class="row justify-content-end d-flex">
+    <div class="row justify-content-end" id="order_paginations">
         <div class="col-6 text-start">
             @if($orders->count())
                 <p class="py-4 mb-0">
@@ -388,6 +388,11 @@
             $('#searchInput').on('keyup', function() {
                 var query = $(this).val();
                 performSearch(query);
+                if(query != ''){
+                    $('#order_paginations').hide();
+                }else{
+                    $('#order_paginations').show();
+                }
             });
 
         });

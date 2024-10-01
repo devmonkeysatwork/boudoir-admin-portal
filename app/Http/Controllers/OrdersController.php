@@ -396,7 +396,7 @@ class OrdersController extends Controller
             ->orderBy('deadline', 'DESC')
             ->orderBy('date_started', 'DESC')
             ->where('orderType', '=', Orders::parentType);
-        $orders = $query->paginate(10);
+        $orders = $query->get();
 
 
         $order_vew = view('admin.partials.order_table',['orders'=>$orders])->render();

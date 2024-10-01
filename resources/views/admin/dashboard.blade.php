@@ -13,8 +13,15 @@
                     </div>
                 </div>
                 <div class="stat-btm">
-                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                    <p><span class="stat-up">8.5%</span> Up from yesterday</p>
+                    @isset($percentageChange)
+                        @if($percentageChange['readyForPrint'] > 0)
+                            <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                            <p><span class="stat-up">{{$percentageChange['readyForPrint']}}%</span> Up from yesterday</p>
+                        @elseif($percentageChange['readyForPrint'] < 0)
+                            <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                            <p><span class="stat-down">{{abs($percentageChange['readyForPrint'])}}%</span> Down from yesterday</p>
+                        @endif
+                    @endisset
                 </div>
             </div>
             <div class="stat">
@@ -26,8 +33,16 @@
                     </div>
                 </div>
                 <div class="stat-btm">
-                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                    <p><span class="stat-up">1.3%</span> Up from past week</p>
+                    @isset($percentageChange)
+                        @if($percentageChange['production'] > 0)
+                            <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                            <p><span class="stat-up">{{$percentageChange['production']}}%</span> Up from yesterday</p>
+                        @elseif($percentageChange['production'] < 0)
+                            <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                            <p><span class="stat-down">{{abs($percentageChange['production'])}}%</span> Down from yesterday</p>
+                        @endif
+                    @endisset
+
                 </div>
             </div>
             <div class="stat">
@@ -39,8 +54,15 @@
                     </div>
                 </div>
                 <div class="stat-btm">
-                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                    <p><span class="stat-down">4.3%</span> Down from yesterday</p>
+                    @isset($percentageChange)
+                        @if($percentageChange['onHold'] > 0)
+                            <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                            <p><span class="stat-up">{{$percentageChange['onHold']}}%</span> Up from yesterday</p>
+                        @elseif($percentageChange['onHold'] < 0)
+                            <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                            <p><span class="stat-down">{{abs($percentageChange['onHold'])}}%</span> Down from yesterday</p>
+                        @endif
+                    @endisset
                 </div>
             </div>
             <div class="stat">
@@ -52,8 +74,13 @@
                     </div>
                 </div>
                 <div class="stat-btm">
-                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                    <p><span class="stat-up">1.8%</span> Up from yesterday</p>
+                    @if($percentageChange['readyToShip'] > 0)
+                        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                        <p><span class="stat-up">{{$percentageChange['readyToShip']}}%</span> Up from yesterday</p>
+                    @elseif($percentageChange['readyToShip'] < 0)
+                        <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                        <p><span class="stat-down">{{abs($percentageChange['readyToShip'])}}%</span> Down from yesterday</p>
+                    @endif
                 </div>
             </div>
             <div class="stat">
@@ -65,8 +92,13 @@
                     </div>
                 </div>
                 <div class="stat-btm">
-                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                    <p><span class="stat-up">0%</span> Up from yesterday</p>
+                    @if($percentageChange['qualityControl'] > 0)
+                        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                        <p><span class="stat-up">{{$percentageChange['qualityControl']}}%</span> Up from yesterday</p>
+                    @elseif($percentageChange['qualityControl'] < 0)
+                        <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                        <p><span class="stat-down">{{abs($percentageChange['qualityControl'])}}%</span> Down from yesterday</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -168,7 +200,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="row">
+            <div class="row justify-content-end" id="order_paginations">
                 <div class="col-6 text-start">
                     @if($orders->count())
                         <p class="py-4 mb-0">
@@ -420,6 +452,11 @@
             $('#searchInput').on('keyup', function() {
                 var query = $(this).val();
                 performSearch(query);
+                if(query != ''){
+                    $('#order_paginations').hide();
+                }else{
+                    $('#order_paginations').show();
+                }
             });
         });
         const order_id = '{{$order_id??null}}';

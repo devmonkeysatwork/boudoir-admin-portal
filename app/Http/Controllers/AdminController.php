@@ -24,6 +24,22 @@ class AdminController extends Controller
 {
     public function dashboard(Request $request)
     {
+
+        $yesterday = Carbon::yesterday()->toDateString();
+        $today = Carbon::today()->toDateString();
+
+        $yesterdayCount = Orders::whereDate('date_started', $yesterday)->count();
+        $todayCount = Orders::whereDate('date_started', $today)->count();
+        $percentageChange = [];
+
+        if ($yesterdayCount > 0) {
+            $percentageChange['production'] = (($todayCount - $yesterdayCount) / $yesterdayCount) * 100;
+        } elseif ($yesterdayCount === 0 && $todayCount > 0) {
+            $percentageChange['production'] = 100; // All new orders
+        } elseif ($yesterdayCount === 0 && $todayCount === 0) {
+            $percentageChange['production'] = 0; // No change if both are zero
+        }
+
         // Status IDs based on your categorization
         $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
@@ -101,6 +117,62 @@ class AdminController extends Controller
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
 
+
+//        Percentage Counts ****************************************
+        $yesterdayStart = \Carbon\Carbon::yesterday()->startOfDay();
+        $yesterdayEnd = \Carbon\Carbon::yesterday()->endOfDay();
+        $todayStart = \Carbon\Carbon::today()->startOfDay();
+        $todayEnd = \Carbon\Carbon::today()->endOfDay();
+        // Initialize counts
+        $orderCounts = [
+            'readyForPrint' => ['yesterday' => 0, 'today' => 0],
+            'onHold' => ['yesterday' => 0, 'today' => 0],
+            'readyToShip' => ['yesterday' => 0, 'today' => 0],
+            'qualityControl' => ['yesterday' => 0, 'today' => 0],
+        ];
+
+        // Count orders for each status updated yesterday
+        $orderCounts['readyForPrint']['yesterday'] = Orders::whereIn('status_id', $readyForPrintStatusId)
+            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
+            ->count();
+
+        $orderCounts['onHold']['yesterday'] = Orders::whereIn('status_id', $onHoldStatusIds)
+            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
+            ->count();
+
+        $orderCounts['readyToShip']['yesterday'] = Orders::whereIn('status_id', $readyToShipStatusId)
+            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
+            ->count();
+
+        $orderCounts['qualityControl']['yesterday'] = Orders::whereIn('status_id', $qualityControlStatusId)
+            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
+            ->count();
+
+// Count orders for each status updated today
+        $orderCounts['readyForPrint']['today'] = Orders::whereIn('status_id', $readyForPrintStatusId)
+            ->whereBetween('updated_at', [$todayStart, $todayEnd])
+            ->count();
+
+        $orderCounts['onHold']['today'] = Orders::whereIn('status_id', $onHoldStatusIds)
+            ->whereBetween('updated_at', [$todayStart, $todayEnd])
+            ->count();
+
+        $orderCounts['readyToShip']['today'] = Orders::whereIn('status_id', $readyToShipStatusId)
+            ->whereBetween('updated_at', [$todayStart, $todayEnd])
+            ->count();
+
+        $orderCounts['qualityControl']['today'] = Orders::whereIn('status_id', $qualityControlStatusId)
+            ->whereBetween('updated_at', [$todayStart, $todayEnd])
+            ->count();
+
+        foreach ($orderCounts as $status => $counts) {
+            if ($counts['yesterday'] > 0) {
+                $percentageChange[$status] = (($counts['today'] - $counts['yesterday']) / $counts['yesterday']) * 100;
+            } else {
+                $percentageChange[$status] = $counts['today'] > 0 ? 100 : 0; // If there were no orders yesterday
+            }
+        }
+
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',
             'inProductionOrdersCount',
@@ -112,7 +184,8 @@ class AdminController extends Controller
             'workstations',
             'edit_statuses',
             'sub_statuses',
-            'filter_date'
+            'filter_date',
+            'percentageChange'
         ));
     }
 
