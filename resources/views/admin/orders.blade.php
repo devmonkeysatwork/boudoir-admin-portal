@@ -54,8 +54,11 @@
     </div>
   </div>
 
-    <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('export.pdf')}}">
+    <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.pdf')}}">
         <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as PDF
+    </a>
+    <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.csv')}}">
+        <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as CSV
     </a>
   <table id="ordersTable" class="tablesorter">
     <thead>

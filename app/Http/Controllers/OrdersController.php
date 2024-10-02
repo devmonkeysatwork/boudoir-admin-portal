@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
+use App\Exports\OrdersExport;
 use App\Mail\TemplateEmail;
 use App\Models\CostumerAddress;
 use App\Models\EmailTemplates;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrdersController extends Controller
 {
@@ -445,6 +447,15 @@ class OrdersController extends Controller
         }catch (\Exception $e){
             echo 'Error ' . $e->getMessage();
         }
+    }
+
+    public function exportCSV(Request $request)
+    {
+        $filter_product = $request->input('filter_product');
+        $filter_date = $request->input('filter_date');
+        $filter_status = $request->input('filter_status');
+        $filter_priority = $request->input('filter_priority');
+        return Excel::download(new OrdersExport($filter_product, $filter_date, $filter_status, $filter_priority), 'orders.xlsx');
     }
 
 //    public function exportCSV(Request $request)
