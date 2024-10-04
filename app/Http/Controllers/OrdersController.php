@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Maatwebsite\Excel\Facades\Excel;
+use Picqer\Barcode\BarcodeGeneratorJPG;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class OrdersController extends Controller
 {
@@ -629,8 +631,10 @@ class OrdersController extends Controller
     public function packing_slip($orderId)
     {
         $order = Orders::with(['items','status','addresses','items.attributes'])->findOrFail($orderId);
+//        $qr_code = QrCode::size(150)->generate($order->order_id);
+        $qrcode = base64_encode(QrCode::format('svg')->size(200)->errorCorrection('H')->generate($order->order_id));
 
-        $pdf = Pdf::loadView('admin.pdf.packing-slip', compact('order'));
+        $pdf = Pdf::loadView('admin.pdf.packing-slip', compact(['order','qrcode']));
 
         // Return the PDF file as a download
         return $pdf->download('order_' . $orderId . '.pdf');
