@@ -248,20 +248,22 @@ button {
 }
 
 /* DASHBOARD */
-.dashboard .stats {
-    display: flex;
-    /* flex-wrap: wrap; */
-    justify-content: space-between;
-    gap: 20px;
-}
+/*.dashboard .stats {*/
+/*    display: flex;*/
+/*    flex-wrap: wrap;*/
+/*    justify-content: space-between;*/
+/*    gap: 20px;*/
+/*}*/
 
 .dashboard .stat {
-    flex: 1 1 23%; /* Default 4 cards per row */
+    /*flex: 1 1 23%; !* Default 4 cards per row *!*/
+    /*max-width: 200px;*/
     background-color: #fff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
+    margin-bottom: 15px;
 }
 
 .dashboard .stat:hover {
@@ -1944,8 +1946,43 @@ thead, tbody tr {
     table-layout: fixed;/* even columns width , fix width of table too*/
 }
 thead {
-    width: calc( 100% - 1em )/* scrollbar is average 1em/16px width, remove it from thead width */
+    /*width: calc( 100% - 1em )!* scrollbar is average 1em/16px width, remove it from thead width *!*/
 }
 #order_paginations{
     display: flex;
+}
+
+#ordersTable th:nth-child(2),
+#ordersTable td:nth-child(2),
+#ordersTable th:nth-child(7),
+#ordersTable td:nth-child(7),
+#dashboardOrdersTable th:nth-child(2),
+#dashboardOrdersTable td:nth-child(2),
+#dashboardOrdersTable th:nth-child(7),
+#dashboardOrdersTable td:nth-child(7) {
+    width: 100px;
+}
+@media (min-width: 1300px) {
+    .col-xl {
+        flex: 1 0 0% !important;
+    }
+    .dashboard .stat{
+        height: 140px;
+    }
+}
+@media (max-width: 1300px) {
+    .filters{
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+}
+@media (max-width: 1150px) {
+    .filter-bar{
+        flex-wrap: wrap;
+    }
+    .filter-item{
+        flex: 0 0 33%;
+    }
 }

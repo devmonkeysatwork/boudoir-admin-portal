@@ -3,102 +3,111 @@
 @section('content')
     <div class="dashboard">
         <h1>Dashboard</h1>
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-top">
-                    <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
-                    <div class="stat-info">
-                        <h3>{{ $readyForPrintOrdersCount }}</h3>
-                        <p>Ready for Print</p>
+        <div class="stats row">
+            <div class="col-md-6 col-lg-4 col-xl">
+                <div class="stat">
+                    <div class="stat-top">
+                        <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
+                        <div class="stat-info">
+                            <h3>{{ $readyForPrintOrdersCount }}</h3>
+                            <p>Ready for Print</p>
+                        </div>
+                    </div>
+                    <div class="stat-btm">
+                        @isset($percentageChange)
+                            @if($percentageChange['readyForPrint'] > 0)
+                                <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                <p><span class="stat-up">{{$percentageChange['readyForPrint']}}%</span> Up from yesterday</p>
+                            @elseif($percentageChange['readyForPrint'] < 0)
+                                <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                <p><span class="stat-down">{{abs($percentageChange['readyForPrint'])}}%</span> Down from yesterday</p>
+                            @endif
+                        @endisset
                     </div>
                 </div>
-                <div class="stat-btm">
-                    @isset($percentageChange)
-                        @if($percentageChange['readyForPrint'] > 0)
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl">
+                <div class="stat">
+                    <div class="stat-top">
+                        <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
+                        <div class="stat-info">
+                            <h3>{{ $inProductionOrdersCount }}</h3>
+                            <p>In Production</p>
+                        </div>
+                    </div>
+                    <div class="stat-btm">
+                        @isset($percentageChange)
+                            @if($percentageChange['production'] > 0)
+                                <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                <p><span class="stat-up">{{$percentageChange['production']}}%</span> Up from yesterday</p>
+                            @elseif($percentageChange['production'] < 0)
+                                <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                <p><span class="stat-down">{{abs($percentageChange['production'])}}%</span> Down from yesterday</p>
+                            @endif
+                        @endisset
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xl">
+                <div class="stat">
+                    <div class="stat-top">
+                        <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
+                        <div class="stat-info">
+                            <h3>{{ $onHoldOrdersCount }}</h3>
+                            <p>On Hold</p>
+                        </div>
+                    </div>
+                    <div class="stat-btm">
+                        @isset($percentageChange)
+                            @if($percentageChange['onHold'] > 0)
+                                <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                <p><span class="stat-up">{{$percentageChange['onHold']}}%</span> Up from yesterday</p>
+                            @elseif($percentageChange['onHold'] < 0)
+                                <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                <p><span class="stat-down">{{abs($percentageChange['onHold'])}}%</span> Down from yesterday</p>
+                            @endif
+                        @endisset
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-xl">
+                <div class="stat">
+                    <div class="stat-top">
+                        <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
+                        <div class="stat-info">
+                            <h3>{{ $readyToShipOrdersCount }}</h3>
+                            <p>Ready to Ship</p>
+                        </div>
+                    </div>
+                    <div class="stat-btm">
+                        @if($percentageChange['readyToShip'] > 0)
                             <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                            <p><span class="stat-up">{{$percentageChange['readyForPrint']}}%</span> Up from yesterday</p>
-                        @elseif($percentageChange['readyForPrint'] < 0)
+                            <p><span class="stat-up">{{$percentageChange['readyToShip']}}%</span> Up from yesterday</p>
+                        @elseif($percentageChange['readyToShip'] < 0)
                             <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                            <p><span class="stat-down">{{abs($percentageChange['readyForPrint'])}}%</span> Down from yesterday</p>
+                            <p><span class="stat-down">{{abs($percentageChange['readyToShip'])}}%</span> Down from yesterday</p>
                         @endif
-                    @endisset
-                </div>
-            </div>
-            <div class="stat">
-                <div class="stat-top">
-                    <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
-                    <div class="stat-info">
-                        <h3>{{ $inProductionOrdersCount }}</h3>
-                        <p>In Production</p>
                     </div>
                 </div>
-                <div class="stat-btm">
-                    @isset($percentageChange)
-                        @if($percentageChange['production'] > 0)
+            </div>
+            <div class="col-md-6 col-lg-6 col-xl">
+                <div class="stat">
+                    <div class="stat-top">
+                        <img src="{{ asset('icons/quality-control.png') }}" alt="Quality Control">
+                        <div class="stat-info">
+                            <h3>{{ $qualityControlOrdersCount }}</h3>
+                            <p>in Quality Control</p>
+                        </div>
+                    </div>
+                    <div class="stat-btm">
+                        @if($percentageChange['qualityControl'] > 0)
                             <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                            <p><span class="stat-up">{{$percentageChange['production']}}%</span> Up from yesterday</p>
-                        @elseif($percentageChange['production'] < 0)
+                            <p><span class="stat-up">{{$percentageChange['qualityControl']}}%</span> Up from yesterday</p>
+                        @elseif($percentageChange['qualityControl'] < 0)
                             <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                            <p><span class="stat-down">{{abs($percentageChange['production'])}}%</span> Down from yesterday</p>
+                            <p><span class="stat-down">{{abs($percentageChange['qualityControl'])}}%</span> Down from yesterday</p>
                         @endif
-                    @endisset
-
-                </div>
-            </div>
-            <div class="stat">
-                <div class="stat-top">
-                    <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
-                    <div class="stat-info">
-                        <h3>{{ $onHoldOrdersCount }}</h3>
-                        <p>On Hold</p>
                     </div>
-                </div>
-                <div class="stat-btm">
-                    @isset($percentageChange)
-                        @if($percentageChange['onHold'] > 0)
-                            <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                            <p><span class="stat-up">{{$percentageChange['onHold']}}%</span> Up from yesterday</p>
-                        @elseif($percentageChange['onHold'] < 0)
-                            <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                            <p><span class="stat-down">{{abs($percentageChange['onHold'])}}%</span> Down from yesterday</p>
-                        @endif
-                    @endisset
-                </div>
-            </div>
-            <div class="stat">
-                <div class="stat-top">
-                    <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
-                    <div class="stat-info">
-                        <h3>{{ $readyToShipOrdersCount }}</h3>
-                        <p>Ready to Ship</p>
-                    </div>
-                </div>
-                <div class="stat-btm">
-                    @if($percentageChange['readyToShip'] > 0)
-                        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                        <p><span class="stat-up">{{$percentageChange['readyToShip']}}%</span> Up from yesterday</p>
-                    @elseif($percentageChange['readyToShip'] < 0)
-                        <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                        <p><span class="stat-down">{{abs($percentageChange['readyToShip'])}}%</span> Down from yesterday</p>
-                    @endif
-                </div>
-            </div>
-            <div class="stat">
-                <div class="stat-top">
-                    <img src="{{ asset('icons/quality-control.png') }}" alt="Quality Control">
-                    <div class="stat-info">
-                        <h3>{{ $qualityControlOrdersCount }}</h3>
-                        <p>in Quality Control</p>
-                    </div>
-                </div>
-                <div class="stat-btm">
-                    @if($percentageChange['qualityControl'] > 0)
-                        <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                        <p><span class="stat-up">{{$percentageChange['qualityControl']}}%</span> Up from yesterday</p>
-                    @elseif($percentageChange['qualityControl'] < 0)
-                        <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                        <p><span class="stat-down">{{abs($percentageChange['qualityControl'])}}%</span> Down from yesterday</p>
-                    @endif
                 </div>
             </div>
         </div>
@@ -191,7 +200,10 @@
                                         <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
                                     </button>
                                     <button class="edit-btn" onclick="viewDetails('{{ $order->id }}','{{ $order->order_id }}')">
-                                        View details
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                        </svg>
                                     </button>
                                 </td>
                             </tr>
