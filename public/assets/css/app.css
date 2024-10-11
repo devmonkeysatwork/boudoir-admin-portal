@@ -203,7 +203,7 @@ button {
     background-color: #fff;
     padding: 20px 30px;
     display: flex;
-    justify-content: space-between;
+    justify-content: end;
     align-items: center;
     position: sticky;
     top: 0;
@@ -2027,5 +2027,8 @@ thead {
     }
     .sidebar.active {
         left: 0; /* Move into view */
+    }
+    .header{
+        justify-content: space-between !important;
     }
 }
