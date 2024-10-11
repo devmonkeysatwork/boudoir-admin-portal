@@ -56,6 +56,9 @@
 <script src="{{asset('assets/js/app.js')}}"></script>
 
 <script>
+    function toggleSidebar(){
+        $('.sidebar').toggleClass('active');
+    }
     document.addEventListener("DOMContentLoaded", function() {
         // Initialize Pickr for create status modal
         const createPickr = Pickr.create({

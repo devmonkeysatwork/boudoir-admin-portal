@@ -203,7 +203,7 @@ button {
     background-color: #fff;
     padding: 20px 30px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
@@ -2007,4 +2007,25 @@ thead {
     color: #FFF;
     text-align: center;
 
+}
+.toggleSidebar{
+    display: none !important;
+}
+@media (max-width: 992px) {
+    .toggleSidebar{
+        display: block !important;
+    }
+    .sidebar {
+        position: absolute;
+        height: 100vh;
+        left: -100%;
+        transition: left 0.3s ease;
+        z-index: 999999;
+    }
+    .main{
+        margin-left: 0px;
+    }
+    .sidebar.active {
+        left: 0; /* Move into view */
+    }
 }
