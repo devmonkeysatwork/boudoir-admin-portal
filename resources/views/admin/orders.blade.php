@@ -138,6 +138,9 @@
                           <img src="{{ asset('icons/chevron-down.svg') }}" alt="Expand Icon">
                       </button>
                   @endif
+                  <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                      Start order
+                  </button>
               </td>
           </tr>
             @if(isset($order) && isset($order->children) && count($order->children))
@@ -210,6 +213,7 @@
                                                 <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                             </svg>
                                         </button>
+
                                     </td>
                                 </tr>
                             @endforeach

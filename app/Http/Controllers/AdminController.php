@@ -116,7 +116,7 @@ class AdminController extends Controller
 
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
-
+        $statuses = OrderStatus::whereNotIn('status_name',OrderStatus::adminStatuses)->get();
 
 //        Percentage Counts ****************************************
         $yesterdayStart = \Carbon\Carbon::yesterday()->startOfDay();
@@ -185,7 +185,8 @@ class AdminController extends Controller
             'edit_statuses',
             'sub_statuses',
             'filter_date',
-            'percentageChange'
+            'percentageChange',
+            'statuses'
         ));
     }
 

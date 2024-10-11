@@ -6,7 +6,6 @@ use App\Http\Controllers\CustomAuthController;
 use \App\Http\Controllers\OrdersController;
 use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\ProfileController;
-use App\Mail\grantDetails;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +41,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/get_order_details', [OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
     Route::post('/comment_add_reply', [OrdersController::class, 'addComment'])->name('order.add_reply');
+
+    Route::get('/my_orders', [OrdersController::class, 'myOrders'])->name('admin.my_orders');
+    Route::post('/update_order_log', [OrdersController::class, 'updateOrderStatus'])->name('order.add_log');
+    Route::post('/end_order_phase', [OrdersController::class, 'endOrderPhase'])->name('order.end_log');
 
     Route::get('/orders/export', [OrdersController::class, 'exportCSV'])->name('order.csv');
     Route::get('/export-pdf', [OrdersController::class, 'exportPDF'])->name('order.pdf');
@@ -89,6 +92,5 @@ Route::get('/send_email', [AdminController::class,'sendSummaryEmail'])->name('se
 
 
 Route::post('/api/save_order', [OrdersController::class, 'store']);
-Route::post('/update_order_log', [OrdersController::class, 'addOrUpdateOrderStatusRow'])->name('order.add_log');
 
 require __DIR__ . '/auth.php';

@@ -81,3 +81,4 @@ $(document).ready(function() {
     $("#areasTable").tablesorter();
     $("#teamTable").tablesorter();
 });
+

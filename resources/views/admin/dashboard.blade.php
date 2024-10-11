@@ -156,15 +156,15 @@
                                     @endif
                                 </td>
                                 <td>
-                              <span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
-                              @if(isset($order->last_log->sub_status))
-                                      {{$order->last_log?->sub_status?->name ?? null}}
-                                  @elseif(isset($order->last_log->status))
-                                      {{$order->last_log?->status?->status_name ?? null}}
-                                  @else
-                                      {{$order->status?->status_name ?? null}}
-                                  @endif
-                              </span>
+                                  <span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
+                                      @if(isset($order->last_log->sub_status))
+                                          {{$order->last_log?->sub_status?->name ?? null}}
+                                      @elseif(isset($order->last_log->status))
+                                          {{$order->last_log?->status?->status_name ?? null}}
+                                      @else
+                                          {{$order->status?->status_name ?? null}}
+                                      @endif
+                                  </span>
                                 </td>
                                 <td>
                                     @if(isset($order->last_log->user))
@@ -204,6 +204,9 @@
                                             <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                         </svg>
+                                    </button>
+                                    <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                        Start order
                                     </button>
                                 </td>
                             </tr>

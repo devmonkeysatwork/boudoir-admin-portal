@@ -488,124 +488,227 @@ class OrdersController extends Controller
 //        ]);
 //    }
 
-    public function addOrUpdateOrderStatusRow(Request $request)
+//    public function addOrUpdateOrderStatusRow(Request $request)
+//    {
+//
+//        $inputs = explode(',', $request->input);
+//        if (count($inputs) > 0) {
+//            try {
+//                for ($i = 0; $i < count($inputs) - 1; $i++) {
+//                    $input = $inputs[$i];
+//                    $text = explode('-', $input);
+//                    if (count($text) > 0) {
+//                        DB::beginTransaction();
+//
+//                        $userId = User::where('name', $text[0])->pluck('id')->first();
+//                        if(count($text)>2){
+//                            $content = $text[1].$text[2];
+//                        }else{
+//                            $content = $text[1];
+//                        }
+//
+//                        if (is_numeric($text[1])) {
+//                            $content = $text[1];
+//                            $existingOrderStatus = OrderLogs::where('status_id', null)
+//                                ->where('order_id', $content)
+//                                ->first();
+//
+//                            if ($existingOrderStatus) {
+//                                $response = [
+//                                    'status' => 200,
+//                                    'message' => 'Order log row already exists.',
+//                                ];
+//                            } else {
+//
+//                                $lastOrderStatus = OrderLogs::where('order_id', $content)
+//                                    ->whereNotNull('status_id')
+//                                    ->orderBy('created_at', 'desc')
+//                                    ->first();
+//                                if($lastOrderStatus){
+//                                    $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
+//                                    $lastOrderStatus->save();
+//                                }
+//
+//                                $orderStatus = new OrderLogs();
+//                                $orderStatus->order_id = $content;
+//                                $orderStatus->user_id = $userId;
+//                                $orderStatus->save();
+//
+//                                $response = [
+//                                    'status' => 200,
+//                                    'message' => 'Status log row created.',
+//                                ];
+//                            }
+//
+//                        } else {
+//                            $status_id = OrderStatus::where('status_name', $content)->pluck('id')->first();
+//                            $orderStatus = OrderLogs::where('user_id', $userId)
+//                                ->where('order_id', '!=', null)
+//                                ->where('status_id', null)
+//                                ->first();
+//
+//                            if ($orderStatus) {
+//                                $orderStatus->status_id = $status_id;
+//                                $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+//                                $orderStatus->save();
+//
+//                                $order = Orders::where('order_id', $orderStatus->order_id)->first();
+//                                if ($order) {
+//                                    $order->status_id = $status_id;
+//                                    $order->save();
+//                                }
+//                                $log = OrderLogs::with(['user','status'])
+//                                    ->where('id', $orderStatus->id)
+//                                    ->first();
+//
+//                                $notification = new Notifications();
+//                                $notification->type = Notifications::typestatus;
+//                                $notification->log_id = $log->id;
+//                                $notification->save();
+//
+//                                $message = ['message'=>'A status was updated for order id '.$orderStatus->order_id,'log'=>$log];
+//                                event(new NewMessage($message));
+//                                $this->sendIssueWithPrintEmail($order,$log->status->status_name);
+//                                $response = [
+//                                    'status' => 200,
+//                                    'message' => 'Status log updated successfully.',
+//                                ];
+//                            } else {
+//                                $response = [
+//                                    'status' => 404,
+//                                    'message' => 'No matching order status found to update.',
+//                                ];
+//                            }
+//                        }
+//
+//                        DB::commit();
+//                    } else {
+//                        Log::info('--------------ERROR WHILE UPDATING STATUS-----------------------');
+//                        Log::info($input);
+//                        Log::info('-------------------------------------');
+//                    }
+//                }
+//
+//            } catch (\Exception $e) {
+//                DB::rollBack();
+//                return response()->json([
+//                    'status' => 400,
+//                    'message' => 'Something went wrong: ' . $e->getMessage(),
+//                ]);
+//            }
+//        }
+//        else{
+//            return response()->json([
+//                'status' => 400,
+//                'message' => 'No inputs provided.',
+//            ]);
+//        }
+//
+//        return response()->json($response);
+//    }
+
+    public function updateOrderStatus(Request $request)
     {
+        // Get the logged-in user's ID
+        $userId = auth()->id();
 
-        $inputs = explode(',', $request->input);
-        if (count($inputs) > 0) {
-            try {
-                for ($i = 0; $i < count($inputs) - 1; $i++) {
-                    $input = $inputs[$i];
-                    $text = explode('-', $input);
-                    if (count($text) > 0) {
-                        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                        $userId = User::where('name', $text[0])->pluck('id')->first();
-                        if(count($text)>2){
-                            $content = $text[1].$text[2];
-                        }else{
-                            $content = $text[1];
-                        }
-
-                        if (is_numeric($text[1])) {
-                            $content = $text[1];
-                            $existingOrderStatus = OrderLogs::where('status_id', null)
-                                ->where('order_id', $content)
-                                ->first();
-
-                            if ($existingOrderStatus) {
-                                $response = [
-                                    'status' => 200,
-                                    'message' => 'Order log row already exists.',
-                                ];
-                            } else {
-
-                                $lastOrderStatus = OrderLogs::where('order_id', $content)
-                                    ->whereNotNull('status_id')
-                                    ->orderBy('created_at', 'desc')
-                                    ->first();
-                                if($lastOrderStatus){
-                                    $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
-                                    $lastOrderStatus->save();
-                                }
-
-                                $orderStatus = new OrderLogs();
-                                $orderStatus->order_id = $content;
-                                $orderStatus->user_id = $userId;
-                                $orderStatus->save();
-
-                                $response = [
-                                    'status' => 200,
-                                    'message' => 'Status log row created.',
-                                ];
-                            }
-
-                        } else {
-                            $status_id = OrderStatus::where('status_name', $content)->pluck('id')->first();
-                            $orderStatus = OrderLogs::where('user_id', $userId)
-                                ->where('order_id', '!=', null)
-                                ->where('status_id', null)
-                                ->first();
-
-                            if ($orderStatus) {
-                                $orderStatus->status_id = $status_id;
-                                $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
-                                $orderStatus->save();
-
-                                $order = Orders::where('order_id', $orderStatus->order_id)->first();
-                                if ($order) {
-                                    $order->status_id = $status_id;
-                                    $order->save();
-                                }
-                                $log = OrderLogs::with(['user','status'])
-                                    ->where('id', $orderStatus->id)
-                                    ->first();
-
-                                $notification = new Notifications();
-                                $notification->type = Notifications::typestatus;
-                                $notification->log_id = $log->id;
-                                $notification->save();
-
-                                $message = ['message'=>'A status was updated for order id '.$orderStatus->order_id,'log'=>$log];
-                                event(new NewMessage($message));
-                                $this->sendIssueWithPrintEmail($order,$log->status->status_name);
-                                $response = [
-                                    'status' => 200,
-                                    'message' => 'Status log updated successfully.',
-                                ];
-                            } else {
-                                $response = [
-                                    'status' => 404,
-                                    'message' => 'No matching order status found to update.',
-                                ];
-                            }
-                        }
-
-                        DB::commit();
-                    } else {
-                        Log::info('--------------ERROR WHILE UPDATING STATUS-----------------------');
-                        Log::info($input);
-                        Log::info('-------------------------------------');
-                    }
-                }
-
-            } catch (\Exception $e) {
-                DB::rollBack();
+            // Split the input into order number and status ID
+            $orderNumber = $request->input('order_id');
+            $statusId = $request->input('status_id');
+            if (!$orderNumber && !$statusId || $statusId==0) {
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Something went wrong: ' . $e->getMessage(),
+                    'message' => 'Invalid input format. Please provide order number and status ID.',
                 ]);
             }
-        }
-        else{
+            // Check for existing order status
+            $existingOrderStatus = OrderLogs::with('status')->where('time_end', null)
+                ->where('order_id', $orderNumber)
+                ->where('time_started','!=', null)
+                ->first();
+
+            if ($existingOrderStatus) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Order ID '.$orderNumber.' is not yet completed on '. $existingOrderStatus->status->status_name,
+                ]);
+            }
+
+            // Create new order status log
+            $orderStatus = new OrderLogs();
+            $orderStatus->order_id = $orderNumber;
+            $orderStatus->user_id = $userId;
+            $orderStatus->status_id = $statusId;
+            $orderStatus->time_started = Carbon::now()->format('Y-m-d H:i:s');
+            $orderStatus->save();
+
+            $order = Orders::where('order_id', $orderNumber)->first();
+            if ($order) {
+                $order->status_id = $statusId;
+                $order->save();
+            }
+            DB::commit();
+            $log = OrderLogs::whereId($orderStatus->id)->with(['user','status'])->first();
+            $message = ['message' => 'A status was updated for order id ' . $orderStatus->order_id, 'log' => $log];
+            event(new NewMessage($message));
+            $this->sendIssueWithPrintEmail($order, $log->status->status_name);
+            $response = [
+                'status' => 200,
+                'message' => 'Status log row created.',
+            ];
+
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'status' => 400,
-                'message' => 'No inputs provided.',
+                'message' => 'Something went wrong: ' . $e->getMessage(),
+            ]);
+        }
+        return response()->json($response);
+    }
+
+    public function endOrderPhase(Request $request){
+        $userId = auth()->id();
+        $orderNumber = $request->input('order_id');
+        $id = $request->input('id');
+        try {
+            DB::beginTransaction();
+
+            $lastOrderStatus = OrderLogs::where('id',$id)
+                ->where('order_id', $orderNumber)
+                ->whereNotNull('time_started')
+                ->whereNull('time_end')
+                ->where('user_id',$userId)
+                ->first();
+            if($lastOrderStatus){
+                $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
+                $lastOrderStatus->save();
+            }else{
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'No order with '.$orderNumber. ' for user '.auth()->user()?->name??'',
+                ]);
+            }
+
+
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 400,
+                'message' => 'Something went wrong: ' . $e->getMessage(),
             ]);
         }
 
-        return response()->json($response);
+
     }
+
+
 
 
     public function sendIssueWithPrintEmail($order,$status)
@@ -638,5 +741,23 @@ class OrdersController extends Controller
 
         // Return the PDF file as a download
         return $pdf->download('order_' . $orderId . '.pdf');
+    }
+
+    function myOrders(){
+        $userId = auth()->id();
+        // Fetch the associated OrderLogs to get the time_started
+        $orderLog = OrderLogs::with(['user','status'])
+            ->where('user_id',$userId)
+            ->whereNotNull('time_started')
+            ->whereNull('time_end')
+            ->first();
+        $myOrders = OrderLogs::with(['user','status','order'])
+            ->where('time_started','!=', null)
+            ->where('time_end','!=', null)
+            ->where('user_id',$userId)
+            ->orderBy('time_end','DESC')
+            ->paginate(10);
+
+        return view('workers.orders', compact('myOrders', 'orderLog'));
     }
 }

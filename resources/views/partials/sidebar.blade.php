@@ -19,6 +19,11 @@
       </a>
     </li>
     <li>
+      <a href="{{ route('admin.my_orders') }}" class="{{ Request::routeIs('admin.my_orders') ? 'active' : '' }}">
+        <img src="{{ asset('icons/order-list.png') }}" alt="Order List">My Orders
+      </a>
+    </li>
+    <li>
       <a href="{{ route('admin.areas') }}" class="{{ Request::routeIs('admin.areas') ? 'active' : '' }}">
         <img src="{{ asset('icons/workstations.png') }}" alt="Areas">Areas
       </a>
