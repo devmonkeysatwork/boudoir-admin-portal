@@ -124,9 +124,11 @@
                   @endif
               </td>
               <td>
-                  <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
-                      <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon">
-                  </button>
+                  @if(Auth::user()->role_id == 1)
+                      <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                          <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon">
+                      </button>
+                  @endif
                   <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
                       <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="12" cy="12" r="3.5" stroke="#222222"/>

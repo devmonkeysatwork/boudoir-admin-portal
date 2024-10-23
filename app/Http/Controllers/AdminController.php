@@ -25,6 +25,10 @@ class AdminController extends Controller
     public function dashboard(Request $request)
     {
 
+        if(Auth::user()->role_id != 1){
+            return redirect()->route('my_dashboard');
+        }
+
         $yesterday = Carbon::yesterday()->toDateString();
         $today = Carbon::today()->toDateString();
 

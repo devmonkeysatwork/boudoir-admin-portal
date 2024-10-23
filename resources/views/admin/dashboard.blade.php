@@ -3,114 +3,200 @@
 @section('content')
     <div class="dashboard">
         <h1>Dashboard</h1>
-        <div class="stats row">
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="stat">
-                    <div class="stat-top">
-                        <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
-                        <div class="stat-info">
-                            <h3>{{ $readyForPrintOrdersCount }}</h3>
-                            <p>Ready for Print</p>
+        @if(Auth::user()->role_id == 1)
+            <div class="stats row">
+                <div class="col-md-6 col-lg-4 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
+                            <div class="stat-info">
+                                <h3>{{ $readyForPrintOrdersCount }}</h3>
+                                <p>Ready for Print</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @isset($percentageChange)
+                                @if($percentageChange['readyForPrint'] > 0)
+                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                    <p><span class="stat-up">{{$percentageChange['readyForPrint']}}%</span> Up from yesterday</p>
+                                @elseif($percentageChange['readyForPrint'] < 0)
+                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                    <p><span class="stat-down">{{abs($percentageChange['readyForPrint'])}}%</span> Down from yesterday</p>
+                                @endif
+                            @endisset
                         </div>
                     </div>
-                    <div class="stat-btm">
-                        @isset($percentageChange)
-                            @if($percentageChange['readyForPrint'] > 0)
+                </div>
+                <div class="col-md-6 col-lg-4 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
+                            <div class="stat-info">
+                                <h3>{{ $inProductionOrdersCount }}</h3>
+                                <p>In Production</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @isset($percentageChange)
+                                @if($percentageChange['production'] > 0)
+                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                    <p><span class="stat-up">{{$percentageChange['production']}}%</span> Up from yesterday</p>
+                                @elseif($percentageChange['production'] < 0)
+                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                    <p><span class="stat-down">{{abs($percentageChange['production'])}}%</span> Down from yesterday</p>
+                                @endif
+                            @endisset
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
+                            <div class="stat-info">
+                                <h3>{{ $onHoldOrdersCount }}</h3>
+                                <p>On Hold</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @isset($percentageChange)
+                                @if($percentageChange['onHold'] > 0)
+                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                    <p><span class="stat-up">{{$percentageChange['onHold']}}%</span> Up from yesterday</p>
+                                @elseif($percentageChange['onHold'] < 0)
+                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                    <p><span class="stat-down">{{abs($percentageChange['onHold'])}}%</span> Down from yesterday</p>
+                                @endif
+                            @endisset
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
+                            <div class="stat-info">
+                                <h3>{{ $readyToShipOrdersCount }}</h3>
+                                <p>Ready to Ship</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @if($percentageChange['readyToShip'] > 0)
                                 <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                                <p><span class="stat-up">{{$percentageChange['readyForPrint']}}%</span> Up from yesterday</p>
-                            @elseif($percentageChange['readyForPrint'] < 0)
+                                <p><span class="stat-up">{{$percentageChange['readyToShip']}}%</span> Up from yesterday</p>
+                            @elseif($percentageChange['readyToShip'] < 0)
                                 <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                                <p><span class="stat-down">{{abs($percentageChange['readyForPrint'])}}%</span> Down from yesterday</p>
+                                <p><span class="stat-down">{{abs($percentageChange['readyToShip'])}}%</span> Down from yesterday</p>
                             @endif
-                        @endisset
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="stat">
-                    <div class="stat-top">
-                        <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
-                        <div class="stat-info">
-                            <h3>{{ $inProductionOrdersCount }}</h3>
-                            <p>In Production</p>
                         </div>
                     </div>
-                    <div class="stat-btm">
-                        @isset($percentageChange)
-                            @if($percentageChange['production'] > 0)
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/quality-control.png') }}" alt="Quality Control">
+                            <div class="stat-info">
+                                <h3>{{ $qualityControlOrdersCount }}</h3>
+                                <p>in Quality Control</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @if($percentageChange['qualityControl'] > 0)
                                 <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                                <p><span class="stat-up">{{$percentageChange['production']}}%</span> Up from yesterday</p>
-                            @elseif($percentageChange['production'] < 0)
+                                <p><span class="stat-up">{{$percentageChange['qualityControl']}}%</span> Up from yesterday</p>
+                            @elseif($percentageChange['qualityControl'] < 0)
                                 <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                                <p><span class="stat-down">{{abs($percentageChange['production'])}}%</span> Down from yesterday</p>
+                                <p><span class="stat-down">{{abs($percentageChange['qualityControl'])}}%</span> Down from yesterday</p>
                             @endif
-                        @endisset
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4 col-xl">
-                <div class="stat">
-                    <div class="stat-top">
-                        <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
-                        <div class="stat-info">
-                            <h3>{{ $onHoldOrdersCount }}</h3>
-                            <p>On Hold</p>
                         </div>
                     </div>
-                    <div class="stat-btm">
-                        @isset($percentageChange)
-                            @if($percentageChange['onHold'] > 0)
-                                <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                                <p><span class="stat-up">{{$percentageChange['onHold']}}%</span> Up from yesterday</p>
-                            @elseif($percentageChange['onHold'] < 0)
-                                <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                                <p><span class="stat-down">{{abs($percentageChange['onHold'])}}%</span> Down from yesterday</p>
-                            @endif
-                        @endisset
-                    </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-6 col-xl">
-                <div class="stat">
-                    <div class="stat-top">
-                        <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
-                        <div class="stat-info">
-                            <h3>{{ $readyToShipOrdersCount }}</h3>
-                            <p>Ready to Ship</p>
+        @else
+            <div class="stats row">
+                <div class="col-md-6 col-lg-4 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
+                            <div class="stat-info">
+                                <h3>{{ $readyForPrintOrdersCount }}</h3>
+                                <p>Ready for Print</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @isset($percentageChange)
+                                @if($percentageChange['readyForPrint'] > 0)
+                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                    <p><span class="stat-up">{{$percentageChange['readyForPrint']}}%</span> Up from yesterday</p>
+                                @elseif($percentageChange['readyForPrint'] < 0)
+                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                    <p><span class="stat-down">{{abs($percentageChange['readyForPrint'])}}%</span> Down from yesterday</p>
+                                @endif
+                            @endisset
                         </div>
                     </div>
-                    <div class="stat-btm">
-                        @if($percentageChange['readyToShip'] > 0)
-                            <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                            <p><span class="stat-up">{{$percentageChange['readyToShip']}}%</span> Up from yesterday</p>
-                        @elseif($percentageChange['readyToShip'] < 0)
-                            <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                            <p><span class="stat-down">{{abs($percentageChange['readyToShip'])}}%</span> Down from yesterday</p>
-                        @endif
-                    </div>
                 </div>
-            </div>
-            <div class="col-md-6 col-lg-6 col-xl">
-                <div class="stat">
-                    <div class="stat-top">
-                        <img src="{{ asset('icons/quality-control.png') }}" alt="Quality Control">
-                        <div class="stat-info">
-                            <h3>{{ $qualityControlOrdersCount }}</h3>
-                            <p>in Quality Control</p>
+                <div class="col-md-6 col-lg-4 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
+                            <div class="stat-info">
+                                <h3>{{ $inProductionOrdersCount }}</h3>
+                                <p>In Production</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @isset($percentageChange)
+                                @if($percentageChange['production'] > 0)
+                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                    <p><span class="stat-up">{{$percentageChange['production']}}%</span> Up from yesterday</p>
+                                @elseif($percentageChange['production'] < 0)
+                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                    <p><span class="stat-down">{{abs($percentageChange['production'])}}%</span> Down from yesterday</p>
+                                @endif
+                            @endisset
                         </div>
                     </div>
-                    <div class="stat-btm">
-                        @if($percentageChange['qualityControl'] > 0)
-                            <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                            <p><span class="stat-up">{{$percentageChange['qualityControl']}}%</span> Up from yesterday</p>
-                        @elseif($percentageChange['qualityControl'] < 0)
-                            <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                            <p><span class="stat-down">{{abs($percentageChange['qualityControl'])}}%</span> Down from yesterday</p>
-                        @endif
+                </div>
+                <div class="col-md-6 col-lg-4 col-xl">
+                    <div class="stat">
+                        <div class="stat-top">
+                            <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
+                            <div class="stat-info">
+                                <h3>{{ $onHoldOrdersCount }}</h3>
+                                <p>On Hold</p>
+                            </div>
+                        </div>
+                        <div class="stat-btm">
+                            @isset($percentageChange)
+                                @if($percentageChange['onHold'] > 0)
+                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
+                                    <p><span class="stat-up">{{$percentageChange['onHold']}}%</span> Up from yesterday</p>
+                                @elseif($percentageChange['onHold'] < 0)
+                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
+                                    <p><span class="stat-down">{{abs($percentageChange['onHold'])}}%</span> Down from yesterday</p>
+                                @endif
+                            @endisset
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
+        @if(Auth::user()->role_id != 1)
+            <div>
+                <div id="current_order" class="text-center mb-4">
+                    @if ($orderLog)
+                        <h1>Working on Order #{{ $orderLog->order_id }}</h1>
+                        <div id="timer" class="mt-4">
+                            <h2>Time Worked: <span id="clock">00:00:00</span></h2>
+                        </div>
+                        <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>
+                    @else
+                        <p class="p20 text-center">No order in progress.</p>
+                    @endif
+                </div>
+            </div>
+        @endif
         <div class="orders" id="orders_table_db">
             <div class="orders-top">
                 <h2>List of Orders</h2>
@@ -196,18 +282,24 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <button class="edit-btn" onclick="editStatus(this)" data-id="{{ $order->id }}" data-status="{{ $order->status_id }}" data-workstation="{{ $order->workstation_id }}">
-                                        <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
-                                    </button>
+                                    @if(Auth::user()->role_id == 1)
+                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon">
+                                        </button>
+                                    @endif
                                     <button class="edit-btn" onclick="viewDetails('{{ $order->id }}','{{ $order->order_id }}')">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                             <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                         </svg>
                                     </button>
-                                    <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
-                                        Start order
-                                    </button>
+                                    @if($orderLog && $orderLog->order_id == $order->order_id)
+                                        In Progress
+                                    @else
+                                        <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                            Start order
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -228,73 +320,74 @@
                 </div>
             </div>
         </div>
-        <div class="team-workstations">
-            <div class="team">
-                <div class="team-top">
-                    <h2>Team</h2>
-                    <div class="sort-dropdown">
-                        <select class="sort-select" id="team-sort">
-                            <option value="week" selected>Week</option>
-                            <option value="day">Day</option>
-                            <option value="month">Month</option>
-                            <option value="year">Year</option>
-                        </select>
+        @if(Auth::user()->role_id == 1)
+            <div class="team-workstations">
+                <div class="team">
+                    <div class="team-top">
+                        <h2>Team</h2>
+                        <div class="sort-dropdown">
+                            <select class="sort-select" id="team-sort">
+                                <option value="week" selected>Week</option>
+                                <option value="day">Day</option>
+                                <option value="month">Month</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <table id="dashboardTeamTable" class="tablesorter">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th># of Orders</th>
-                        <th>Time Spent</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($teamMembers as $teamMember)
-                        <tr onclick="loadTeamDetails({{ $teamMember['id'] }},'{{$teamMember['user_name']}}')">
-                            <td>{{ $teamMember['user_name'] }}</td>
-                            <td>{{ $teamMember['order_count'] }}</td>
-                            <td>{{ $teamMember['total_time'] }}</td>
+                    <table id="dashboardTeamTable" class="tablesorter">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th># of Orders</th>
+                            <th>Time Spent</th>
                         </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        @foreach($teamMembers as $teamMember)
+                            <tr onclick="loadTeamDetails({{ $teamMember['id'] }},'{{$teamMember['user_name']}}')">
+                                <td>{{ $teamMember['user_name'] }}</td>
+                                <td>{{ $teamMember['order_count'] }}</td>
+                                <td>{{ $teamMember['total_time'] }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="workstations">
-                <div class="workstations-top">
-                    <h2>Areas</h2>
-                    <div class="sort-dropdown">
-                        <select class="sort-select" id="workstation-sort">
-                            <option value="week" selected>Week</option>
-                            <option value="day">Day</option>
-                            <option value="month">Month</option>
-                            <option value="year">Year</option>
-                        </select>
+                <div class="workstations">
+                    <div class="workstations-top">
+                        <h2>Areas</h2>
+                        <div class="sort-dropdown">
+                            <select class="sort-select" id="workstation-sort">
+                                <option value="week" selected>Week</option>
+                                <option value="day">Day</option>
+                                <option value="month">Month</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <table id="dashboardWorkstationsTable" class="tablesorter">
-                    <thead>
-                    <tr>
-                        <th>Area Name</th>
-                        <th># of Orders</th>
-                        <th>Total time(hours)</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($workstations as $workstation)
-                        <tr onclick="loadWorkstationDetails({{ $workstation->id }},'{{$workstation->status_name}}')">
-                            <td>{{ $workstation->status_name }}</td>
-                            <td>{{ $workstation->orders_count() }}</td>
-                            <td>{{ round($workstation->time_spent,2) }}</td>
-{{--                            <td>{{ round(\Carbon\Carbon::parse($workstation->first_log?->time_started)->diffInUTCHours(\Carbon\Carbon::parse($workstation->last_log?->time_end)),2) }}</td>--}}
+                    <table id="dashboardWorkstationsTable" class="tablesorter">
+                        <thead>
+                        <tr>
+                            <th>Area Name</th>
+                            <th># of Orders</th>
+                            <th>Total time(hours)</th>
                         </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        @foreach($workstations as $workstation)
+                            <tr onclick="loadWorkstationDetails({{ $workstation->id }},'{{$workstation->status_name}}')">
+                                <td>{{ $workstation->status_name }}</td>
+                                <td>{{ $workstation->orders_count() }}</td>
+                                <td>{{ round($workstation->time_spent,2) }}</td>
+    {{--                            <td>{{ round(\Carbon\Carbon::parse($workstation->first_log?->time_started)->diffInUTCHours(\Carbon\Carbon::parse($workstation->last_log?->time_end)),2) }}</td>--}}
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <x-modal id="workstationModal" title="Workstation">
+            <x-modal id="workstationModal" title="Workstation">
             <div class="modal-body">
                 <div class="search-bar orders-search mb-3">
                     <input type="text" id="searchOrders" placeholder="Search" class="form-control" />
@@ -319,6 +412,47 @@
                 <button class="btn btn-secondary" onclick="document.getElementById('workstationModal').style.display='none'">Cancel</button>
             </x-slot>
         </x-modal>
+            <x-modal id="editStatusModal" title="Edit Status">
+                <form id="editStatusForm" action="javascript:void(0);" method="post" class="d-block">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <input type="hidden" id="edit_id" name="id">
+                                <label for="status-name">Status</label>
+                                <select name="edit_status" class="form-select" id="edit_status">
+                                    <option value="0">Select One</option>
+                                    @foreach($edit_statuses as $status)
+                                        <option value="{{$status->id}}">{{$status->status_name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6" id="sub_status_div" style="display: none;">
+                            <div class="form-group">
+                                <label for="">Sub Status</label>
+                                <select name="edit_sub_status" class="form-select" id="edit_sub_status">
+                                    <option value="">Select One</option>
+                                    @foreach($sub_statuses as $sub_status)
+                                        <option value="{{$sub_status->id}}" data-parent="{{$sub_status->status_id}}" style="display: none;">
+                                            {{$sub_status->name}}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <textarea name="notes"class="form-control" placeholder="Notes..."></textarea>
+                        </div>
+                    </div>
+                </form>
+                <x-slot name="footer">
+                    <div class="form-group buttons">
+                        <button type="submit" class="btn save-btn" onclick="updateStatus()">Update Status</button>
+                        <button type="button" class="btn cancel-btn" onclick="document.getElementById('editStatusModal').style.display='none'">Cancel</button>
+                    </div>
+                </x-slot>
+            </x-modal>
+        @endif
         <x-modal id="orderModal" title="Order #00001">
             <span class="status" id="modal_status_text">Completed</span>
             <div class="orderModal-flex">
@@ -396,46 +530,6 @@
                     </div>
                 </x-slot>
             </div>
-        </x-modal>
-        <x-modal id="editStatusModal" title="Edit Status">
-            <form id="editStatusForm" action="javascript:void(0);" method="post" class="d-block">
-                <div class="row">
-                    <div class="col-6">
-                        <div class="form-group">
-                            <input type="hidden" id="edit_id" name="id">
-                            <label for="status-name">Status</label>
-                            <select name="edit_status" class="form-select" id="edit_status">
-                                <option value="0">Select One</option>
-                                @foreach($edit_statuses as $status)
-                                    <option value="{{$status->id}}">{{$status->status_name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-6" id="sub_status_div" style="display: none;">
-                        <div class="form-group">
-                            <label for="">Sub Status</label>
-                            <select name="edit_sub_status" class="form-select" id="edit_sub_status">
-                                <option value="">Select One</option>
-                                @foreach($sub_statuses as $sub_status)
-                                    <option value="{{$sub_status->id}}" data-parent="{{$sub_status->status_id}}" style="display: none;">
-                                        {{$sub_status->name}}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-12 mt-2">
-                        <textarea name="notes"class="form-control" placeholder="Notes..."></textarea>
-                    </div>
-                </div>
-            </form>
-            <x-slot name="footer">
-                <div class="form-group buttons">
-                    <button type="submit" class="btn save-btn" onclick="updateStatus()">Update Status</button>
-                    <button type="button" class="btn cancel-btn" onclick="document.getElementById('editStatusModal').style.display='none'">Cancel</button>
-                </div>
-            </x-slot>
         </x-modal>
     </div>
 @endsection
@@ -762,6 +856,83 @@
         $('#download-pdf').on('click', function() {
             window.location.href = '/orders/' + activeOrder + '/download-pdf';
         });
+
+
+
+
+
+
+
+        const timeStarted = new Date("{{ $orderLog?->time_started }}").getTime();
+        const serverTime = new Date("{{ \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s') }}").getTime();
+
+        $(document).ready(function() {
+            startTimer(timeStarted, serverTime);
+        });
+
+        function startTimer(startTime, serverTime) {
+            let currentTime = new Date(serverTime).getTime();
+            const updateClock = () => {
+
+                const elapsedTime = currentTime - startTime;
+
+                // Calculate hours, minutes, seconds
+                const seconds = Math.floor((elapsedTime / 1000) % 60);
+                const minutes = Math.floor((elapsedTime / (1000 * 60)) % 60);
+                const hours = Math.floor((elapsedTime / (1000 * 60 * 60)) % 24);
+                const days = Math.floor(elapsedTime / (1000 * 60 * 60 * 24));
+
+                // Format the clock display
+                const display = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+                // Update the clock on the page
+                $('#clock').text(display);
+                currentTime += 1000;
+            };
+
+            // Update the clock every second
+            setInterval(updateClock, 1000);
+
+            // Run it once to set the initial value
+            updateClock();
+        }
+
+
+
+        function endOrderPhase() {
+            const id = @json($orderLog?->id ?? '');
+            const orderNumber = @json($orderLog?->order_id ?? '');
+
+            let data  = new FormData();
+            data.append('_token','{{@csrf_token()}}');
+            data.append('id',id);
+            data.append('order_id',orderNumber);
+
+            $.ajax({
+                url: '{{route('order.end_log')}}',
+                type: 'POST',
+                data: data,
+                processData: false,
+                contentType: false,
+                cache: false,
+                beforeSend() {
+                    show_loader();
+                },
+                success: function(response) {
+                    if (response.status == 200) {
+                        $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
+                        location.reload();
+                    } else {
+                        $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
+                    }
+                    hide_loader();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    hide_loader();
+                }
+            });
+        }
     </script>
 
 @endsection

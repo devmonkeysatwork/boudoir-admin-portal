@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
     //Admin Routes
     Route::post('/add_worker', [\App\Http\Controllers\Auth\RegisteredUserController::class, 'createUser'])->name('admin.add_worker');
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/user/dashboard', [DashboardController::class, 'dashboard'])->name('my_dashboard');
+
     Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
     Route::get('/orders', [OrdersController::class, 'index'])->name('admin.orders');
 

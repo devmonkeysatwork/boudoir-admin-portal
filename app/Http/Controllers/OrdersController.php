@@ -692,10 +692,13 @@ class OrdersController extends Controller
                     'message' => 'No order with '.$orderNumber. ' for user '.auth()->user()?->name??'',
                 ]);
             }
-
-
-
             DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Work completed on order number '.$orderNumber,
+            ]);
+
 
         } catch (\Exception $e) {
             DB::rollBack();

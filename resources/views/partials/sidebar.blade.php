@@ -3,13 +3,11 @@
         <img src="{{ asset('images/logo.png') }}" alt="The Boudoir Album">
     </div>
     <ul class="sidebar-menu">
-        @if(Auth::user()->role_id == 1)
-            <li>
-                <a href="{{ route('dashboard') }}" class="{{ Request::routeIs('dashboard') ? 'active' : '' }}">
-                    <img src="{{ asset('icons/dashboard.png') }}" alt="Dashboard">Dashboard
-                </a>
-            </li>
-        @endif
+        <li>
+            <a href="{{ route('dashboard') }}" class="{{ Request::routeIs('dashboard') ? 'active' : '' }}">
+                <img src="{{ asset('icons/dashboard.png') }}" alt="Dashboard">Dashboard
+            </a>
+        </li>
         @if(Auth::user()->role_id == 1)
             <li>
                 <a href="{{ route('admin.orders') }}" class="{{ Request::routeIs('admin.orders') ? 'active' : '' }}">
@@ -27,11 +25,11 @@
                 </a>
             </li>
         @endif
-        <li>
-            <a href="{{ route('worker.my_orders') }}" class="{{ Request::routeIs('worker.my_orders') ? 'active' : '' }}">
-                <img src="{{ asset('icons/order-list.png') }}" alt="Order List">My Orders
-            </a>
-        </li>
+{{--        <li>--}}
+{{--            <a href="{{ route('worker.my_orders') }}" class="{{ Request::routeIs('worker.my_orders') ? 'active' : '' }}">--}}
+{{--                <img src="{{ asset('icons/order-list.png') }}" alt="Order List">My Orders--}}
+{{--            </a>--}}
+{{--        </li>--}}
         <li>
             <a href="{{ route('admin.notification') }}" class="{{ Request::is('notification*') ? 'active' : '' }}">
                 <img src="{{ asset('icons/notification.png') }}" alt="Settings">Notifications
