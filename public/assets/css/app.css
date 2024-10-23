@@ -2105,3 +2105,8 @@ thead {
     line-height: 10px;
     text-align: center;
 }
+
+
+#notification_list tbody{
+    max-height: 75vh !important;
+}
