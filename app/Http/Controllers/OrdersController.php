@@ -644,17 +644,26 @@ class OrdersController extends Controller
                 ]);
             }
 
+            $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
+
             // Create new order status log
             $orderStatus = new OrderLogs();
             $orderStatus->order_id = $orderNumber;
             $orderStatus->user_id = $userId;
             $orderStatus->status_id = $statusId;
             $orderStatus->time_started = Carbon::now()->format('Y-m-d H:i:s');
+            if($completed_status == $statusId){
+                $orderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
+            }
+
             $orderStatus->save();
 
             $order = Orders::where('order_id', $orderNumber)->first();
             if ($order) {
                 $order->status_id = $statusId;
+                if($completed_status == $statusId){
+                    $order->date_completed = Carbon::now()->format('Y-m-d');
+                }
                 $order->save();
             }
             DB::commit();

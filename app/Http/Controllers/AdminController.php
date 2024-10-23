@@ -212,6 +212,11 @@ class AdminController extends Controller
             $order->status_id = $request->edit_status;
             $order->save();
 
+//            $lastLog = Orders::whereId($order->id)->with(['last_log'])->first();
+            $lastLog = OrderLogs::whereOrderId($order->order_id)->orderBy('id','DESC')->first();
+            $lastLog->error = 1;
+            $lastLog->save();
+
             $orderStatus = new OrderLogs();
             $orderStatus->order_id = $order->order_id;
             $orderStatus->status_id = $request->edit_status;
