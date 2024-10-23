@@ -3,6 +3,21 @@
 @section('content')
     <div class="dashboard">
         <h1>Dashboard</h1>
+        @if(Auth::user()->role_id != 1)
+            <div>
+                <div id="current_order" class="text-center mb-4">
+                    @isset($orderLog)
+                        <h1>Working on Order #{{ $orderLog->order_id }}</h1>
+                        <div id="timer" class="mt-4">
+                            <h2>Time Worked: <span id="clock">00:00:00</span></h2>
+                        </div>
+                        <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>
+                    @else
+                        <p class="p20 text-center">No order in progress.</p>
+                    @endif
+                </div>
+            </div>
+        @endif
         @if(Auth::user()->role_id == 1)
             <div class="stats row">
                 <div class="col-md-6 col-lg-4 col-xl">
@@ -182,21 +197,6 @@
                 </div>
             </div>
         @endif
-        @if(Auth::user()->role_id != 1)
-            <div>
-                <div id="current_order" class="text-center mb-4">
-                    @if ($orderLog)
-                        <h1>Working on Order #{{ $orderLog->order_id }}</h1>
-                        <div id="timer" class="mt-4">
-                            <h2>Time Worked: <span id="clock">00:00:00</span></h2>
-                        </div>
-                        <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>
-                    @else
-                        <p class="p20 text-center">No order in progress.</p>
-                    @endif
-                </div>
-            </div>
-        @endif
         <div class="orders" id="orders_table_db">
             <div class="orders-top">
                 <h2>List of Orders</h2>
@@ -293,7 +293,7 @@
                                             <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                         </svg>
                                     </button>
-                                    @if($orderLog && $orderLog->order_id == $order->order_id)
+                                    @if(isset($orderLog) && $orderLog->order_id == $order->order_id)
                                         In Progress
                                     @else
                                         <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
@@ -862,77 +862,78 @@
 
 
 
+        @if(isset($orderLog))
+            const timeStarted = new Date("{{ $orderLog?->time_started }}").getTime();
+            const serverTime = new Date("{{ \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s') }}").getTime();
 
-        const timeStarted = new Date("{{ $orderLog?->time_started }}").getTime();
-        const serverTime = new Date("{{ \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s') }}").getTime();
-
-        $(document).ready(function() {
-            startTimer(timeStarted, serverTime);
-        });
-
-        function startTimer(startTime, serverTime) {
-            let currentTime = new Date(serverTime).getTime();
-            const updateClock = () => {
-
-                const elapsedTime = currentTime - startTime;
-
-                // Calculate hours, minutes, seconds
-                const seconds = Math.floor((elapsedTime / 1000) % 60);
-                const minutes = Math.floor((elapsedTime / (1000 * 60)) % 60);
-                const hours = Math.floor((elapsedTime / (1000 * 60 * 60)) % 24);
-                const days = Math.floor(elapsedTime / (1000 * 60 * 60 * 24));
-
-                // Format the clock display
-                const display = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-                // Update the clock on the page
-                $('#clock').text(display);
-                currentTime += 1000;
-            };
-
-            // Update the clock every second
-            setInterval(updateClock, 1000);
-
-            // Run it once to set the initial value
-            updateClock();
-        }
-
-
-
-        function endOrderPhase() {
-            const id = @json($orderLog?->id ?? '');
-            const orderNumber = @json($orderLog?->order_id ?? '');
-
-            let data  = new FormData();
-            data.append('_token','{{@csrf_token()}}');
-            data.append('id',id);
-            data.append('order_id',orderNumber);
-
-            $.ajax({
-                url: '{{route('order.end_log')}}',
-                type: 'POST',
-                data: data,
-                processData: false,
-                contentType: false,
-                cache: false,
-                beforeSend() {
-                    show_loader();
-                },
-                success: function(response) {
-                    if (response.status == 200) {
-                        $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
-                        location.reload();
-                    } else {
-                        $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
-                    }
-                    hide_loader();
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    hide_loader();
-                }
+            $(document).ready(function() {
+                startTimer(timeStarted, serverTime);
             });
-        }
+
+            function startTimer(startTime, serverTime) {
+                let currentTime = new Date(serverTime).getTime();
+                const updateClock = () => {
+
+                    const elapsedTime = currentTime - startTime;
+
+                    // Calculate hours, minutes, seconds
+                    const seconds = Math.floor((elapsedTime / 1000) % 60);
+                    const minutes = Math.floor((elapsedTime / (1000 * 60)) % 60);
+                    const hours = Math.floor((elapsedTime / (1000 * 60 * 60)) % 24);
+                    const days = Math.floor(elapsedTime / (1000 * 60 * 60 * 24));
+
+                    // Format the clock display
+                    const display = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+                    // Update the clock on the page
+                    $('#clock').text(display);
+                    currentTime += 1000;
+                };
+
+                // Update the clock every second
+                setInterval(updateClock, 1000);
+
+                // Run it once to set the initial value
+                updateClock();
+            }
+
+
+
+            function endOrderPhase() {
+                const id = @json($orderLog?->id ?? '');
+                const orderNumber = @json($orderLog?->order_id ?? '');
+
+                let data  = new FormData();
+                data.append('_token','{{@csrf_token()}}');
+                data.append('id',id);
+                data.append('order_id',orderNumber);
+
+                $.ajax({
+                    url: '{{route('order.end_log')}}',
+                    type: 'POST',
+                    data: data,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    beforeSend() {
+                        show_loader();
+                    },
+                    success: function(response) {
+                        if (response.status == 200) {
+                            $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
+                            location.reload();
+                        } else {
+                            $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
+                        }
+                        hide_loader();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        hide_loader();
+                    }
+                });
+            }
+        @endif
     </script>
 
 @endsection

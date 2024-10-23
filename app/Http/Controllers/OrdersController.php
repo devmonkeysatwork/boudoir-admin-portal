@@ -685,6 +685,7 @@ class OrdersController extends Controller
                 ->first();
             if($lastOrderStatus){
                 $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
+                $lastOrderStatus->time_spent = round(Carbon::parse($lastOrderStatus->time_started)->diffInUTCHours(Carbon::parse($lastOrderStatus->time_end)),2);
                 $lastOrderStatus->save();
             }else{
                 return response()->json([
