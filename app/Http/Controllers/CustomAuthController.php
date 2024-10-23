@@ -17,9 +17,12 @@ class CustomAuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-
         if (Auth::attempt($credentials)) {
-            return redirect()->route('dashboard');
+            if(Auth::user()->role_id == 1){
+                return redirect()->route('dashboard');
+            }else{
+                return redirect()->route('worker.my_orders');
+            }
         }
 
         return redirect()->route('login')->withErrors(['email' => 'Invalid credentials']);

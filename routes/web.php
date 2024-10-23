@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomAuthController;
 use \App\Http\Controllers\OrdersController;
 use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
@@ -20,29 +21,30 @@ Route::get('/route-cache', function() {
 // Public routes
 Route::get('/',[CustomAuthController::class, 'showLoginForm'])->name('home');
 
-Route::get('/login', [CustomAuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [CustomAuthController::class, 'login'])->name('custom.login');
+//Route::get('/login', [CustomAuthController::class, 'showLoginForm'])->name('login');
+Route::post('/my_login', [CustomAuthController::class, 'login'])->name('custom.login');
 Route::get('/register', [CustomAuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [CustomAuthController::class, 'register'])->name('custom.register');
 Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
+    //Admin Routes
     Route::post('/add_worker', [\App\Http\Controllers\Auth\RegisteredUserController::class, 'createUser'])->name('admin.add_worker');
-
-
-
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
+    Route::get('/orders', [OrdersController::class, 'index'])->name('admin.orders');
+
+
     Route::get('/notification', [AdminController::class, 'notification'])->name('admin.notification');
 
-    Route::get('/orders', [OrdersController::class, 'index'])->name('admin.orders');
     Route::get('/search_orders', [OrdersController::class, 'search'])->name('search.orders');
     Route::post('/update_order_status', [AdminController::class, 'updateOrderStatus'])->name('admin.update_order_status');
     Route::post('/get_order_details', [OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
     Route::post('/comment_add_reply', [OrdersController::class, 'addComment'])->name('order.add_reply');
 
-    Route::get('/my_orders', [OrdersController::class, 'myOrders'])->name('admin.my_orders');
+    Route::get('/my_orders', [OrdersController::class, 'myOrders'])->name('worker.my_orders');
     Route::post('/update_order_log', [OrdersController::class, 'updateOrderStatus'])->name('order.add_log');
     Route::post('/end_order_phase', [OrdersController::class, 'endOrderPhase'])->name('order.end_log');
 
@@ -51,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/orders/{id}/download-pdf', [OrdersController::class, 'packing_slip'])->name('orders.downloadPDF');
 
-    Route::get('/areas', [AdminController::class, 'areas'])->name('admin.areas');
+
     Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
 
     Route::get('/team', [AdminController::class, 'team'])->name('admin.team');
@@ -79,6 +81,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+
+
+    Route::get('/reports', [DashboardController::class, 'reports'])->name('dashboard.reports');
+    Route::get('/compare', [DashboardController::class, 'compare'])->name('dashboard.compare');
 });
 
 Route::get('/barcode-scanner', function () {

@@ -758,6 +758,10 @@ class OrdersController extends Controller
             ->orderBy('time_end','DESC')
             ->paginate(10);
 
-        return view('workers.orders', compact('myOrders', 'orderLog'));
+        $statuses = OrderStatus::all();
+        $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
+        $sub_statuses = SubStatus::with('status')->get();
+
+        return view('workers.orders', compact('myOrders', ['orderLog','statuses','edit_statuses','sub_statuses']));
     }
 }
