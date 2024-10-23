@@ -25,11 +25,11 @@
                 </a>
             </li>
         @endif
-{{--        <li>--}}
-{{--            <a href="{{ route('worker.my_orders') }}" class="{{ Request::routeIs('worker.my_orders') ? 'active' : '' }}">--}}
-{{--                <img src="{{ asset('icons/order-list.png') }}" alt="Order List">My Orders--}}
-{{--            </a>--}}
-{{--        </li>--}}
+        <li>
+            <a href="{{ route('worker.my_orders') }}" class="{{ Request::routeIs('worker.my_orders') ? 'active' : '' }}">
+                <img src="{{ asset('icons/order-list.png') }}" alt="Order List">My Orders
+            </a>
+        </li>
         <li>
             <a href="{{ route('admin.notification') }}" class="{{ Request::is('notification*') ? 'active' : '' }}">
                 <img src="{{ asset('icons/notification.png') }}" alt="Settings">Notifications

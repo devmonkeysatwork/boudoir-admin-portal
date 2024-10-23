@@ -325,7 +325,7 @@
         }
 
         // Restart scanning when the button is clicked
-        $('.btn-start-order').click(function() {
+        $(document).on('click', '.btn-start-order', function() {
             $('#qr-input').val(''); // Clear the input field
             $('#order_number_title').text($(this).data('id'));
             startScanning(); // Restart scanning

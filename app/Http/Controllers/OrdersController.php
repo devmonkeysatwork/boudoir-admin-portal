@@ -402,8 +402,15 @@ class OrdersController extends Controller
             ->where('orderType', '=', Orders::parentType);
         $orders = $query->get();
 
+        $userId = auth()->id();
+        // Fetch the associated OrderLogs to get the time_started
+        $orderLog = OrderLogs::with(['user','status'])
+            ->where('user_id',$userId)
+            ->whereNotNull('time_started')
+            ->whereNull('time_end')
+            ->first();
 
-        $order_vew = view('admin.partials.order_table',['orders'=>$orders])->render();
+        $order_vew = view('admin.partials.order_table',['orders'=>$orders,'orderLog'=>$orderLog])->render();
         // Return JSON response
         return response()->json(['status'=>200,'orders_view' => $order_vew]);
     }
