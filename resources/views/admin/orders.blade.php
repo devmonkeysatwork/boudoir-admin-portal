@@ -64,7 +64,6 @@
     <thead>
       <tr>
         <th>Order #</th>
-        <th>Priority</th>
         <th>Phase</th>
         <th>Team Member</th>
         <th>Date Started</th>
@@ -76,14 +75,12 @@
     <tbody id="ordersBody">
         @foreach($orders as $order)
           <tr>
-            <td>{{$order->order_id}}</td>
-            <td>
-                @if($order->is_rush == 1)
-                    <img src="{{asset('icons/rush.svg')}}" alt="Rush">
-                @else
-                    -
-                @endif
-            </td>
+              <td>
+                  @if($order->is_rush)
+                      <img src="{{asset('icons/rush.svg')}}" alt="Rush">
+                  @endif
+                  {{ $order->order_id }}
+              </td>
             <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
                     @if(isset($order->last_log->sub_status))
                         {{$order->last_log?->sub_status?->name ?? null}}
@@ -152,7 +149,6 @@
                             <thead>
                             <tr>
                                 <th>Order #</th>
-                                <th>Priority</th>
                                 <th>Phase</th>
                                 <th>Team Member</th>
                                 <th>Date Started</th>
@@ -164,13 +160,11 @@
                             <tbody>
                             @foreach($order?->children as $child_order)
                                 <tr>
-                                    <td>{{$child_order->order_id}}</td>
                                     <td>
                                         @if($child_order->is_rush == 1)
                                             <img src="{{asset('icons/rush.svg')}}" alt="Rush">
-                                        @else
-                                            -
                                         @endif
+                                        {{$child_order->order_id}}
                                     </td>
                                     <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">
                                         @if(isset($child_order->last_log->sub_status))

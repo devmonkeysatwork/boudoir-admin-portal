@@ -186,7 +186,6 @@
                     <thead>
                     <tr>
                         <th>Order #</th>
-                        <th>Priority</th>
                         <th>Phase</th>
                         <th>Team Member</th>
                         <th>Date Started</th>
@@ -200,13 +199,11 @@
                     @if(isset($orders) && count($orders))
                         @foreach($orders as $order)
                             <tr>
-                                <td>{{ $order->order_id }}</td>
                                 <td>
                                     @if($order->is_rush)
                                         <img src="{{asset('icons/rush.svg')}}" alt="Rush">
-                                    @else
-                                        -
                                     @endif
+                                    {{ $order->order_id }}
                                 </td>
                                 <td>
                                   <span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
