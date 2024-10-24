@@ -134,20 +134,9 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
                             <div class="stat-info">
-                                <h3>{{ $readyForPrintOrdersCount }}</h3>
-                                <p>Ready for Print</p>
+                                <h3>3</h3>
+                                <p>Orders in queue</p>
                             </div>
-                        </div>
-                        <div class="stat-btm">
-                            @isset($percentageChange)
-                                @if($percentageChange['readyForPrint'] > 0)
-                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                                    <p><span class="stat-up">{{$percentageChange['readyForPrint']}}%</span> Up from yesterday</p>
-                                @elseif($percentageChange['readyForPrint'] < 0)
-                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                                    <p><span class="stat-down">{{abs($percentageChange['readyForPrint'])}}%</span> Down from yesterday</p>
-                                @endif
-                            @endisset
                         </div>
                     </div>
                 </div>
@@ -156,20 +145,9 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
                             <div class="stat-info">
-                                <h3>{{ $inProductionOrdersCount }}</h3>
-                                <p>In Production</p>
+                                <h3>1</h3>
+                                <p>Issues/On Hold</p>
                             </div>
-                        </div>
-                        <div class="stat-btm">
-                            @isset($percentageChange)
-                                @if($percentageChange['production'] > 0)
-                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                                    <p><span class="stat-up">{{$percentageChange['production']}}%</span> Up from yesterday</p>
-                                @elseif($percentageChange['production'] < 0)
-                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                                    <p><span class="stat-down">{{abs($percentageChange['production'])}}%</span> Down from yesterday</p>
-                                @endif
-                            @endisset
                         </div>
                     </div>
                 </div>
@@ -178,20 +156,9 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
                             <div class="stat-info">
-                                <h3>{{ $onHoldOrdersCount }}</h3>
-                                <p>On Hold</p>
+                                <h3>10</h3>
+                                <p>Completed</p>
                             </div>
-                        </div>
-                        <div class="stat-btm">
-                            @isset($percentageChange)
-                                @if($percentageChange['onHold'] > 0)
-                                    <img src="{{ asset('icons/stat-up.png') }}" alt="Stat Up">
-                                    <p><span class="stat-up">{{$percentageChange['onHold']}}%</span> Up from yesterday</p>
-                                @elseif($percentageChange['onHold'] < 0)
-                                    <img src="{{ asset('icons/stat-down.png') }}" alt="Stat Down">
-                                    <p><span class="stat-down">{{abs($percentageChange['onHold'])}}%</span> Down from yesterday</p>
-                                @endif
-                            @endisset
                         </div>
                     </div>
                 </div>

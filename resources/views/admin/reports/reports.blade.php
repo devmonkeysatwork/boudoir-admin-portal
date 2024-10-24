@@ -10,12 +10,18 @@
                         <label for="product_select">Product</label>
                         <select class="form-select" aria-label="Default select example" id="product_select">
                             <option selected>All</option>
+                            @foreach($products as $product)
+                                <option value="{{$product->id}}">{{$product->name}}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-3">
                         <label for="status_select">Status</label>
                         <select class="form-select" aria-label="Default select example" id="status_select">
                             <option selected>All</option>
+                            @foreach($statuses as $status)
+                                <option value="{{$status->id}}">{{$status->status_name}}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-6">

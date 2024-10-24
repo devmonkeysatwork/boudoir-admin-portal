@@ -16,6 +16,7 @@ use App\Models\Orders;
 use App\Http\Requests\StoreOrdersRequest;
 use App\Http\Requests\UpdateOrdersRequest;
 use App\Models\OrderStatus;
+use App\Models\Product;
 use App\Models\SubStatus;
 use App\Models\TimelinePool;
 use App\Models\User;
@@ -158,7 +159,15 @@ class OrdersController extends Controller
                     $order_item = new OrderItems();
                     $order_item->order_id = $order->id;
                     $order_item->item_id = $item['item_id'];
-                    $order_item->product_id = $item['product_id'];
+                    $product = Product::where('name', $item['product_name'])->first();
+                    if ($product) {
+                        $order_item->product_id = $product->id; // Set the product_id from the found product
+                    } else {
+                        $newProduct = Product::create([
+                            'name' => $item['product_name'],
+                        ]);
+                        $order_item->product_id = $newProduct->id;
+                    }
                     $order_item->product_name = $item['product_name'];
                     $order_item->quantity = $item['quantity'];
                     $order_item->subtotal = $item['subtotal'];
@@ -701,7 +710,7 @@ class OrdersController extends Controller
                 ->first();
             if($lastOrderStatus){
                 $lastOrderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
-                $lastOrderStatus->time_spent = round(Carbon::parse($lastOrderStatus->time_started)->diffInUTCHours(Carbon::parse($lastOrderStatus->time_end)),2);
+                $lastOrderStatus->time_spent = round(Carbon::parse($lastOrderStatus->time_started)->diffInUTCMinutes(Carbon::parse($lastOrderStatus->time_end)),2);
                 $lastOrderStatus->save();
             }else{
                 return response()->json([
@@ -775,7 +784,7 @@ class OrdersController extends Controller
             ->where('time_started','!=', null)
             ->where('time_end','!=', null)
             ->where('user_id',$userId)
-            ->orderBy('time_end','DESC')
+            ->orderBy('time_end')
             ->paginate(10);
 
         $statuses = OrderStatus::all();

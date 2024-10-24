@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
+use App\Models\Product;
 use App\Models\SubStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,8 +17,31 @@ class DashboardController extends Controller
 
     public function reports(Request $request){
 
+        $data['statuses'] = OrderStatus::all();
+        $data['products'] = Product::all();
 
-        return view('admin.reports.reports');
+
+        $data['orders_completed'] = Orders::whereNotNull('date_completed')->count();
+        $data['total_time_spent'] = OrderLogs::whereNotNull('time_started')->whereNotNull('time_end')->sum('time_spent');
+        $data['avg_time_spent_on_order'] = OrderLogs::select('order_id', DB::raw('SUM(time_spent) as total_time_spent'))
+            ->whereNotNull('time_started')
+            ->whereNotNull('time_end')
+            ->groupBy('order_id')
+            ->get()
+            ->avg('total_time_spent');
+
+//        $results = OrderLogs::select('order_id', DB::raw('SUM(time_spent) as total_time_spent'))
+//            ->whereNotNull('time_started')
+//            ->whereNotNull('time_end')
+//            ->groupBy('order_id')
+//            ->pluck('total_time_spent');
+//        dd($results);
+
+
+
+
+
+        return view('admin.reports.reports',$data);
     }
     public function compare(Request $request){
 
@@ -27,22 +51,6 @@ class DashboardController extends Controller
 
     public function dashboard(Request $request)
     {
-
-        $yesterday = Carbon::yesterday()->toDateString();
-        $today = Carbon::today()->toDateString();
-
-        $yesterdayCount = Orders::whereDate('date_started', $yesterday)->count();
-        $todayCount = Orders::whereDate('date_started', $today)->count();
-        $percentageChange = [];
-
-        if ($yesterdayCount > 0) {
-            $percentageChange['production'] = (($todayCount - $yesterdayCount) / $yesterdayCount) * 100;
-        } elseif ($yesterdayCount === 0 && $todayCount > 0) {
-            $percentageChange['production'] = 100; // All new orders
-        } elseif ($yesterdayCount === 0 && $todayCount === 0) {
-            $percentageChange['production'] = 0; // No change if both are zero
-        }
-
         // Status IDs based on your categorization
         $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
@@ -78,42 +86,6 @@ class DashboardController extends Controller
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
 
-//        Percentage Counts ****************************************
-        $yesterdayStart = \Carbon\Carbon::yesterday()->startOfDay();
-        $yesterdayEnd = \Carbon\Carbon::yesterday()->endOfDay();
-        $todayStart = \Carbon\Carbon::today()->startOfDay();
-        $todayEnd = \Carbon\Carbon::today()->endOfDay();
-        // Initialize counts
-        $orderCounts = [
-            'readyForPrint' => ['yesterday' => 0, 'today' => 0],
-            'onHold' => ['yesterday' => 0, 'today' => 0],
-        ];
-
-        // Count orders for each status updated yesterday
-        $orderCounts['readyForPrint']['yesterday'] = Orders::whereIn('status_id', $readyForPrintStatusId)
-            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
-            ->count();
-
-        $orderCounts['onHold']['yesterday'] = Orders::whereIn('status_id', $onHoldStatusIds)
-            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
-            ->count();
-
-// Count orders for each status updated today
-        $orderCounts['readyForPrint']['today'] = Orders::whereIn('status_id', $readyForPrintStatusId)
-            ->whereBetween('updated_at', [$todayStart, $todayEnd])
-            ->count();
-
-        $orderCounts['onHold']['today'] = Orders::whereIn('status_id', $onHoldStatusIds)
-            ->whereBetween('updated_at', [$todayStart, $todayEnd])
-            ->count();
-
-        foreach ($orderCounts as $status => $counts) {
-            if ($counts['yesterday'] > 0) {
-                $percentageChange[$status] = (($counts['today'] - $counts['yesterday']) / $counts['yesterday']) * 100;
-            } else {
-                $percentageChange[$status] = $counts['today'] > 0 ? 100 : 0; // If there were no orders yesterday
-            }
-        }
 
         $userId = auth()->id();
         // Fetch the associated OrderLogs to get the time_started
@@ -131,7 +103,6 @@ class DashboardController extends Controller
             'edit_statuses',
             'sub_statuses',
             'filter_date',
-            'percentageChange',
             'statuses',
             'orderLog'
         ));

@@ -85,30 +85,6 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-6 mt-5">
-            <div class="bg-white rounded-5 px-3 pt-3">
-                <div id="rightLineChart"></div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 report_small_boxes mt-5">
-            <div class="bg-white rounded-5">
-                <h2 class="text-center">25</h2>
-                <p class="text-center">Total Items Resent for Printing</p>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 report_small_boxes mt-5">
-            <div class="bg-white rounded-5">
-                <h2 class="text-center">62</h2>
-                <p class="text-center">Total Orders with Errors</p>
-            </div>
-        </div>
-
-        <div class="col-12 mt-5">
-            <div class="bg-white rounded-5 p-4">
-                <div id="errCountChart"></div>
-            </div>
-        </div>
-
     </div>
 
 
@@ -174,10 +150,10 @@
 
         var options2 = {
             series: [{
-                name: 'All Orders',
+                name: 'Employee One',
                 data: [31, 40, 28, 51, 42, 109, 100]
             }, {
-                name: 'Order with Guilding',
+                name: 'Employee Two',
                 data: [11, 32, 45, 32, 34, 52, 41]
             }],
             chart: {
@@ -211,11 +187,11 @@
 
         var options3 = {
             series: [{
-                name: 'All orders',
-                data: [760, 850, 1010, 980, 870, 1050, 910, 1140, 940,210,970,400]
+                name: 'Employee One',
+                data: [400,250,378,567,430,390,400]
             },{
-                name: 'Order with Guilding',
-                data: [210,670,400,440, 550, 570, 560, 610, 580, 630, 600, 660]
+                name: 'Employee Two',
+                data: [210,350,450,510,530,360,310]
             }],
             chart: {
                 height: 350,
@@ -241,7 +217,7 @@
                 },
             },
             xaxis: {
-                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep','Oct','Nov','Dec'],
+                categories: ['Mon','Tue','Wed','Thur','Fri','Sat','Sun'],
                 lines: {
                     show: true // Enable x-axis lines
                 }
