@@ -173,7 +173,7 @@
                         <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
                     </div>
                     <div class="sort-dropdown">
-                        <select class="sort-select" id="order-sort">
+                        <select class="sort-select form-select pe-5" id="">
                             <option value="" disabled selected>Sort By</option>
                             <option {{$filter_date && $filter_date =='oldest'?'selected':''}} value="oldest">Oldest</option>
                             <option {{$filter_date && $filter_date =='newest'?'selected':''}} value="newest">Newest</option>
@@ -499,7 +499,7 @@
 @endsection
 @section('footer_scripts')
     <script>
-        $('#order-sort').on('change',function() {
+        $('.sort-select').on('change',function() {
             window.location.href = '{{route('dashboard')}}?filter_date='+ $(this).val();
         })
         $(document).ready(function() {
