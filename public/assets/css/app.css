@@ -1251,7 +1251,7 @@ input:checked+.slider:before {
 #orderModal .comment .comment-user {
     font-weight: 700;
     position: relative;
-    padding-left: 50px;
+    /*padding-left: 50px;*/
 }
 
 #orderModal .comment .comment-user,
@@ -1260,21 +1260,21 @@ input:checked+.slider:before {
 }
 
 
-#orderModal .comment .comment-user::before {
-    content: attr(data-initial);
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 40px;
-    height: 40px;
-    background-color: #6c757d;
-    color: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
+/*#orderModal .comment .comment-user::before {*/
+/*    content: attr(data-initial);*/
+/*    position: absolute;*/
+/*    left: 0;*/
+/*    top: 0;*/
+/*    width: 40px;*/
+/*    height: 40px;*/
+/*    background-color: #6c757d;*/
+/*    color: #fff;*/
+/*    border-radius: 50%;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    font-weight: bold;*/
+/*}*/
 
 #orderModal .comment .comment-footer {
     border-top: 1px solid #D5D5D5;
