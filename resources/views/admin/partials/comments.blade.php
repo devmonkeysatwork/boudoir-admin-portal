@@ -18,7 +18,7 @@
         @if($comment->replies)
             <div class="replies replies_{{$comment->id}}">
                 @foreach($comment->replies??[] as $reply)
-                    <div class="reply" style="padding-left: 20px;">
+                    <div class="reply" style="padding: 0px 20px;">
                         <div class="reply-body">
                             <div class="d-flex justify-content-between align-items-center flex-row mb-2">
                                 <span class="comment-user" data-initial="S">{{$reply->user?->name}}</span>
