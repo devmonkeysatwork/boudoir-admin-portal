@@ -76,13 +76,13 @@
     <div class="row my-5">
         <div class="col-6 col-md-3 report_small_boxes">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">6722</h2>
+                <h2 class="text-center">{{$orders_completed}}</h2>
                 <p class="text-center">Total Orders Completed</p>
             </div>
         </div>
         <div class="col-6 col-md-3 report_small_boxes">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">571,200 min</h2>
+                <h2 class="text-center">{{$total_time_spent}} min</h2>
                 <p class="text-center">Total Time Spent on Orders</p>
             </div>
         </div>
@@ -94,7 +94,7 @@
         </div>
         <div class="col-6 col-md-3 report_small_boxes">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">96 min</h2>
+                <h2 class="text-center">{{round($avg_time_spent_on_order,2)}} min</h2>
                 <p class="text-center">Average Time per Order</p>
             </div>
         </div>

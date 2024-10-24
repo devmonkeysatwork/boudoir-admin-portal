@@ -35,8 +35,8 @@
         </div>
 
         <!-- Scrollable Workstation Orders Table -->
-        <div class="table-responsive">
-            <table class="table">
+        <div>
+            <table class="table" id="workers_area_modal">
                 <thead>
                 <tr>
                     <th>#</th>
@@ -85,7 +85,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Create User</button>
+                    <button type="submit" class="btn btn-primary create-btn">Create User</button>
                 </form>
             </div>
         </div>

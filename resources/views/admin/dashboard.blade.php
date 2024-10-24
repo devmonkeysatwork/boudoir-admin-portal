@@ -361,8 +361,8 @@
                     <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table">
+                <div>
+                    <table class="table"  id="workers_area_modal">
                         <thead>
                         <tr>
                             <th>#</th>

@@ -30,7 +30,7 @@
         <input type="text" class="search-input" placeholder="Search">
         <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
       </div>
-      <table>
+      <table id="workers_area_modal">
         <thead>
           <tr>
             <th>#</th>

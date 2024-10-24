@@ -40,8 +40,8 @@
         </div>
 
         <!-- Scrollable Workstation Orders Table -->
-        <div class="table-responsive">
-            <table class="table">
+        <div>
+            <table class="table" id="workers_area_modal">
                 <thead>
                     <tr>
                         <th>#</th>

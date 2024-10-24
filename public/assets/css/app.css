@@ -895,7 +895,10 @@ table.tablesorter th {
     transition: background-color 0.3s;
     width: fit-content;
 }
-
+.create-btn:focus,
+.create-btn:hover{
+    background-color: #000;
+}
 table {
     width: 100%;
     border-collapse: separate;
@@ -1429,7 +1432,16 @@ input:checked+.slider:before {
     border-bottom: 0.5px solid #D5D5D5;
     cursor: default;
 }
-
+#workers_area_modal tbody td {
+    border-bottom: none !important;
+}
+#workers_area_modal tbody{
+    max-height: 400px !important;
+}
+#workers_area_modal thead tr th:first-child,
+#workers_area_modal tbody tr td:first-child{
+    width: 50px !important;
+}
 #workstationModal .modal-footer {
     border-top: none;
 }
