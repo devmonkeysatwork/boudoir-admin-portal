@@ -144,22 +144,22 @@
           </tr>
             @if(isset($order) && isset($order->children) && count($order->children))
                 <tr style="display: none;border: 1px solid #191919;" id="children_{{$order->id}}">
-                    <td colspan="8" style="border: 1px solid #191919;">
+                    <td colspan="8" style="border: 1px solid #191919;padding: 0px;">
                         <table>
-                            <thead>
-                            <tr>
-                                <th>Order #</th>
-                                <th>Phase</th>
-                                <th>Team Member</th>
-                                <th>Date Started</th>
-                                <th>Time in Production</th>
-                                <th>Late</th>
-                                <th></th>
-                            </tr>
-                            </thead>
+{{--                            <thead>--}}
+{{--                            <tr>--}}
+{{--                                <th>Order #</th>--}}
+{{--                                <th>Phase</th>--}}
+{{--                                <th>Team Member</th>--}}
+{{--                                <th>Date Started</th>--}}
+{{--                                <th>Time in Production</th>--}}
+{{--                                <th>Late</th>--}}
+{{--                                <th></th>--}}
+{{--                            </tr>--}}
+{{--                            </thead>--}}
                             <tbody>
                             @foreach($order?->children as $child_order)
-                                <tr>
+                                <tr style="border-bottom: none;">
                                     <td>
                                         @if($child_order->is_rush == 1)
                                             <img src="{{asset('icons/rush.svg')}}" alt="Rush">
@@ -201,13 +201,16 @@
                                     </td>
                                     <td>
                                         <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">
-                                            <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
+                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon">
                                         </button>
                                         <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="12" cy="12" r="3.5" stroke="#222222"/>
+                                                <path d="M21 12C21 12 20 4 12 4C4 4 3 12 3 12" stroke="#222222"/>
                                             </svg>
+                                        </button>
+                                        <button data-id="{{$child_order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                            Start order
                                         </button>
 
                                     </td>

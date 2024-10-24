@@ -1939,6 +1939,7 @@ input:checked+.slider:before {
 
 .tablesorter-default td {
     vertical-align: middle;
+    border-bottom: none;
 }
 .page-item .page-link{
     color: #202224;
