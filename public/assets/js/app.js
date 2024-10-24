@@ -66,14 +66,14 @@ function hide_loader(){
 $(document).ready(function() {
     $("#dashboardOrdersTable").tablesorter({
         headers: { // Exclude the first column (Order ID)
-            5: { sorter: false }  // Exclude the third column (Order Date)
+            6: { sorter: false }  // Exclude the third column (Order Date)
         }
     });
     $("#dashboardTeamTable").tablesorter();
     $("#dashboardWorkstationsTable").tablesorter();
     $("#ordersTable").tablesorter({
         headers: { // Exclude the first column (Order ID)
-            5: { sorter: false }  // Exclude the third column (Order Date)
+            6: { sorter: false }  // Exclude the third column (Order Date)
         }
     });
     $("#areasTable").tablesorter();
