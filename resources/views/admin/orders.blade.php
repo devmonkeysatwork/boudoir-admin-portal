@@ -132,14 +132,14 @@
                           <path d="M21 12C21 12 20 4 12 4C4 4 3 12 3 12" stroke="#222222"/>
                       </svg>
                   </button>
+                  <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                      Start order
+                  </button>
                   @if(isset($order->children) && count($order->children))
                       <button class="edit-btn" onclick="viewChildren('children_{{$order->id}}')">
                           <img src="{{ asset('icons/chevron-down.svg') }}" alt="Expand Icon">
                       </button>
                   @endif
-                  <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
-                      Start order
-                  </button>
               </td>
           </tr>
             @if(isset($order) && isset($order->children) && count($order->children))
