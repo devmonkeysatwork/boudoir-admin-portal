@@ -1,88 +1,93 @@
 @extends('layouts.app')
-
+<link rel="stylesheet" href="{{asset('assets/css/date-range.css')}}">
 @section('content')
 
     <div class="bg-white rounded-5 py-3 px-4 w-100">
-        <div class="row">
-            <div class="col-12 mb-3">
-                <div class="row">
-                    <div class="col-3">
-                        <label for="product_select">Product</label>
-                        <select class="form-select" aria-label="Default select example" id="product_select">
-                            <option selected>All</option>
-                            @foreach($products as $product)
-                                <option value="{{$product->id}}">{{$product->name}}</option>
-                            @endforeach
-                        </select>
+        <form action="{{route('dashboard.reports')}}" method="GET" id="report_filter_form">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <div class="row">
+                        <div class="col-3">
+                            <label for="product_select">Product</label>
+                            <select class="form-select" name="product_name" aria-label="Default select example" id="product_select">
+                                <option selected value="0">All</option>
+                                @foreach($products as $product)
+                                    <option {{isset($productName) && $productName == $product->id?'Selected':''}} value="{{$product->id}}">{{$product->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <label for="status_select">Status</label>
+                            <select class="form-select" name="status" aria-label="Default select example" id="status_select">
+                                <option selected value="0">All</option>
+                                @foreach($statuses as $status)
+                                    <option {{isset($status_id) && $status_id == $status->id?'Selected':''}} value="{{$status->id}}">{{$status->status_name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex gap-3 flex-row justify-content-end align-items-center">
+                                <button class="btn">
+                                    <img src="{{asset('icons/print.svg')}}" alt="">
+                                    Print
+                                </button>
+                                <button class="btn">
+                                    <img src="{{asset('icons/export.svg')}}" alt="">
+                                    Export
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-3">
-                        <label for="status_select">Status</label>
-                        <select class="form-select" aria-label="Default select example" id="status_select">
-                            <option selected>All</option>
-                            @foreach($statuses as $status)
-                                <option value="{{$status->id}}">{{$status->status_name}}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <div class="d-flex gap-3 flex-row justify-content-end align-items-center">
-                            <button class="btn">
-                                <img src="{{asset('icons/print.svg')}}" alt="">
-                                Print
-                            </button>
-                            <button class="btn">
-                                <img src="{{asset('icons/export.svg')}}" alt="">
-                                Export
-                            </button>
+                </div>
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col">
+                            <label for="product_option_select">Product Option:</label>
+                            <select class="form-select" name="product_option" aria-label="Default select example" id="product_option_select">
+                                <option selected>All</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="attribute_select">Attributes:</label>
+                            <select class="form-select" name="attribute" aria-label="Default select example" id="attribute_select">
+                                <option selected>All</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="team_select">Team Member:</label>
+                            <select class="form-select" name="team_member" aria-label="Default select example" id="team_select">
+                                <option selected value="0">All</option>
+                                @foreach($team_members as $team_member)
+                                    <option {{isset($teamMember) && $teamMember == $team_member->id?'Selected':''}} value="{{$team_member->id}}">{{$team_member->name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="date_select">Date Range:</label>
+                            <input type="text" id="date-range" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label for="group_select">Group By:</label>
+                            <select class="form-select" name="group_by" aria-label="Default select example" id="group_select">
+                                <option selected>All</option>
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12">
-                <div class="row">
-                    <div class="col">
-                        <label for="product_option_select">Product Option:</label>
-                        <select class="form-select" aria-label="Default select example" id="product_option_select">
-                            <option selected>All</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <label for="attribute_select">Attributes:</label>
-                        <select class="form-select" aria-label="Default select example" id="attribute_select">
-                            <option selected>All</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <label for="team_select">Team Member:</label>
-                        <select class="form-select" aria-label="Default select example" id="team_select">
-                            <option selected>All</option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <label for="date_select">Date Range:</label>
-                        <input type="date" class="form-control">
-                    </div>
-                    <div class="col">
-                        <label for="group_select">Group By:</label>
-                        <select class="form-select" aria-label="Default select example" id="group_select">
-                            <option selected>All</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
 
     <div class="row my-5">
         <div class="col-6 col-md-3 report_small_boxes">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">6722</h2>
+                <h2 class="text-center">{{$orders_completed}}</h2>
                 <p class="text-center">Total Orders Completed</p>
             </div>
         </div>
         <div class="col-6 col-md-3 report_small_boxes">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">571,200 min</h2>
+                <h2 class="text-center">{{$total_time_spent}} min</h2>
                 <p class="text-center">Total Time Spent on Orders</p>
             </div>
         </div>
@@ -94,7 +99,7 @@
         </div>
         <div class="col-6 col-md-3 report_small_boxes">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">96 min</h2>
+                <h2 class="text-center">{{round($avg_time_spent_on_order,2)}} min</h2>
                 <p class="text-center">Average Time per Order</p>
             </div>
         </div>
@@ -149,7 +154,19 @@
 @endsection
 @section('footer_scripts')
     <script src="{{asset('assets/js/apexCharts.js')}}"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="{{asset('assets/js/date-range.js')}}"></script>
     <script>
+        $(document).ready(function() {
+            $('#date-range').daterangepicker({
+                "opens": "center",
+            });
+        });
+        $('#report_filter_form select').on('change',function (){
+            $(this).closest('form').submit();
+        })
+
+
         var options = {
             series: [{
                 name: 'All orders',

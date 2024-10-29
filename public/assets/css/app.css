@@ -2128,3 +2128,32 @@ thead {
 #notification_list tbody{
     max-height: 75vh !important;
 }
+
+
+button.btn_loader{
+    position: relative;
+    width: 200px !important;
+}
+button.btn_loader:after {
+    display: none;
+    content: "";
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    right: 0px;
+    top: 5px;
+    aspect-ratio: 1;
+    padding: 3px;
+    background:
+        radial-gradient(farthest-side,#FFF 95%,#0000) 50% 0/12px 12px no-repeat,
+        radial-gradient(farthest-side,#0000 calc(100% - 5px),#FFF calc(100% - 4px)) content-box;
+    animation: l6 2s infinite ;
+}
+button.btn_loader.clicked:after{
+    display: block !important;
+    pointer-events: none !important;
+}
+@keyframes l6 {to{transform: rotate(1turn)}}
+

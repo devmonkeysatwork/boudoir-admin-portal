@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OnboardingEmail;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
@@ -54,7 +57,8 @@ class RegisteredUserController extends Controller
         // Validate request data
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'role_id' => 'required|integer'
+            'role_id' => 'required|integer',
+            'email' => 'required|email'
         ]);
 
         if ($validator->fails()) {
@@ -66,12 +70,20 @@ class RegisteredUserController extends Controller
 
         // Create user
         try {
+            $pwd = str()->random(8);
             $user = User::create([
                 'name' => $request->input('name'),
-                'email' => str_replace(' ','_',$request->input('name')).'@theboudoiralbum.com',
-                'password' => Hash::make(str()->random()),
+                'email' => $request->input('email'),
+                'password' => Hash::make($pwd),
                 'role_id' => $request->input('role_id'), // Assign role
             ]);
+            $mailData = [
+                'email' => $request->input('email'),
+                'pwd' => $pwd,
+                'url' => route('login'),
+            ];
+
+            Mail::to($request->input('email'))->send(new OnboardingEmail($mailData));
 
             return response()->json([
                 'success' => true,

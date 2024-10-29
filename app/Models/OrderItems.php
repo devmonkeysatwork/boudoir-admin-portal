@@ -12,4 +12,7 @@ class OrderItems extends Model
     function attributes(){
         return $this->hasMany(ItemAttributes::class,'item_id','id');
     }
+    function products(){
+        return $this->hasMany(Product::class,'id','product_id');
+    }
 }

@@ -84,8 +84,15 @@
                                 <div class="invalid-feedback" id="role_id-error"></div>
                             </div>
                         </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="email" placeholder="Name" name="email" required>
+                                <div class="invalid-feedback" id="email-error"></div>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary create-btn">Create User</button>
+                    <button type="submit" class="btn btn-primary create-btn btn_loader">Create User</button>
                 </form>
             </div>
         </div>
@@ -129,6 +136,7 @@
         $("#teamTable").tablesorter();
         $('#createUserForm').on('submit', function(event) {
             event.preventDefault();
+            $('#createUserForm').find('button').addClass('clicked');
 
             $('.invalid-feedback').empty();
             $('#createUserForm').removeClass('was-validated');
@@ -146,6 +154,9 @@
                         $('#createUserModal').modal('hide');
                         show_toast(response.message,'success');
                         window.location.reload();
+                    }else{
+                        show_toast(response.message,'error');
+                        $('#createUserForm').find('button').removeClass('clicked');
                     }
                 },
                 error: function(xhr) {
@@ -155,6 +166,9 @@
                             $('#' + key + '-error').text(value[0]);
                             $('#' + key).addClass('is-invalid');
                         });
+                    }else{
+                        show_toast(xhr.responseJSON.message,'error');
+                        $('#createUserForm').find('button').removeClass('clicked');
                     }
                 }
             });
