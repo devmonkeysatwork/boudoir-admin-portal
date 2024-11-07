@@ -22,7 +22,7 @@
                 @endif
             </td>
             <td class="shop-info" style="horiz-align: right">
-                <img style="float: right;" src="data:image/png;base64,{{ $qrcode }}">
+                <img style="float: right;width: 120px;" src="data:image/png;base64,{{ $qrcode }}">
             </td>
         </tr>
     </table>

@@ -51,6 +51,9 @@
                             <label for="attribute_select">Attributes:</label>
                             <select class="form-select" name="attribute" aria-label="Default select example" id="attribute_select">
                                 <option selected>All</option>
+                                @foreach($attributes as $attribut)
+                                    <option {{isset($attribute) && $attribute == str_replace(' ','_',$attribut->type)?'Selected':''}} value="{{str_replace(' ','_',$attribut->type)}}">{{$attribut->type}}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col">
@@ -66,12 +69,12 @@
                             <label for="date_select">Date Range:</label>
                             <input type="text" id="date-range" class="form-control">
                         </div>
-                        <div class="col">
-                            <label for="group_select">Group By:</label>
-                            <select class="form-select" name="group_by" aria-label="Default select example" id="group_select">
-                                <option selected>All</option>
-                            </select>
-                        </div>
+                        {{--                        <div class="col">--}}
+                        {{--                            <label for="group_select">Group By:</label>--}}
+                        {{--                            <select class="form-select" name="group_by" aria-label="Default select example" id="group_select">--}}
+                        {{--                                <option selected>All</option>--}}
+                        {{--                            </select>--}}
+                        {{--                        </div>--}}
                     </div>
                 </div>
             </div>
@@ -129,13 +132,13 @@
         </div>
         <div class="col-6 col-md-3 report_small_boxes mt-5">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">25</h2>
+                <h2 class="text-center">{{$order_with_issues[1]??0}}</h2>
                 <p class="text-center">Total Items Resent for Printing</p>
             </div>
         </div>
         <div class="col-6 col-md-3 report_small_boxes mt-5">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">62</h2>
+                <h2 class="text-center">{{array_sum($order_with_issues)}}</h2>
                 <p class="text-center">Total Orders with Errors</p>
             </div>
         </div>
@@ -147,8 +150,6 @@
         </div>
 
     </div>
-
-
 
 
 @endsection
@@ -166,14 +167,17 @@
             $(this).closest('form').submit();
         })
 
+        const all_orders_data = @json($orders_graph_monthly['total_orders'] ?? []);
+        const album_orders_data = @json($orders_graph_monthly['orders_with_album'] ?? []);
+        const months = @json($orders_graph_monthly['months'] ?? []);
 
         var options = {
             series: [{
                 name: 'All orders',
-                data: [760, 850, 1010, 980, 870, 1050, 910, 1140, 940,210,970,400]
+                data: all_orders_data
             }, {
-                name: 'Order with Guilding',
-                data: [210,670,400,440, 550, 570, 560, 610, 580, 630, 600, 660]
+                name: 'Order with Album',
+                data: album_orders_data
             }],
             chart: {
                 type: 'bar',
@@ -195,7 +199,7 @@
                 colors: ['transparent']
             },
             xaxis: {
-                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep','Oct','Nov','Dec'],
+                categories: months,
             },
             yaxis: {
                 title: {
@@ -208,7 +212,7 @@
             tooltip: {
                 y: {
                     formatter: function (val) {
-                        return "$ " + val + " thousands"
+                        return val
                     }
                 }
             },
@@ -218,14 +222,18 @@
         var chart = new ApexCharts(document.querySelector("#chart"), options);
         chart.render();
 
+
+        const avg_time_spent = @json($time_graph_data['avg_time_spent'] ?? []);
         var options2 = {
             series: [{
-                name: 'All Orders',
-                data: [31, 40, 28, 51, 42, 109, 100]
-            }, {
-                name: 'Order with Guilding',
-                data: [11, 32, 45, 32, 34, 52, 41]
-            }],
+                name: 'Avg time spent',
+                data: avg_time_spent
+            },
+                // {
+                //     name: 'Order with Guilding',
+                //     data: [11, 32, 45, 32, 34, 52, 41]
+                // }
+            ],
             chart: {
                 height: 350,
                 type: 'area'
@@ -241,12 +249,12 @@
                 curve: 'smooth'
             },
             xaxis: {
-                type: 'datetime',
-                categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
+                type: 'date',
+                categories: months
             },
             tooltip: {
                 x: {
-                    format: 'dd/MM/yy HH:mm'
+                    format: 'dd/MM/yy'
                 },
             },
             colors: ['#8D87CE', '#BD7F7F']
@@ -255,14 +263,18 @@
         var chart2 = new ApexCharts(document.querySelector("#avgTimeChart"), options2);
         chart2.render();
 
+
+        const total_time_spent = @json($time_graph_data['total_time_spent'] ?? []);
         var options3 = {
             series: [{
-                name: 'All orders',
-                data: [760, 850, 1010, 980, 870, 1050, 910, 1140, 940,210,970,400]
-            },{
-                name: 'Order with Guilding',
-                data: [210,670,400,440, 550, 570, 560, 610, 580, 630, 600, 660]
-            }],
+                name: 'Total time spent',
+                data: total_time_spent
+            },
+                //     {
+                //     name: 'Order with Guilding',
+                //     data: [210,670,400,440, 550, 570, 560, 610, 580, 630, 600, 660]
+                // }
+            ],
             chart: {
                 height: 350,
                 type: 'line',
@@ -287,7 +299,7 @@
                 },
             },
             xaxis: {
-                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep','Oct','Nov','Dec'],
+                categories: months,
                 lines: {
                     show: true // Enable x-axis lines
                 }
@@ -303,10 +315,11 @@
         var chart3 = new ApexCharts(document.querySelector("#lineChart"), options3);
         chart3.render();
 
+        const order_with_issues = @json($order_with_issues ?? []);
 
         var options4 = {
             series: [{
-                data: [400, 430, 480, 420]
+                data: order_with_issues
             }],
             chart: {
                 type: 'bar',
@@ -323,8 +336,7 @@
                 enabled: false
             },
             xaxis: {
-                categories: ['Missing Materials', 'Resent for Printing', 'Gilding Issues', 'Binding Issues',
-                ],
+                categories: ['On Hold', 'Issues With Printing', 'Remake + Reasons',],
 
             },
             title: {
