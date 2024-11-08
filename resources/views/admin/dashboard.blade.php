@@ -460,7 +460,7 @@
                 <div class="comments">
                     <h3>Comments</h3>
                     <div id="comments_container">
-                        @foreach($order->comments as $comment)
+                        @foreach($order->comments ?? [] as $comment)
                             <div class="comment">
                                 <div class="comment-body">
                                     <span class="comment-user" data-initial="{{ $comment->user->name[0] }}">{{ $comment->user->name }}</span>
