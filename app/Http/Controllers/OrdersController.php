@@ -139,7 +139,7 @@ class OrdersController extends Controller
                 $order->customer_email = $order_data['customer_email']??null;
                 $order->date_started = Carbon::now()->format('Y-m-d h:i:s')??null;
                 $order->status_id = 1;
-                $order->workstation_id = 1;
+                $order->workstation_id = 0;
                 $order->payment_method = $order_data['payment_method']??null;
                 $order->payment_method_title = $order_data['payment_method_title']??null;
                 $order->transaction_id = $order_data['transaction_id']??null;
