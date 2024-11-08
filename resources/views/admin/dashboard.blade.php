@@ -26,7 +26,7 @@
                             <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
                             <div class="stat-info">
                                 <h3>{{ $readyForPrintOrdersCount }}</h3>
-                                <p>Ready for Print</p>
+                                <p>Ready for Production</p>
                             </div>
                         </div>
                         <div class="stat-btm">

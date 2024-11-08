@@ -248,7 +248,7 @@ class DashboardController extends Controller
         }
 //        dd($p_ids,$previous_step,$all_orders);
         // Status IDs based on your categorization
-        $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
+        $readyForPrintStatusId = OrderStatus::where('status_name','Ready for Production')->pluck('id')->toArray();
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->toArray();
         $excludedStatusIds = array_merge(
