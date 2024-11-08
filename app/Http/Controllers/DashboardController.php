@@ -252,7 +252,8 @@ class DashboardController extends Controller
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->toArray();
         $excludedStatusIds = array_merge(
-            $completedStatusId
+            $completedStatusId,
+            $readyForPrintStatusId
         );
         $inProductionStatusIds = OrderStatus::whereNotIn('status_name',$excludedStatusIds)->pluck('id');
 

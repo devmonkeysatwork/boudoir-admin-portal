@@ -45,13 +45,13 @@ class AdminController extends Controller
         }
 
         // Status IDs based on your categorization
-        $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
+        $readyForPrintStatusId = OrderStatus::where('status_name','Ready for Production')->pluck('id')->toArray();
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
         $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
         $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->toArray();
         $excludedStatusIds = array_merge(
-//            $readyForPrintStatusId,
+            $readyForPrintStatusId,
 //            $onHoldStatusIds,
 //            $readyToShipStatusId,
 //            $qualityControlStatusId,
