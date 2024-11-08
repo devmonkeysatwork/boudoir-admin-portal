@@ -57,7 +57,7 @@ class AdminController extends Controller
 //            $qualityControlStatusId,
             $completedStatusId
         );
-        $inProductionStatusIds = OrderStatus::whereNotIn('status_name',$excludedStatusIds)->pluck('id');
+        $inProductionStatusIds = OrderStatus::whereNotIn('id',$excludedStatusIds)->pluck('id');
 
         // Dynamic counts for each category
         $readyForPrintOrdersCount = Orders::whereIn('status_id', $readyForPrintStatusId)->count();
