@@ -331,18 +331,20 @@ class AdminController extends Controller
     public function team()
     {
         $roles = Roles::all();
+        $statuses = OrderStatus::all();
 
         $teamMembers = User::select(
-            'users.id',
-            'users.name',
-            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
-            DB::raw('IFNULL(SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)), 0) AS total_time')
-        )
+                'users.id',
+                'users.name',
+                'users.product_status_id',
+                DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
+                DB::raw('IFNULL(SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)), 0) AS total_time')
+            )
             ->leftJoin('order_logs', 'users.id', '=', 'order_logs.user_id')
-            ->groupBy('users.id','users.name')
+            ->groupBy('users.id','users.name', 'users.product_status_id')
             ->get();
 
-        return view('admin.team', compact(['teamMembers','roles']));
+        return view('admin.team', compact(['teamMembers','roles','statuses']));
     }
 
     public function getTeamDetails($id)
@@ -453,6 +455,28 @@ class AdminController extends Controller
         $response = [
             'status' => 200,
             'message' => 'Status deleted successfully.'
+        ];
+
+        return response()->json($response);
+    }
+
+    public function update_worker_station(Request $request)
+    {
+        $workerId = $request->input('active_user_id');
+        $statusId = $request->input('status_id');
+        if(!$statusId){
+            $response = [
+                'status' => 203,
+                'message' => 'Please select status to assign.'
+            ];
+            return response()->json($response);
+        }
+        $worker = User::find($workerId);
+        $worker->product_status_id = $statusId;
+        $worker->save();
+        $response = [
+            'status' => 200,
+            'message' => 'Status updated successfully.'
         ];
 
         return response()->json($response);

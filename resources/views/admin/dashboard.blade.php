@@ -134,7 +134,7 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
                             <div class="stat-info">
-                                <h3>3</h3>
+                                <h3>{{$ordersInQueue}}</h3>
                                 <p>Orders in queue</p>
                             </div>
                         </div>

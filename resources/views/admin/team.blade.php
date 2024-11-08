@@ -13,14 +13,19 @@
         <th>Team</th>
         <th># of Orders</th>
         <th>Time Spent</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
       @foreach($teamMembers as $teamMember)
-        <tr onclick="loadTeamDetails({{ $teamMember->id }})">
+        <tr>
           <td>{{ $teamMember->name }}</td>
           <td>{{ $teamMember->order_count }}</td>
           <td>{{ $teamMember->total_time }}</td>
+          <td>
+              <button onclick="statusAssignModal('{{$teamMember->id}}','{{$teamMember->name}}','{{$teamMember->product_status_id}}')">Edit</button>
+              <button onclick="loadTeamDetails({{ $teamMember->id }})">Details</button>
+          </td>
         </tr>
       @endforeach
     </tbody>
@@ -98,6 +103,40 @@
         </div>
     </div>
 </div>
+
+
+
+
+<div class="modal fade" id="userWorkingStatusModal" tabindex="-1" aria-labelledby="userNameLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userNameLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="userAssignedStatusForm">
+                    <input type="hidden" name="active_user_id" id="active_user_id">
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="role_id" class="form-label">Assigned Status</label>
+                                <select class="form-select" id="status_id" name="status_id" required>
+                                    <option value="" disabled selected>Select a status</option>
+                                    @foreach($statuses??[] as $status)
+                                        <option value="{{$status->id}}">{{$status->status_name}}</option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback" id="role_id-error"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary create-btn btn_loader">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('footer_scripts')
@@ -130,6 +169,14 @@
             $(this).toggle($(this).text().toLowerCase().indexOf(searchValue) > -1);
         });
     });
+
+
+    function statusAssignModal(id,user,status){
+        $('#userWorkingStatusModal .modal-title').text(user);
+        $('#userWorkingStatusModal #status_id').val(status);
+        $('#userWorkingStatusModal #active_user_id').val(id);
+        $('#userWorkingStatusModal').modal('show');
+    }
 
 
     $(document).ready(function() {
@@ -170,6 +217,38 @@
                         show_toast(xhr.responseJSON.message,'error');
                         $('#createUserForm').find('button').removeClass('clicked');
                     }
+                }
+            });
+        });
+
+
+        $('#userAssignedStatusForm').on('submit', function(event) {
+            event.preventDefault();
+            $('#userAssignedStatusForm').find('button').addClass('clicked');
+
+            $('.invalid-feedback').empty();
+            $('#userAssignedStatusForm').removeClass('was-validated');
+            let data  = new FormData($('#userAssignedStatusForm')[0]);
+            data.append('_token','{{@csrf_token()}}');
+            $.ajax({
+                type: 'post',
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: '{{route('worker.update_station')}}',
+                data: data,
+                success: function(response) {
+                    if (response.status == 200) {
+                        $('#userWorkingStatusModal').modal('hide');
+                        show_toast(response.message,'success');
+                        window.location.reload();
+                    }else{
+                        show_toast(response.message,'error');
+                        $('#userAssignedStatusForm').find('button').removeClass('clicked');
+                    }
+                },
+                error: function(xhr) {
+                    var errors = xhr.responseJSON.errors;
                 }
             });
         });

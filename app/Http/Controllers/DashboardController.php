@@ -6,11 +6,13 @@ use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
 use App\Models\Product;
+use App\Models\ProductFlows;
 use App\Models\SubStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -223,6 +225,28 @@ class DashboardController extends Controller
 
     public function dashboard(Request $request)
     {
+
+        $myWorkStatusID = auth()->user()->product_status_id ?? null;
+        $ordersInQueue = 0;
+        if($myWorkStatusID){
+            $p_ids = ProductFlows::whereStepId($myWorkStatusID)->pluck('product_id','step_no');
+            $previous_step = [];
+            foreach ($p_ids as $index => $p_id){
+                $previous_step[] = ProductFlows::where('product_id', $p_id)
+                    ->where('step_no', '<', $index)
+                    ->orderByDesc('step_no')
+                    ->pluck('step_id')->first();
+            }
+
+            $ordersInQueue = Orders::with('items') // Eager load items relation
+                ->whereHas('items', function ($query) use ($p_ids) {
+                    $query->whereIn('product_id', $p_ids); // Filter items by product_id
+                })
+                ->whereIn('status_id',$previous_step)
+                ->count();
+
+        }
+//        dd($p_ids,$previous_step,$all_orders);
         // Status IDs based on your categorization
         $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
@@ -276,7 +300,8 @@ class DashboardController extends Controller
             'sub_statuses',
             'filter_date',
             'statuses',
-            'orderLog'
+            'orderLog',
+            'ordersInQueue'
         ));
     }
 
