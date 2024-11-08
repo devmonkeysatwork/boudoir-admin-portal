@@ -438,7 +438,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach($order->children as $child_order)
+                                @foreach($order->children ?? [] as $child_order)
                                     <tr>
                                         <td>{{ $child_order->order_id }}</td>
                                         <td>{{ $child_order->status->status_name }}</td>
