@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Workstations extends Model
 {
     use HasFactory;
+    protected $fillable = ['assigned_to_id', 'status_id'];
 
     function worker(){
         return $this->belongsTo(User::class,'assigned_to_id','id');
@@ -20,6 +21,9 @@ class Workstations extends Model
     public function orders()
     {
         return $this->hasMany(Orders::class, 'workstation_id', 'id');
+    }
+    function status(){
+        return $this->belongsTo(OrderStatus::class,'status_id','id');
     }
 
     public function getOrderCount()

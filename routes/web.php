@@ -32,6 +32,7 @@ Route::middleware(['auth'])->group(function () {
     //Admin Routes
     Route::post('/add_worker', [\App\Http\Controllers\Auth\RegisteredUserController::class, 'createUser'])->name('admin.add_worker');
     Route::post('/update_worker_station', [AdminController::class, 'update_worker_station'])->name('worker.update_station');
+    Route::get('/get/{userId}/workstations', [AdminController::class, 'getUserWorkstations']);
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/user/dashboard', [DashboardController::class, 'dashboard'])->name('my_dashboard');
 
@@ -57,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{id}/download-pdf', [OrdersController::class, 'packing_slip'])->name('orders.downloadPDF');
 
 
-    Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
+//    Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
 
     Route::get('/team', [AdminController::class, 'team'])->name('admin.team');
     Route::get('/team/{id}', [AdminController::class, 'getTeamDetails']);

@@ -463,17 +463,23 @@ class AdminController extends Controller
     public function update_worker_station(Request $request)
     {
         $workerId = $request->input('active_user_id');
-        $statusId = $request->input('status_id');
-        if(!$statusId){
+        $statusIds = $request->input('status_ids');
+        if (empty($statusIds)) {
             $response = [
                 'status' => 203,
-                'message' => 'Please select status to assign.'
+                'message' => 'Please select at least one status to assign.'
             ];
             return response()->json($response);
         }
+
         $worker = User::find($workerId);
-        $worker->product_status_id = $statusId;
-        $worker->save();
+        $worker->workstations()->delete();
+        foreach ($statusIds as $statusId) {
+            $worker->workstations()->create([
+                'status_id' => $statusId
+            ]);
+        }
+
         $response = [
             'status' => 200,
             'message' => 'Status updated successfully.'
@@ -481,6 +487,27 @@ class AdminController extends Controller
 
         return response()->json($response);
     }
+    public function getUserWorkstations($userId)
+    {
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'User not found.'
+            ]);
+        }
+
+        // Assuming the user has many workstations
+        $workstations = $user->workstations()->with('status')->get();
+
+        // Return the status_ids (the user’s workstations)
+        return response()->json([
+            'status' => 200,
+            'data' => $workstations
+        ]);
+    }
+
 
 
 

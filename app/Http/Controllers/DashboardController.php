@@ -226,10 +226,10 @@ class DashboardController extends Controller
     public function dashboard(Request $request)
     {
 
-        $myWorkStatusID = auth()->user()->product_status_id ?? null;
+        $myWorkStatusIDs = auth()->user()->workstations->pluck('status_id')->toArray();
         $ordersInQueue = 0;
-        if($myWorkStatusID){
-            $p_ids = ProductFlows::whereStepId($myWorkStatusID)->pluck('product_id','step_no');
+        if($myWorkStatusIDs){
+            $p_ids = ProductFlows::whereIn('step_id',$myWorkStatusIDs)->pluck('product_id','step_no');
             $previous_step = [];
             foreach ($p_ids as $index => $p_id){
                 $previous_step[] = ProductFlows::where('product_id', $p_id)
