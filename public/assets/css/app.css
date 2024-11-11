@@ -2015,6 +2015,14 @@ thead {
         flex: 0 0 15%;
     }
 }
+.remove_status_btn{
+    background: #000;
+    right: -6px;
+    top: 0px;
+    color: #FFF;
+    border-radius: 50%;
+    padding: 8px 10px 5px 10px;
+}
 .btn-start-order{
     width: 100px;
     height: 35px;

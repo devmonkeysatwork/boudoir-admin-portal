@@ -119,18 +119,7 @@
                         <input type="hidden" name="active_user_id" id="active_user_id">
                         <div id="statusFieldsContainer">
                             <div class="row statusField">
-                                <div class="col-12 col-md-6">
-                                    <div class="mb-3">
-                                        <label for="role_id" class="form-label">Assigned Status</label>
-                                        <select class="form-select" id="status_id" name="status_id" required>
-                                            <option value="" disabled selected>Select a status</option>
-                                            @foreach($statuses??[] as $status)
-                                                <option value="{{$status->id}}">{{$status->status_name}}</option>
-                                            @endforeach
-                                        </select>
-                                        <div class="invalid-feedback" id="role_id-error"></div>
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
                         <div class="form-group btn-group text-end">
@@ -178,7 +167,6 @@
 
         function statusAssignModal(id,user,status){
             $('#userWorkingStatusModal .modal-title').text(user);
-            $('#userWorkingStatusModal #status_id').val(status);
             $('#userWorkingStatusModal #active_user_id').val(id);
             $('#userWorkingStatusModal').modal('show');
         }
@@ -283,7 +271,7 @@
         }
         function addStatusField(statusId = '') {
             let statusFieldHtml = `
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-6 position-relative">
                     <div class="mb-3">
                         <label for="status_id" class="form-label">Assigned Status</label>
                         <select class="form-select" name="status_ids[]" required>
@@ -294,12 +282,16 @@
                         </select>
                         <div class="invalid-feedback"></div>
                     </div>
+                    <button type="button" class="position-absolute remove_status_btn">X</button>
                 </div>`;
             $('#statusFieldsContainer .row').append(statusFieldHtml);
         }
         $('#addStatusField').on('click', function() {
             addStatusField();
         });
+        $(document).on('click', '.remove_status_btn', function(){
+            $(this).parent().remove();
+        })
     </script>
 @endsection
 
