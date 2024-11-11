@@ -29,21 +29,11 @@
 
     <table class="order-details">
         <tbody>
-        <tr>
-            @foreach ($order->items as $item)
+        @foreach ($order->items as $item)
+            <tr>
                 <td>
-{{--                    <table>--}}
-{{--                        <tr>--}}
-{{--                            <td style='width: 50%;'>--}}
-{{--                                <img src="{{ asset('icons/green-checkmark.png') }}" />--}}
-{{--                            </td>--}}
-{{--                            <td style='width: 50%;'>--}}
-{{--                                <img src="{{ asset('icons/green-checkmark.png') }}" style="width: 100%; max-height: 150px;" />--}}
-{{--                            </td>--}}
-{{--                        </tr>--}}
-{{--                    </table>--}}
-                    <div><b>Line item quantity: </b>{{ $item->quantity }}</div>
                     <br><br>
+                    <div><b>Line item quantity: </b>{{ $item->quantity }}</div>
                     <div class="item-name">{{ $item->product_name }}</div>
                     <div><b>Selected Quantity: </b> {{ $item->quantity }}</div>
                     @foreach ($item->attributes as $attribute)
@@ -51,8 +41,8 @@
                     @endforeach
                     <br><br>
                 </td>
-            @endforeach
-        </tr>
+            </tr>
+        @endforeach
         </tbody>
     </table>
     <br /><br />
