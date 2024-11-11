@@ -3,21 +3,21 @@
 @section('content')
     <div class="dashboard">
         <h1>Dashboard</h1>
-        @if(Auth::user()->role_id != 1)
-            <div>
-                <div id="current_order" class="text-center mb-4">
-                    @isset($orderLog)
-                        <h1>Working on Order #{{ $orderLog->order_id }}</h1>
-                        <div id="timer" class="mt-4">
-                            <h2>Time Worked: <span id="clock">00:00:00</span></h2>
-                        </div>
-                        <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>
-                    @else
-                        <p class="p20 text-center">No order in progress.</p>
-                    @endif
-                </div>
-            </div>
-        @endif
+{{--        @if(Auth::user()->role_id != 1)--}}
+{{--            <div>--}}
+{{--                <div id="current_order" class="text-center mb-4">--}}
+{{--                    @isset($orderLog)--}}
+{{--                        <h1>Working on Order #{{ $orderLog->order_id }}</h1>--}}
+{{--                        <div id="timer" class="mt-4">--}}
+{{--                            <h2>Time Worked: <span id="clock">00:00:00</span></h2>--}}
+{{--                        </div>--}}
+{{--                        <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>--}}
+{{--                    @else--}}
+{{--                        <p class="p20 text-center">No order in progress.</p>--}}
+{{--                    @endif--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        @endif--}}
         @if(Auth::user()->role_id == 1)
             <div class="stats row">
                 <div class="col-md-6 col-lg-4 col-xl">
@@ -827,12 +827,12 @@
 
 
         @if(isset($orderLog))
-            const timeStarted = new Date("{{ $orderLog?->time_started }}").getTime();
-            const serverTime = new Date("{{ \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s') }}").getTime();
+            {{--const timeStarted = new Date("{{ $orderLog?->time_started }}").getTime();--}}
+            {{--const serverTime = new Date("{{ \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s') }}").getTime();--}}
 
-            $(document).ready(function() {
-                startTimer(timeStarted, serverTime);
-            });
+            {{--$(document).ready(function() {--}}
+            {{--    startTimer(timeStarted, serverTime);--}}
+            {{--});--}}
 
             function startTimer(startTime, serverTime) {
                 let currentTime = new Date(serverTime).getTime();

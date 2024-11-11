@@ -72,7 +72,7 @@
                 </form>
                 <x-slot name="footer">
                     <div class="form-group buttons">
-                        <button type="submit" class="btn save-btn" onclick="addStatus()">Save Status</button>
+                        <button type="submit" class="btn create-btn" onclick="addStatus()">Save Status</button>
                         <button type="button" class="btn cancel-btn" onclick="document.getElementById('createStatusModal').style.display='none'">Cancel</button>
                     </div>
                 </x-slot>
@@ -96,7 +96,7 @@
                 </form>
                 <x-slot name="footer">
                     <div class="form-group buttons">
-                        <button type="submit" class="btn save-btn" onclick="updateStatus()">Update Status</button>
+                        <button type="submit" class="btn create-btn" onclick="updateStatus()">Update Status</button>
                         <button type="button" class="btn cancel-btn" onclick="document.getElementById('editStatusModal').style.display='none'">Cancel</button>
                     </div>
                 </x-slot>

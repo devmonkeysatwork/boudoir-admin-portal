@@ -1545,14 +1545,12 @@ input:checked+.slider:before {
     border-radius: 5px;
 }
 
-#createStatusModal .save-btn,
-#editStatusModal .save-btn,
-#createEmailModal .save-btn,
-#editEmailModal .save-btn {
+#createStatusModal .create-btn,
+#editStatusModal .create-btn,
+#createEmailModal .create-btn,
+#editEmailModal .create-btn {
     padding: 13px 35px;
-    background-color: transparent;
-    border: 1px solid #DEDEDE;
-    color: #202224;
+    color: #FFF;
     border-radius: 4px;
 }
 
@@ -2014,7 +2012,7 @@ thead {
         flex-wrap: wrap;
     }
     .filter-item{
-        flex: 0 0 33%;
+        flex: 0 0 15%;
     }
 }
 .btn-start-order{
@@ -2036,6 +2034,19 @@ thead {
 @media (max-width: 1024px) {
     .toggleSidebar{
         display: block !important;
+    }
+    .sidebar-menu .toggleSidebar{
+        position: absolute;
+        right: -30px;
+        top: 50%;
+    }
+    .sidebar-menu .toggleSidebar button{
+        background: #000;
+        color: #FFF;
+        height: 50px;
+    }
+    .sidebar-menu{
+        position: relative;
     }
     .sidebar {
         position: absolute;
@@ -2156,4 +2167,11 @@ button.btn_loader.clicked:after{
     pointer-events: none !important;
 }
 @keyframes l6 {to{transform: rotate(1turn)}}
+
+
+@media (max-width: 992px) {
+    .settings-menu {
+        left: 0px;
+    }
+}
 

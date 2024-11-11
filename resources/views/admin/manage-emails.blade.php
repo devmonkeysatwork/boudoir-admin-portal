@@ -87,7 +87,7 @@
             <textarea id="email-content" name="email_content"></textarea>
           </div>
           <div class="form-group btn-group">
-            <button type="button" class="btn save-btn" id="save_template">Save Template</button>
+            <button type="button" class="btn create-btn" id="save_template">Save Template</button>
             <button type="button" class="btn cancel-btn" onclick="document.getElementById('createEmailModal').style.display='none'">Cancel</button>
           </div>
         </form>
@@ -123,7 +123,7 @@
             <textarea id="edit-email-content" name="content">{{ $template->content }}</textarea>
           </div>
           <div class="form-group btn-group">
-            <button type="submit" class="btn save-btn">Save Template</button>
+            <button type="submit" class="btn create-btn">Save Template</button>
             <button type="button" class="btn cancel-btn" onclick="document.getElementById('editEmailModal').style.display='none'">Cancel</button>
           </div>
           <x-slot name="footer"></x-slot>
