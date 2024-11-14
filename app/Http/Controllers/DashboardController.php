@@ -279,7 +279,7 @@ class DashboardController extends Controller
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 
-        $statuses = OrderStatus::all();
+        $statuses = OrderStatus::whereIn('id',$myWorkStatusIDs)->get();
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
 
