@@ -92,15 +92,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/compare', [DashboardController::class, 'compare'])->name('dashboard.compare');
 });
 
-Route::get('/barcode-scanner', function () {
-    return view('barcode-scanner');
-});
-Route::get('/barcode-scanner-mobile', function () {
-    return view('barcode-scanner-mobile');
-});
+//Route::get('/barcode-scanner', function () {
+//    return view('barcode-scanner');
+//});
+//Route::get('/barcode-scanner-mobile', function () {
+//    return view('barcode-scanner-mobile');
+//});
 Route::get('/send_email', [AdminController::class,'sendSummaryEmail'])->name('send-summary-email');
 
-
+//Route::post('/product/attributes/import', [AdminController::class, 'import'])->name('product.attribute.import');
 
 Route::post('/api/save_order', [OrdersController::class, 'store']);
 

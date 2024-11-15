@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class ProductAttributeValues extends Model
 {
     use HasFactory;
+    protected $fillable = ['attribute_id', 'value', 'price_cad', 'price_usd'];
 }

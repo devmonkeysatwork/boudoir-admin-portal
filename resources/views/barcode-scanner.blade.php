@@ -15,6 +15,13 @@
     <p id="barcode_result"></p>
 </div>
 
+<form action="{{ route('product.attribute.import') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    <label for="excel_file">Upload Excel File:</label>
+    <input type="file" name="excel_file" id="excel_file" required>
+    <button type="submit">Import</button>
+</form>
+
 
 <!-- Include jQuery and Bootstrap JS for modal functionality -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>

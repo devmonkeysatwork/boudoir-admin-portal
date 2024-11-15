@@ -9,6 +9,9 @@ use App\Models\Notifications;
 use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
+use App\Models\Product;
+use App\Models\ProductAttributes;
+use App\Models\ProductAttributeValues;
 use App\Models\Roles;
 use App\Models\SubStatus;
 use App\Models\User;
@@ -17,7 +20,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+//use Maatwebsite\Excel\Facades\Excel;
 use Picqer\Barcode\BarcodeGeneratorJPG;
 
 class AdminController extends Controller
@@ -549,5 +554,79 @@ class AdminController extends Controller
             ->header('Content-Type', 'image/jpeg')
             ->header('Content-Disposition', 'inline; filename="'.strtolower($status_name).'_barcode.jpg"');
     }
+
+//    public function import(Request $request)
+//    {
+//        $file = $request->file('excel_file');
+//
+//        if (!$file) {
+//            return redirect()->back()->with('error', 'Please upload an Excel file.');
+//        }
+//
+//        // Read the Excel file
+//        $sheets = Excel::toArray([], $file);
+//        $sheetNames = [
+//            "New Leathers & Smooth Velvets",
+//            "Luxury Swatch Box",
+//            "USB",
+//            "Ice Cubes",
+//            "Metal Print",
+//            "Presentation Boxes",
+//            "Folios",
+//            "The Album",
+//            "Journals",
+//            "Couture Box",
+//            "GEM Journal Album",
+//            "Prints",
+//            "Matted Prints",
+//            "Mats",
+//            "Leather Envelopes",
+//            "Fine Art Prints",
+//        ];
+//
+//
+//        // Current timestamp for created_at and updated_at columns
+//        $currentTimestamp = Carbon::now();
+//
+//        foreach ($sheets as $sheetName => $rows) {
+//            // 1. Get the Product ID using the sheet name (product name)
+//            $product = Product::where('name', $sheetNames[$sheetName])->first();
+//
+//            if (!$product) {
+//                continue; // Skip this sheet if no product is found
+//            }
+//
+//            // 2. Insert Option Name (Option name) into product_attributes table
+//            foreach ($rows as $index => $row) {
+//                // Skip the first iteration
+//                if ($index === 0) {
+//                    continue; // Skip the first row
+//                }
+//
+//                $optionName = $row[0];
+//                $optionTitle = $row[1];
+//
+//                // Insert Option Name (Option name) into product_attributes table
+//                $existingId = ProductAttributes::where('name', $optionName)->where('product_id', $product->id)->pluck('id')->first();
+//                if(!$existingId){
+//                    $attribute = ProductAttributes::create([
+//                        'name' => $optionName,
+//                        'product_id' => $product->id
+//                    ]);
+//                    $existingId = $attribute->id;
+//                }
+//                // Insert Option Title (Option title) into product_attribute_values table
+//                ProductAttributeValues::create([
+//                    'attribute_id' => $existingId,
+//                    'value' => $optionTitle,
+//                    'price_cad' => null, // You can add logic to handle price if needed
+//                    'price_usd' => null
+//                ]);
+//            }
+//
+//        }
+//
+//        return redirect()->back()->with('success', 'Product attributes imported successfully.');
+//    }
 
 }

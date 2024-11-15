@@ -17,6 +17,8 @@ use App\Http\Requests\StoreOrdersRequest;
 use App\Http\Requests\UpdateOrdersRequest;
 use App\Models\OrderStatus;
 use App\Models\Product;
+use App\Models\ProductAttributes;
+use App\Models\ProductAttributeValues;
 use App\Models\SubStatus;
 use App\Models\TimelinePool;
 use App\Models\User;
@@ -183,6 +185,16 @@ class OrdersController extends Controller
                     foreach ($attributes as $attribute){
                         $arr = explode('_',$attribute);
                         $order_attribute = new ItemAttributes();
+                        $attributeRecord = ProductAttributes::where('product_id', $order_item->product_id)
+                            ->where('name', $arr[0])
+                            ->first();
+                        if($attributeRecord){
+                            $attributeValueRecord = ProductAttributeValues::where('attribute_id', $attributeRecord->id)
+                                ->where('value', $arr[1])
+                                ->first();
+                        }
+                        $order_attribute->attribute_id = $attributeRecord?->id ?? null;
+                        $order_attribute->attribute_value_id = $attributeValueRecord?->id ?? null;
                         $order_attribute->type= $arr[0]??null;
                         $order_attribute->title=$arr[1]??null;
                         $order_attribute->item_id=$order_item->id;
@@ -235,13 +247,16 @@ class OrdersController extends Controller
 
                 DB::commit();
                 Log::info('Successfully saved ORDER -------'.$order->id);
+                return response()->json(['order'=>$order->id]);
             }else{
                 Log::info('Failed to save ORDER -------'.$request);
+                return response()->json(['Error'=>'Failed to save ORDER']);
             }
         }catch (\Exception $e){
             DB::rollBack();
             Log::info('Failed to save ORDER -------'.$request);
             Log::info('Error -------'.$e);
+            return response()->json(['Error'=>$e->getMessage()]);
         }
 
     }
