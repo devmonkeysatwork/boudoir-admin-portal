@@ -42,17 +42,20 @@
                 <div class="col-12">
                     <div class="row">
                         <div class="col">
-                            <label for="product_option_select">Product Option:</label>
-                            <select class="form-select" name="product_option" aria-label="Default select example" id="product_option_select">
+                            <label for="product_attribute_select">Product Option:</label>
+                            <select class="form-select" name="product_attribute" aria-label="Default select example" id="product_attribute_select">
                                 <option selected>All</option>
+                                @foreach($attributes as $attribut)
+                                    <option {{isset($productAttribute) && $productAttribute ==$attribut->id ?'Selected':''}} value="{{$attribut->id}}">{{$attribut->name}}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col">
                             <label for="attribute_select">Attributes:</label>
                             <select class="form-select" name="attribute" aria-label="Default select example" id="attribute_select">
                                 <option selected>All</option>
-                                @foreach($attributes as $attribut)
-                                    <option {{isset($attribute) && $attribute == str_replace(' ','_',$attribut->type)?'Selected':''}} value="{{str_replace(' ','_',$attribut->type)}}">{{$attribut->type}}</option>
+                                @foreach($attributesValues as $attributesValue)
+                                    <option {{isset($attribute) && $attribute ==$attributesValue->id ?'Selected':''}} value="{{$attributesValue->id}}">{{$attributesValue->value}}</option>
                                 @endforeach
                             </select>
                         </div>

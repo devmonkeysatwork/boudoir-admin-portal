@@ -6,6 +6,8 @@ use App\Models\OrderLogs;
 use App\Models\Orders;
 use App\Models\OrderStatus;
 use App\Models\Product;
+use App\Models\ProductAttributes;
+use App\Models\ProductAttributeValues;
 use App\Models\ProductFlows;
 use App\Models\SubStatus;
 use App\Models\User;
@@ -23,7 +25,7 @@ class DashboardController extends Controller
 
         $data['productName'] = $request->input('product_name');
         $data['status_id'] = $request->input('status');
-        $data['productOption'] = $request->input('product_option');
+        $data['productAttribute'] = $request->input('product_attribute');
         $data['attribute'] = $request->input('attribute');
         $data['teamMember'] = $request->input('team_member');
         $data['groupBy'] = $request->input('group_by');
@@ -31,7 +33,8 @@ class DashboardController extends Controller
         $data['statuses'] = OrderStatus::all();
         $data['products'] = Product::all();
         $data['team_members'] = User::whereRoleId(2)->get();
-        $data['attributes'] = DB::select('SELECT DISTINCT type FROM item_attributes');
+        $data['attributes'] = ProductAttributes::where('product_id', $data['productName'])->get(['id', 'name']);
+        $data['attributesValues'] = ProductAttributeValues::where('attribute_id', $data['productAttribute'])->get(['id', 'value']);
 
 
 
@@ -408,8 +411,5 @@ class DashboardController extends Controller
             'months' => $months,    // Array of month names (from the most recent month)
         ];
     }
-
-
-
 
 }
