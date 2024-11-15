@@ -219,6 +219,12 @@ class AdminController extends Controller
 
 //            $lastLog = Orders::whereId($order->id)->with(['last_log'])->first();
             $lastLog = OrderLogs::whereOrderId($order->order_id)->orderBy('id','DESC')->first();
+            if(!$lastLog){
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'No activity so far on this order'
+                ]);
+            }
             $lastLog->error = 1;
             $lastLog->save();
 
