@@ -294,11 +294,13 @@ class AdminController extends Controller
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
         $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
         $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
+        $productionReadyId = OrderStatus::where('status_name','Ready For Production')->pluck('id')->toArray();
         $excludedStatusIds = array_merge(
             $readyForPrintStatusId,
             $onHoldStatusIds,
             $readyToShipStatusId,
-            $qualityControlStatusId
+            $qualityControlStatusId,
+            $productionReadyId
         );
         $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs'])->paginate(10);
 
