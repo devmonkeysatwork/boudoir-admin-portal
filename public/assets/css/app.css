@@ -1991,6 +1991,11 @@ thead {
 #dashboardOrdersTable td:nth-child(6) {
     width: 100px;
 }
+@media (min-width: 1440px) {
+    .filter-item{
+        flex: 0 0 16.5%;
+    }
+}
 @media (min-width: 1300px) {
     .col-xl {
         flex: 1 0 0% !important;
