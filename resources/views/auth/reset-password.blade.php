@@ -1,39 +1,59 @@
-<x-guest-layout>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{asset('assets/css/login.css')}}">
+    {{--    @vite(['resources/css/login.css', 'resources/js/app.js'])--}}
+</head>
+
+<body>
+<img src="{{ asset('images/logo.png') }}" class="mx-auto" width="200px" alt="The Boudoir Album">
+<div class="login-container flex-row">
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
 
         <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <input type="hidden" name="token" value="{{ $request->token }}">
+        <div class="form-group">
+            <label for="email">Email address:</label>
+            <input type="email" id="email" name="email" value="{{$request->email}}" required autofocus autocomplete="username">
+            @if ($errors->has('email'))
+                <span class="error">{{ $errors->first('email') }}</span>
+            @endif
         </div>
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+                @if ($errors->has('password'))
+                    <span class="error">{{ $errors->first('password') }}</span>
+                @endif
+            </div>
         </div>
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password">
+                @if ($errors->has('password_confirmation'))
+                    <span class="error">{{ $errors->first('password') }}</span>
+                @endif
+            </div>
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
+            <button type="submit">Reset Password</button>
         </div>
     </form>
-</x-guest-layout>
+</div>
+<script src="{{asset('assets/js/app.js')}}"></script>
+</body>
+
+</html>
+

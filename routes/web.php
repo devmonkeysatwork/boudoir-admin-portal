@@ -58,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{id}/download-pdf', [OrdersController::class, 'packing_slip'])->name('orders.downloadPDF');
 
 
-//    Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
+    Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
 
     Route::get('/team', [AdminController::class, 'team'])->name('admin.team');
     Route::get('/team/{id}', [AdminController::class, 'getTeamDetails']);

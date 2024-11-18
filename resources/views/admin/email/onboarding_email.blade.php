@@ -10,7 +10,8 @@
     <h1 style="text-align: center; line-height: normal; margin-bottom: 20px;">Please login to the portal using below credentials.</h1>
 
     <div style="padding: 20px; white-space: pre-line;">
-        <strong>Portal URL</strong>: <a href="{{$url??''}}" style="color: #000;text-decoration: none;">login here.</a><br>
+        Reset your password <a href="{{$reset_link??''}}">here</a>. <br>
+        OR <a href="{{$url??''}}" style="color: #000;text-decoration: none;">login here.</a> with below credentials.<br>
         <strong>Email</strong>: {{$email??''}}<br>
         <strong>Password</strong>: {{$pwd??''}}
     </div>

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
@@ -77,10 +78,12 @@ class RegisteredUserController extends Controller
                 'password' => Hash::make($pwd),
                 'role_id' => $request->input('role_id'), // Assign role
             ]);
+            $token = Password::getRepository()->create($user);
             $mailData = [
                 'email' => $request->input('email'),
                 'pwd' => $pwd,
                 'url' => route('login'),
+                'reset_link' => route('password.reset', ['token' => $token, 'email' => $user->email]),
             ];
 
             Mail::to($request->input('email'))->send(new OnboardingEmail($mailData));
