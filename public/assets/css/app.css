@@ -2187,4 +2187,13 @@ button.btn_loader.clicked:after{
         left: 0px;
     }
 }
+@media (max-width: 992px) {
+    #orderModal .activity-logs .log-entry{
+        display: flex;
+        flex-direction: column;
+    }
+    #orderModal .log-date{
+        position: unset;
+    }
+}
 

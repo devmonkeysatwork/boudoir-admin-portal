@@ -312,10 +312,12 @@
                 (decodedText, decodedResult) => {
                     // Handle the result here
                     $('#qr-input').val(decodedText);
+                    $('#scanning_message').empty().removeClass('text-danger').text('ORDER ID :' + decodedText);
                     html5QrCode.stop(); // Stop scanning after successful read
                 },
                 (errorMessage) => {
                     // Handle scanning error (optional)
+                    $('#scanning_message').empty().addClass('text-danger').text('Error please scan again.');
                     console.log(errorMessage);
                 }
             ).catch(err => {
@@ -389,7 +391,7 @@
                     <input type="hidden" id="qr-input" class="form-control" placeholder="Scan barcode here" autofocus>
                     <p id="barcode_result"></p>
                     <div id="qr-reader" style="width: 300px; height: fit-content;margin: 0px auto"></div>
-                    <p class="p14 text-center">Scan the barcode on the order sheet PDF to proceed.</p>
+                    <p class="p14 text-center" id="scanning_message">Scan the barcode on the order sheet PDF to proceed.</p>
                     <div class="form-group">
                         <input type="hidden" id="edit_id" name="id">
                         <label for="status-name">Status</label>
