@@ -664,6 +664,47 @@ class OrdersController extends Controller
                     'message' => 'Invalid input format. Please provide order number and status ID.',
                 ]);
             }
+            //Gilding
+            if($statusId == 3){
+                $attributes = Orders::with('items')
+                    ->where(function ($attrQuery) {
+                        $attrQuery->whereHas('items.attributes', function ($subQuery) {
+                            $subQuery->where('type','Like','Gilding')
+                                ->where('title', 'none');
+                        });
+                    })
+                    ->whereOrderId($orderNumber)->first();
+                if($attributes){
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Order ID '.$orderNumber.' does not have gilding required.',
+                    ]);
+                }
+            }elseif($statusId == 5){
+                $attributes = Orders::with('items')
+                    ->where(function ($attrQuery) {
+                        $attrQuery->whereHas('items.attributes', function ($subQuery) {
+                            $subQuery->where('type','Like','Imprinting or Logo')
+                                ->where('title', 'none');
+                        });
+                    })
+                    ->whereOrderId($orderNumber)->first();
+                $attributes2 = Orders::with('items')
+                    ->where(function ($attrQuery) {
+                        $attrQuery->whereHas('items.attributes', function ($subQuery) {
+                            $subQuery->where('type','Like','Second Imprinting or Logo')
+                                ->where('title', 'none');
+                        });
+                    })
+                    ->whereOrderId($orderNumber)->first();
+                if($attributes && $attributes2){
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Order ID '.$orderNumber.' does not have Imprinting required.',
+                    ]);
+                }
+            }
+
             // Check for existing order status
             $existingOrderStatus = OrderLogs::with('status')->where('time_end', null)
                 ->where('order_id', $orderNumber)
