@@ -86,9 +86,17 @@ class OrdersController extends Controller
         if($request->order_id){
             $order_id = Orders::where('order_id',$request->order_id)->pluck('id')->first();
         }
+
+        $userId = auth()->id();
+        // Fetch the associated OrderLogs to get the time_started
+        $orderLog = OrderLogs::with(['user','status'])
+            ->where('user_id',$userId)
+            ->whereNotNull('time_started')
+            ->whereNull('time_end')
+            ->first();
 //        dd($data);
         return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id',
-            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority'));
+            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog'));
     }
 
     /**

@@ -182,6 +182,14 @@ class AdminController extends Controller
             }
         }
 
+        $userId = auth()->id();
+        // Fetch the associated OrderLogs to get the time_started
+        $orderLog = OrderLogs::with(['user','status'])
+            ->where('user_id',$userId)
+            ->whereNotNull('time_started')
+            ->whereNull('time_end')
+            ->first();
+
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',
             'inProductionOrdersCount',
@@ -195,7 +203,8 @@ class AdminController extends Controller
             'sub_statuses',
             'filter_date',
             'percentageChange',
-            'statuses'
+            'statuses',
+            'orderLog',
         ));
     }
 

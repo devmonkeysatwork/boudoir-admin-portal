@@ -377,6 +377,41 @@
         });
     }
 
+    function endOrderPhase() {
+        const id = @json($orderLog?->id ?? '');
+        const orderNumber = @json($orderLog?->order_id ?? '');
+
+        let data  = new FormData();
+        data.append('_token','{{@csrf_token()}}');
+        data.append('id',id);
+        data.append('order_id',orderNumber);
+
+        $.ajax({
+            url: '{{route('order.end_log')}}',
+            type: 'POST',
+            data: data,
+            processData: false,
+            contentType: false,
+            cache: false,
+            beforeSend() {
+                show_loader();
+            },
+            success: function(response) {
+                if (response.status == 200) {
+                    $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
+                    location.reload();
+                } else {
+                    $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
+                }
+                hide_loader();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                hide_loader();
+            }
+        });
+    }
+
 </script>
 @yield('footer_scripts')
 <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" id="startWorkModel">

@@ -30,7 +30,11 @@
     <tbody id="ordersBody">
         @foreach($myOrders as $log)
           <tr>
-              <td> {{$log->order->order_id}} </td>
+              <td>
+                  <button class="edit-btn" onclick="viewDetails('{{ $log->order->id }}','{{ $log->order_id }}')">
+                      {{ $log->order_id }}
+                  </button>
+              </td>
               <td>
                   <span class="status" style="background-color: {{$log->status?->status_color ?? 'transparent'}}">
                       {{$log->status?->status_name ?? null}}
@@ -51,14 +55,10 @@
                   {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
               </td>
               <td>
-                  <button class="edit-btn" onclick="viewDetails('{{$log->order->id}}','{{$log->order->order_id}}')">
-                      <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="3.5" stroke="#222222"/>
-                          <path d="M21 12C21 12 20 4 12 4C4 4 3 12 3 12" stroke="#222222"/>
-                      </svg>
-                  </button>
-                  @if($orderLog && $orderLog->order_id == $log->order_id)
-                      In Progress
+                  @if(isset($orderLog) && $orderLog->order_id == $log->order_id)
+                      <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
+                          <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
+                      </button>
                   @else
                       <button data-id="{{$log->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
                           Start order
@@ -174,42 +174,6 @@
             updateClock();
         }
 
-
-
-        function endOrderPhase() {
-            const id = @json($orderLog?->id ?? '');
-            const orderNumber = @json($orderLog?->order_id ?? '');
-
-            let data  = new FormData();
-            data.append('_token','{{@csrf_token()}}');
-            data.append('id',id);
-            data.append('order_id',orderNumber);
-
-            $.ajax({
-                url: '{{route('order.end_log')}}',
-                type: 'POST',
-                data: data,
-                processData: false,
-                contentType: false,
-                cache: false,
-                beforeSend() {
-                    show_loader();
-                },
-                success: function(response) {
-                    if (response.status == 200) {
-                        $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
-                        location.reload();
-                    } else {
-                        $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
-                    }
-                    hide_loader();
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    hide_loader();
-                }
-            });
-        }
 
         let activeOrder = 0;
         function viewDetails(orderId, title) {
