@@ -279,6 +279,9 @@ class DashboardController extends Controller
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
             })
+            ->whereHas('items', function ($query) use ($p_ids) {
+                $query->whereIn('product_id', $p_ids); // Filter items by product_id
+            })
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 

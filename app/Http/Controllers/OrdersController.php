@@ -19,6 +19,7 @@ use App\Models\OrderStatus;
 use App\Models\Product;
 use App\Models\ProductAttributes;
 use App\Models\ProductAttributeValues;
+use App\Models\ProductFlows;
 use App\Models\SubStatus;
 use App\Models\TimelinePool;
 use App\Models\User;
@@ -797,6 +798,11 @@ class OrdersController extends Controller
 
     function myOrders(){
         $userId = auth()->id();
+
+        $myWorkStatusIDs = auth()->user()->workstations->pluck('status_id')->toArray();
+        $p_ids = ProductFlows::whereIn('step_id',$myWorkStatusIDs)->pluck('product_id','step_no');
+
+
         // Fetch the associated OrderLogs to get the time_started
         $orderLog = OrderLogs::with(['user','status'])
             ->where('user_id',$userId)
@@ -808,6 +814,9 @@ class OrdersController extends Controller
             ->where('time_end','!=', null)
             ->where('user_id',$userId)
             ->orderBy('time_end')
+            ->whereHas('order.items', function ($query) use ($p_ids) {
+                $query->whereIn('product_id', $p_ids); // Filter items by product_id
+            })
             ->paginate(10);
 
         $statuses = OrderStatus::all();
