@@ -812,12 +812,10 @@ class OrdersController extends Controller
         $myOrders = OrderLogs::with(['user','status','order'])
             ->where('time_started','!=', null)
             ->where('time_end','!=', null)
-            ->where('user_id',$userId)
+            ->where('user_id', $userId)
             ->orderBy('time_end')
-            ->whereHas('order.items', function ($query) use ($p_ids) {
-                $query->whereIn('product_id', $p_ids); // Filter items by product_id
-            })
             ->paginate(10);
+
 
         $statuses = OrderStatus::all();
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();

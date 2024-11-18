@@ -228,28 +228,29 @@ class DashboardController extends Controller
 
     public function dashboard(Request $request)
     {
-
         $myWorkStatusIDs = auth()->user()->workstations->pluck('status_id')->toArray();
         $ordersInQueue = 0;
+        $my_product_ids = [];
         if($myWorkStatusIDs){
-            $p_ids = ProductFlows::whereIn('step_id',$myWorkStatusIDs)->pluck('product_id','step_no');
+            $p_ids = ProductFlows::whereIn('step_id',$myWorkStatusIDs)->get();
             $previous_step = [];
-            foreach ($p_ids as $index => $p_id){
-                $previous_step[] = ProductFlows::where('product_id', $p_id)
-                    ->where('step_no', '<', $index)
+            foreach ($p_ids as $p_id){
+                $previous_step[] = ProductFlows::where('product_id', $p_id->product_id)
+                    ->where('step_no', '<', $p_id->step_no)
                     ->orderByDesc('step_no')
                     ->pluck('step_id')->first();
+                $my_product_ids[]=$p_id->product_id;
             }
 
             $ordersInQueue = Orders::with('items') // Eager load items relation
-                ->whereHas('items', function ($query) use ($p_ids) {
-                    $query->whereIn('product_id', $p_ids); // Filter items by product_id
+                ->whereHas('items', function ($query) use ($my_product_ids) {
+                    $query->whereIn('product_id', $my_product_ids); // Filter items by product_id
                 })
                 ->whereIn('status_id',$previous_step)
                 ->count();
 
         }
-//        dd($p_ids,$previous_step,$all_orders);
+//        dd($my_product_ids,$myWorkStatusIDs,$ordersInQueue,$previous_step);
         // Status IDs based on your categorization
         $readyForPrintStatusId = OrderStatus::where('status_name','Ready for Production')->pluck('id')->toArray();
         $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
@@ -279,9 +280,21 @@ class DashboardController extends Controller
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
             })
-            ->whereHas('items', function ($query) use ($p_ids) {
-                $query->whereIn('product_id', $p_ids); // Filter items by product_id
+            ->whereHas('items', function ($query) use ($my_product_ids) {
+                $query->whereIn('product_id', $my_product_ids)  // Filter items by product_id
+                ->where(function ($attrQuery) {
+                    // For items with specified attribute types, ensure 'value' is not 'None'
+                    $attrQuery->whereHas('attributes', function ($subQuery) {
+                        $subQuery->whereIn('type', Product::possibleNoneValueAttributes)
+                            ->whereNotIn('title', ['none']);
+                    })
+                        // Or ensure items without these attributes are also included
+                    ->orWhereHas('attributes', function ($subQuery) {
+                        $subQuery->whereNotIn('type', Product::possibleNoneValueAttributes);
+                    });
+                });
             })
+            ->whereNotIn('status_id',$completedStatusId)
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 

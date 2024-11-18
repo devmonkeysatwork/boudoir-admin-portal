@@ -10,6 +10,7 @@ class OrderStatus extends Model
     use HasFactory;
     protected $table = 'order_status';
     const adminStatuses = ['On hold','Issue with print','Remake + Reasons'];
+    const possibleNoneValueStatus = ['Gilding','Imprinting'];
     const COMPLETED = 'Completed';
 
 
