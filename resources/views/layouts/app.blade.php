@@ -306,25 +306,29 @@
             html5QrCode.start(
                 { facingMode: "environment" },
                 {
-                    fps: 10,
-                    qrbox: 250
+                    fps: 10, // Scanning speed (frames per second)
+                    qrbox: 250 // Size of the scanning area
                 },
                 (decodedText, decodedResult) => {
-                    // Handle the result here
+                    // Handle the result here when QR code is decoded successfully
                     $('#qr-input').val(decodedText);
                     $('#scanning_message').empty().removeClass('text-danger').text('ORDER ID :' + decodedText);
                     html5QrCode.stop(); // Stop scanning after successful read
                 },
                 (errorMessage) => {
                     // Handle scanning error (optional)
-                    $('#scanning_message').empty().addClass('text-danger').text('Error please scan again.');
-                    console.log(errorMessage);
+                    // $('#scanning_message').empty().text('Looking for a QR code.');
+
+                    // Optionally log the error message for debugging
+                    console.log('Scanning error: ', errorMessage);
                 }
             ).catch(err => {
-                // Start failed, handle it
+                // Handle failed initialization (unable to start scanning)
                 console.log(`Unable to start scanning: ${err}`);
+                $('#scanning_message').empty().addClass('text-danger').text('Unable to initialize scanner. Please check camera permissions.');
             });
         }
+
 
         // Restart scanning when the button is clicked
         $(document).on('click', '.btn-start-order', function() {
