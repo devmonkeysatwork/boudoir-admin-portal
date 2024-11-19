@@ -669,18 +669,21 @@ class OrdersController extends Controller
                     'message' => 'Invalid input format. Please provide order number and status ID.',
                 ]);
             }
-            $p_ids = ProductFlows::where('step_id',$statusId)->pluck('product_id');
-            $prod_ids = Orders::with('items') // Eager load items relation
-            ->whereHas('items', function ($query) use ($p_ids) {
-                $query->whereIn('product_id', $p_ids); // Filter items by product_id
-            })->whereOrderId($orderNumber)->count();
-            if(!$prod_ids){
-                $status_name = OrderStatus::whereId($statusId)->pluck('status_name')->first();
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'Order ID '.$orderNumber.' does not have '.$status_name.' required.',
-                ]);
+            if(!in_array($statusId,OrderStatus::exceptionStatuses)){
+                $p_ids = ProductFlows::where('step_id',$statusId)->pluck('product_id');
+                $prod_ids = Orders::with('items') // Eager load items relation
+                ->whereHas('items', function ($query) use ($p_ids) {
+                    $query->whereIn('product_id', $p_ids); // Filter items by product_id
+                })->whereOrderId($orderNumber)->count();
+                if(!$prod_ids){
+                    $status_name = OrderStatus::whereId($statusId)->pluck('status_name')->first();
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Order ID '.$orderNumber.' does not have '.$status_name.' required.',
+                    ]);
+                }
             }
+
 
 
 
