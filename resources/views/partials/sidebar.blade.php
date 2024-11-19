@@ -36,11 +36,11 @@
             </a>
         </li>
         @if(Auth::user()->role_id == 1)
-            <li>
-                <a href="{{ route('dashboard.reports') }}" class="{{ Request::routeIs('dashboard.reports') ? 'active' : '' }}">
-                    <img src="{{ asset('icons/reports.png') }}" alt="Reports">Reports
-                </a>
-            </li>
+{{--            <li>--}}
+{{--                <a href="{{ route('dashboard.reports') }}" class="{{ Request::routeIs('dashboard.reports') ? 'active' : '' }}">--}}
+{{--                    <img src="{{ asset('icons/reports.png') }}" alt="Reports">Reports--}}
+{{--                </a>--}}
+{{--            </li>--}}
 {{--            <li>--}}
 {{--                <a href="{{ route('dashboard.compare') }}" class="{{ Request::routeIs('dashboard.compare') ? 'active' : '' }}">--}}
 {{--                    <img src="{{ asset('icons/reports.png') }}" alt="Reports">Compare Members--}}
