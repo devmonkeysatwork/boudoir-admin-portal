@@ -341,12 +341,15 @@
         });
 
         $(document).on('click', '.btn-rescan-order', function() {
+            // Hide modal and reset scanning button
             $('#startWorkModel').modal('hide');
             $('.btn-rescan-order').fadeOut();
             setTimeout(function () {
                 $('#startWorkModel').modal('show');
-                startScanning(); // Restart scanning
-            },1000);
+                setTimeout(function () {
+                    startScanning();
+                }, 800);
+            }, 500);
         });
     });
     function updateOrderStatus() {
