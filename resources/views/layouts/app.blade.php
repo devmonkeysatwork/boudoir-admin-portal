@@ -343,6 +343,7 @@
         $(document).on('click', '.btn-rescan-order', function() {
             html5QrCode.stop();
             $('#startWorkModel').modal('hide');
+            $('.btn-rescan-order').fadeOut();
             setTimeout(function () {
                 $('#startWorkModel').modal('show');
                 startScanning(); // Restart scanning
