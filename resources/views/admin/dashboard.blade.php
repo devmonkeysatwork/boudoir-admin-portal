@@ -145,7 +145,7 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-in-production.png') }}" alt="in Production">
                             <div class="stat-info">
-                                <h3>1</h3>
+                                <h3>0</h3>
                                 <p>Issues/On Hold</p>
                             </div>
                         </div>
@@ -156,7 +156,7 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-on-hold.png') }}" alt="on Hold">
                             <div class="stat-info">
-                                <h3>10</h3>
+                                <h3>0</h3>
                                 <p>Completed</p>
                             </div>
                         </div>

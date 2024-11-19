@@ -78,7 +78,12 @@ class OrdersController extends Controller
         $orders = $query->paginate(10);
 //        dd($orders);
         $workstations = Workstations::all();
-        $statuses = OrderStatus::all();
+        if(Auth::user()->role_id == 1){
+            $statuses = OrderStatus::whereNotIn('status_name',OrderStatus::adminStatuses)->get();
+        }else{
+            $myWorkStatusIDs = auth()->user()->workstations->pluck('status_id')->toArray();
+            $statuses = OrderStatus::whereIn('id',$myWorkStatusIDs)->get();
+        }
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
         $users = User::all();
