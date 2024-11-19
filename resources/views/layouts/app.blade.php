@@ -358,7 +358,7 @@
         // Verify that the scanned QR matches the order ID
         if (qrInput !== orderNumber) {
             alert('Scanned QR code does not match the order number.');
-            startScanning();
+            $('.btn-rescan-order').fadeIn();
             return;
         }
         let data  = new FormData();
