@@ -27,7 +27,7 @@
         @endif
         <li>
             <a href="{{ route('worker.my_orders') }}" class="{{ Request::routeIs('worker.my_orders') ? 'active' : '' }}">
-                <img src="{{ asset('icons/my-orders.svg') }}" height="40px" alt="Order List">My Orders
+                <img src="{{ asset('icons/my-orders.svg') }}" height="40px" alt="Order List" style="object-fit: cover">My Orders
             </a>
         </li>
         <li>

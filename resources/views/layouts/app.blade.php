@@ -339,6 +339,15 @@
         $('#startWorkModel').on('hidden.bs.modal', function () {
             html5QrCode.stop();
         });
+
+        $(document).on('click', '.btn-rescan-order', function() {
+            html5QrCode.stop();
+            $('#startWorkModel').modal('hide');
+            setTimeout(function () {
+                $('#startWorkModel').modal('show');
+                startScanning(); // Restart scanning
+            },1000);
+        });
     });
     function updateOrderStatus() {
         const orderNumber = $('#order_number_title').text().trim(); // Get order number from modal
@@ -348,6 +357,7 @@
         // Verify that the scanned QR matches the order ID
         if (qrInput !== orderNumber) {
             alert('Scanned QR code does not match the order number.');
+            $('.btn-rescan-order').fadeIn();
             return;
         }
         let data  = new FormData();
@@ -416,6 +426,8 @@
         });
     }
 
+
+
 </script>
 @yield('footer_scripts')
 <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" id="startWorkModel">
@@ -429,6 +441,7 @@
                 <div class="d-flex flex-column gap-3">
                     <input type="hidden" id="qr-input" class="form-control" placeholder="Scan barcode here" autofocus>
                     <p id="barcode_result"></p>
+                    <button class="btn btn-primary create-btn btn-rescan-order mx-auto" style="display: none;">Rescan barcode</button>
                     <div id="qr-reader" style="width: 300px; height: fit-content;margin: 0px auto"></div>
                     <p class="p14 text-center" id="scanning_message">Scan the barcode on the order sheet PDF to proceed.</p>
                     <div class="form-group">
