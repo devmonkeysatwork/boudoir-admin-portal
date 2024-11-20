@@ -143,11 +143,12 @@ class AdminController extends Controller
             'onHold' => ['yesterday' => 0, 'today' => 0],
             'readyToShip' => ['yesterday' => 0, 'today' => 0],
             'qualityControl' => ['yesterday' => 0, 'today' => 0],
+            'production' => ['yesterday' => 0, 'today' => 0],
         ];
 
         // Count orders for each status updated yesterday
         $orderCounts['readyForPrint']['yesterday'] = Orders::whereIn('status_id', $readyForPrintStatusId)
-            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
+            ->whereBetween('created_at', [$yesterdayStart, $yesterdayEnd])
             ->count();
 
         $orderCounts['onHold']['yesterday'] = Orders::whereIn('status_id', $onHoldStatusIds)
@@ -162,9 +163,13 @@ class AdminController extends Controller
             ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
             ->count();
 
+        $orderCounts['production']['yesterday'] = Orders::whereIn('status_id', $inProductionStatusIds)
+            ->whereBetween('updated_at', [$yesterdayStart, $yesterdayEnd])
+            ->count();
+
 // Count orders for each status updated today
         $orderCounts['readyForPrint']['today'] = Orders::whereIn('status_id', $readyForPrintStatusId)
-            ->whereBetween('updated_at', [$todayStart, $todayEnd])
+            ->whereBetween('created_at', [$todayStart, $todayEnd])
             ->count();
 
         $orderCounts['onHold']['today'] = Orders::whereIn('status_id', $onHoldStatusIds)
@@ -178,6 +183,10 @@ class AdminController extends Controller
         $orderCounts['qualityControl']['today'] = Orders::whereIn('status_id', $qualityControlStatusId)
             ->whereBetween('updated_at', [$todayStart, $todayEnd])
             ->count();
+        $orderCounts['production']['today'] = Orders::whereIn('status_id', $inProductionStatusIds)
+            ->whereBetween('updated_at', [$todayStart, $todayEnd])
+            ->count();
+
 
         foreach ($orderCounts as $status => $counts) {
             if ($counts['yesterday'] > 0) {
