@@ -120,7 +120,7 @@
             </div>
           </div>
           <div class="form-group text">
-            <textarea id="edit-email-content" name="content">{{ $template->content }}</textarea>
+            <textarea id="edit-email-content" name="content">{{ $template?->content??'' }}</textarea>
           </div>
           <div class="form-group btn-group">
             <button type="submit" class="btn create-btn">Save Template</button>
