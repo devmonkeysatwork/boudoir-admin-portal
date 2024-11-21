@@ -190,7 +190,7 @@ class AdminController extends Controller
 
         foreach ($orderCounts as $status => $counts) {
             if ($counts['yesterday'] > 0) {
-                $percentageChange[$status] = (($counts['today'] - $counts['yesterday']) / $counts['yesterday']) * 100;
+                $percentageChange[$status] = round((($counts['today'] - $counts['yesterday']) / $counts['yesterday']) * 100,0);
             } else {
                 $percentageChange[$status] = $counts['today'] > 0 ? 100 : 0; // If there were no orders yesterday
             }
