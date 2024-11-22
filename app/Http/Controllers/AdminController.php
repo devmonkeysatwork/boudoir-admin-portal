@@ -248,7 +248,10 @@ class AdminController extends Controller
                     'message' => 'No activity so far on this order'
                 ]);
             }
-            $lastLog->error = 1;
+            $engravingId = OrderStatus::where('status_name',OrderStatus::ENGRAVING)->pluck('id')->first();
+            if($engravingId != $request->edit_status){
+                $lastLog->error = 1;
+            }
             $lastLog->save();
 
             $orderStatus = new OrderLogs();
@@ -257,6 +260,9 @@ class AdminController extends Controller
             $orderStatus->sub_status_id = $request->edit_sub_status??null;
             $orderStatus->user_id = Auth::user()->id;
             $orderStatus->notes = $request->notes??null;
+            if($engravingId != $request->edit_status){
+                $orderStatus->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+            }
             $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
             $orderStatus->save();
 
