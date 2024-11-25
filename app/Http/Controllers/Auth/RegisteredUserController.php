@@ -74,6 +74,7 @@ class RegisteredUserController extends Controller
             $pwd = str()->random(8);
             $user = User::create([
                 'name' => $request->input('name'),
+                'username' => strtolower(str_replace(' ','_',$request->input('name'))),
                 'email' => $request->input('email'),
                 'password' => Hash::make($pwd),
                 'role_id' => $request->input('role_id'), // Assign role
@@ -81,6 +82,7 @@ class RegisteredUserController extends Controller
             $token = Password::getRepository()->create($user);
             $mailData = [
                 'email' => $request->input('email'),
+                'username' => strtolower(str_replace(' ','_',$request->input('name'))),
                 'pwd' => $pwd,
                 'url' => route('login'),
                 'reset_link' => route('password.reset', ['token' => $token, 'email' => $user->email]),

@@ -16,11 +16,14 @@
             @csrf
             <h2>Login</h2>
             <p>Please enter your email and password to continue</p>
+            @if ($errors->has('login'))
+                <span class="error">{{ $errors->first('login') }}</span>
+            @endif
             <div class="form-group">
-                <label for="email">Email address:</label>
-                <input type="email" id="email" name="email" :value="old('email')" required autofocus autocomplete="username">
-                @if ($errors->has('email'))
-                <span class="error">{{ $errors->first('email') }}</span>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ old('username') }}" required autofocus autocomplete="username">
+                @if ($errors->has('username'))
+                    <span class="error">{{ $errors->first('username') }}</span>
                 @endif
             </div>
             <div class="form-group">

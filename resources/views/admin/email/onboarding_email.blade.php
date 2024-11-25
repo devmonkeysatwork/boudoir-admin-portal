@@ -13,6 +13,7 @@
         Reset your password <a href="{{$reset_link??''}}">here</a>. <br>
         OR <a href="{{$url??''}}" style="color: #000;text-decoration: none;">login here.</a> with below credentials.<br>
         <strong>Email</strong>: {{$email??''}}<br>
+        <strong>Username</strong>: {{$username??''}}<br>
         <strong>Password</strong>: {{$pwd??''}}
     </div>
 </div>
