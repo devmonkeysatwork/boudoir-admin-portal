@@ -35,8 +35,8 @@
                         <tbody>
                         @foreach($statuses as $status)
                             <tr>
-                                <td><span class="status" style="background-color: {{$status->status_color}};">{{$status->status_name}}</span></td>
-                                <td>{{$status->status_name}}</td>
+                                <td><span class="status" style="background-color: {{$status->status_color}};">{{$status->title}}</span></td>
+                                <td>{{$status->title}}</td>
                                 <td class="actions">
                                     <button class="edit-btn" onclick="editStatus(this)" data-name="{{$status->status_name}}" data-id="{{$status->id}}" data-color="{{$status->status_color}}">
                                         <img src="{{ asset('icons/edit.png') }}" alt="Edit Icon">
