@@ -167,7 +167,9 @@
                                         @if($child_order->is_rush == 1)
                                             <img src="{{asset('icons/rush.svg')}}" alt="Rush">
                                         @endif
-                                        {{$child_order->order_id}}
+                                        <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">
+                                            {{ $child_order->order_id }}
+                                        </button>
                                     </td>
                                     <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">
                                         @if(isset($child_order->last_log->sub_status))
@@ -203,18 +205,20 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">
-                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon">
-                                        </button>
-                                        <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">
-                                            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="12" cy="12" r="3.5" stroke="#222222"/>
-                                                <path d="M21 12C21 12 20 4 12 4C4 4 3 12 3 12" stroke="#222222"/>
-                                            </svg>
-                                        </button>
-                                        <button data-id="{{$child_order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
-                                            Start order
-                                        </button>
+                                        @if(Auth::user()->role_id == 1)
+                                            <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">
+                                                <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
+                                            </button>
+                                        @endif
+                                        @if(isset($orderLog) && $orderLog->order_id == $child_order->order_id)
+                                            <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
+                                                <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
+                                            </button>
+                                        @else
+                                            <button data-id="{{$child_order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                                Start order
+                                            </button>
+                                        @endif
 
                                     </td>
                                 </tr>
@@ -461,6 +465,7 @@
         }
 
         function viewDetails(orderId, title) {
+            $('#child_order > h3').text('Sub-Orders');
             activeOrder = orderId;
             show_loader();
 
@@ -487,6 +492,10 @@
                         let logs = response.order.logs;
                         let commentsHtml = response.comments_vew; // This is an HTML string now
                         let child_orders = response.order.children;
+                        if(child_orders && child_orders.length == 0){
+                            child_orders = [response.order.parent];
+                            $('#child_order > h3').text('Main Order');
+                        }
 
                         // Populate the Activity Log
                         $('#order_logs').empty();

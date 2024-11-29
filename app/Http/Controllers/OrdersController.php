@@ -396,7 +396,7 @@ class OrdersController extends Controller
     {
         $id = $request->id;
 
-        $order = Orders::with(['children','children.status','children.station',
+        $order = Orders::with(['children','children.status','children.station','parent','parent.status','parent.station',
             'children.station.worker','status','logs','logs.user','logs.status',
             'logs.sub_status','comments','comments.replies','comments.replies.user','comments.user'])
             ->whereId($id)->first();
