@@ -492,9 +492,10 @@
                         let logs = response.order.logs;
                         let commentsHtml = response.comments_vew; // This is an HTML string now
                         let child_orders = response.order.children;
-                        if(child_orders && child_orders.length == 0){
-                            child_orders = [response.order.parent];
-                            $('#child_order > h3').text('Main Order');
+                        let parent_orders = response.order.parent;
+                        if(child_orders && child_orders.length == 0 && parent_orders){
+                            child_orders = [parent_orders];
+                            $('#child_order > h3').text('Main order');
                         }
 
                         // Populate the Activity Log

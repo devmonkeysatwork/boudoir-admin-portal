@@ -637,9 +637,10 @@
                         let status = response.status_log;
                         let logs = response.order.logs;
                         let commentsHtml = response.comments_vew;
-                        let child_orders = response.order.children ?? response.order.parent;
-                        if(child_orders && child_orders.length == 0){
-                            child_orders = [response.order.parent];
+                        let child_orders = response.order.children;
+                        let parent_orders = response.order.parent;
+                        if(child_orders && child_orders.length == 0 && parent_orders){
+                            child_orders = [parent_orders];
                             $('#child_order > h3').text('Main order');
                         }
 
