@@ -157,11 +157,11 @@
           shiftEnterMode: CKEDITOR.ENTER_P,
           removePlugins: 'elementspath',
           allowedContent: true,
-          autoParagraph: false,
+          autoParagraph: true,
           // Enable this to retain line breaks and spaces
-          basicEntities: false,
-          entities: false,
-          fillEmptyBlocks: false
+          basicEntities: true,
+          entities: true,
+          fillEmptyBlocks: true
       });
 
 
@@ -220,7 +220,7 @@
                             $('#edit-associated-status').val(response.template.status_id);
 
                             // Use CKEditor's method to set data while maintaining formatting
-                            CKEDITOR.instances['edit-email-content'].setData(response.template.content.replace(/\n/g, '<br>'));
+                            CKEDITOR.instances['edit-email-content'].setData(response.template.content);
 
                             $('#template-id').val(response.template.id);
 
