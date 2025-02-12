@@ -158,7 +158,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    @isset($orderLog)
+                    @if(isset($orderLog) && $orderLog->isNotEmpty())
                         @foreach($orderLog as $activeOrder)
                             <div class="col-12 border-bottom mb-2 pb-2">
                                 <div class="row">
@@ -190,6 +190,10 @@
                                 </div>
                             </div>
                         @endforeach
+                    @else
+                        <div class="col-12">
+                            <p class="p14 text-center">There are no orders currently in progress</p>
+                        </div>
                     @endif
                     <div class="col-12 text-center">
                         <button type="button" class="btn text-white create-btn" id="startRandomOrder">
