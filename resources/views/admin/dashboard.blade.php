@@ -152,7 +152,7 @@
             </div>
         @endif
 
-        <div class="card rounded-5" id="active-orders-container">
+        <div class="card rounded-5 mt-3" id="active-orders-container">
             <div class="card-header">
                 <h2 class="h24">Orders In Progress</h2>
             </div>
