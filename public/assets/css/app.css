@@ -2202,6 +2202,10 @@ button.btn_loader.clicked:after{
     line-height: 20px;
     letter-spacing: 0px;
 }
+#active-orders-container{
+    min-height: 350px;
+    overflow-y: auto;
+}
 #active-orders-container .card-header{
     background-color: #BD7F7F;
     color: #FFF;
