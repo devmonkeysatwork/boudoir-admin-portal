@@ -2203,7 +2203,12 @@ button.btn_loader.clicked:after{
     letter-spacing: 0px;
 }
 #active-orders-container .card-header{
-    background-color: var(--primary);
+    background-color: #BD7F7F;
+    color: #FFF;
+    overflow: hidden;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 20px 20px 15px 20px;
 }
 #active-orders-container .btn-complete-phase{
     background-color: #033FC1;
