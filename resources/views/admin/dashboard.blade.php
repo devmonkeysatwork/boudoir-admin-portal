@@ -2,22 +2,9 @@
 
 @section('content')
     <div class="dashboard">
-        <h1>Dashboard</h1>
-{{--        @if(Auth::user()->role_id != 1)--}}
-{{--            <div>--}}
-{{--                <div id="current_order" class="text-center mb-4">--}}
-{{--                    @isset($orderLog)--}}
-{{--                        <h1>Working on Order #{{ $orderLog->order_id }}</h1>--}}
-{{--                        <div id="timer" class="mt-4">--}}
-{{--                            <h2>Time Worked: <span id="clock">00:00:00</span></h2>--}}
-{{--                        </div>--}}
-{{--                        <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>--}}
-{{--                    @else--}}
-{{--                        <p class="p20 text-center">No order in progress.</p>--}}
-{{--                    @endif--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        @endif--}}
+        <div class="d-flex flex-row justify-content-between align-items-center">
+            <h1>Dashboard</h1>
+        </div>
         @if(Auth::user()->role_id == 1)
             <div class="stats row">
                 <div class="col-md-6 col-lg-4 col-xl">
@@ -164,6 +151,55 @@
                 </div>
             </div>
         @endif
+
+        <div class="card rounded-5" id="active-orders-container">
+            <div class="card-header">
+                <h2 class="h24">Orders In Progress</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @isset($orderLog)
+                        @foreach($orderLog as $activeOrder)
+                            <div class="col-12 border-bottom mb-2 pb-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button class="p12 fw-bold my-3 edit-btn" onclick="viewDetails('{{ $activeOrder->order->id }}','{{ $activeOrder->order_id }}')">
+                                            Order #{{ $activeOrder->order_id }} —
+                                            @php
+                                                $dateStarted = \Carbon\Carbon::parse($activeOrder->time_started);
+                                                $now = \Carbon\Carbon::now();
+                                                $workingTime = calculateWorkingTime($dateStarted, $now);
+                                            @endphp
+
+                                            {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
+                                            {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
+                                            {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
+                                            {{ $workingTime['minutes'] . 'm' }}
+                                        </button>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        @if(Auth::user()->role_id == 1)
+                                            <button class="edit-btn" onclick="editStatus(this)" data-id="{{$activeOrder->order->id}}" data-status="{{$activeOrder->order->status_id}}" data-workstation="{{$activeOrder->order->workstation_id}}">
+                                                <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
+                                            </button>
+                                        @endif
+                                        <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},{{ $activeOrder->order_id }})">
+                                            Current Station Complete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                    <div class="col-12 text-center">
+                        <button type="button" class="btn text-white create-btn" id="startRandomOrder">
+                            Start Another Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="orders" id="orders_table_db">
             <div class="orders-top">
                 <h2>List of Orders</h2>
@@ -248,22 +284,25 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if(Auth::user()->role_id == 1)
-                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
-                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
-                                        </button>
-                                    @endif
 
-                                    @if(isset($orderLog) && $orderLog->order_id == $order->order_id)
-                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
-                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
-                                        </button>
-                                    @else
-                                        <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
-                                            Start order
-                                        </button>
-                                    @endif
                                 </td>
+{{--                                <td>--}}
+{{--                                    @if(Auth::user()->role_id == 1)--}}
+{{--                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">--}}
+{{--                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">--}}
+{{--                                        </button>--}}
+{{--                                    @endif--}}
+
+{{--                                    @if(isset($orderLog) && $orderLog->order_id == $order->order_id)--}}
+{{--                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">--}}
+{{--                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">--}}
+{{--                                        </button>--}}
+{{--                                    @else--}}
+{{--                                        <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">--}}
+{{--                                            Start order--}}
+{{--                                        </button>--}}
+{{--                                    @endif--}}
+{{--                                </td>--}}
                             </tr>
                         @endforeach
                     @endif
@@ -416,6 +455,8 @@
                 </x-slot>
             </x-modal>
         @endif
+
+
         <x-modal id="orderModal" title="Order #00001">
             <span class="status" id="modal_status_text">Completed</span>
             <div class="orderModal-flex">
@@ -864,43 +905,6 @@
 
                 // Run it once to set the initial value
                 updateClock();
-            }
-
-
-
-            function endOrderPhase() {
-                const id = @json($orderLog?->id ?? '');
-                const orderNumber = @json($orderLog?->order_id ?? '');
-
-                let data  = new FormData();
-                data.append('_token','{{@csrf_token()}}');
-                data.append('id',id);
-                data.append('order_id',orderNumber);
-
-                $.ajax({
-                    url: '{{route('order.end_log')}}',
-                    type: 'POST',
-                    data: data,
-                    processData: false,
-                    contentType: false,
-                    cache: false,
-                    beforeSend() {
-                        show_loader();
-                    },
-                    success: function(response) {
-                        if (response.status == 200) {
-                            $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
-                            location.reload();
-                        } else {
-                            $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
-                        }
-                        hide_loader();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        hide_loader();
-                    }
-                });
             }
         @endif
     </script>

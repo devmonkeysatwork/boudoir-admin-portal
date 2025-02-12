@@ -2195,3 +2195,21 @@ button.btn_loader.clicked:after{
     }
 }
 
+.h24{
+    font-family: Nunito Sans;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 20px;
+    letter-spacing: 0px;
+}
+#active-orders-container .card-header{
+    background-color: var(--primary);
+}
+#active-orders-container .btn-complete-phase{
+    background-color: #033FC1;
+    border-radius: 8px;
+}
+#active-orders-container #startRandomOrder{
+    background-color: #00B69B;
+    border-radius: 8px;
+}

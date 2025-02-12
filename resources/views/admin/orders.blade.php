@@ -149,17 +149,6 @@
                 <tr style="display: none;border: 1px solid #191919;" id="children_{{$order->id}}">
                     <td colspan="8" style="border: 1px solid #191919;padding: 0px;">
                         <table>
-{{--                            <thead>--}}
-{{--                            <tr>--}}
-{{--                                <th>Order #</th>--}}
-{{--                                <th>Phase</th>--}}
-{{--                                <th>Team Member</th>--}}
-{{--                                <th>Date Started</th>--}}
-{{--                                <th>Time in Production</th>--}}
-{{--                                <th>Late</th>--}}
-{{--                                <th></th>--}}
-{{--                            </tr>--}}
-{{--                            </thead>--}}
                             <tbody>
                             @foreach($order?->children as $child_order)
                                 <tr style="border-bottom: none;">

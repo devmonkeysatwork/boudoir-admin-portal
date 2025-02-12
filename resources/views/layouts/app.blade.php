@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/notyf.css')}}" />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
+    <link rel="stylesheet" href="{{asset('assets/css/sweetAlert.css')}}">
     {{--    @vite(['resources/css/app.css', 'resources/js/app.js'])--}}
 </head>
 
@@ -41,11 +42,11 @@
 </div>
 
 <!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{asset('assets/js/jquery360.js')}}"></script>
 <!-- tablesorter JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
 <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{asset('assets/js/bootstrap530.js')}}"></script>
 <!-- Pusher JS -->
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <!-- Pickr JS -->
@@ -54,7 +55,8 @@
 <script src="{{asset('assets/js/notyf.js')}}"></script>
 <!-- Custom JS -->
 <script src="{{asset('assets/js/app.js')}}"></script>
-
+<script src="{{asset('assets/js/qrCode.js')}}"></script>
+<script src="{{asset('assets/js/sweetAlert.js')}}"></script>
 <script>
     function toggleSidebar(){
         $('.sidebar').toggleClass('active');
@@ -163,9 +165,7 @@
         });
     });
 </script>
-<script src="{{asset('assets/js/qrCode.js')}}"></script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<script src="{{asset('assets/js/notyf.js')}}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const orderSort = new Choices('#order-sort', {
@@ -333,9 +333,18 @@
         // Restart scanning when the button is clicked
         $(document).on('click', '.btn-start-order', function() {
             $('#qr-input').val(''); // Clear the input field
-            $('#order_number_title').text($(this).data('id'));
+            // $('#order_number_title').text($(this).data('id'));
             startScanning(); // Restart scanning
         });
+
+        $(document).on('click', '#startRandomOrder', function() {
+            $('#qr-input').val('');
+            $('#startWorkModel').modal('show');
+            setTimeout(function () {
+                startScanning();
+            }, 500);
+        });
+
         $('#startWorkModel').on('hidden.bs.modal', function () {
             html5QrCode.stop();
         });
@@ -353,19 +362,19 @@
         });
     });
     function updateOrderStatus() {
-        const orderNumber = $('#order_number_title').text().trim(); // Get order number from modal
+        // const orderNumber = $('#order_number_title').text().trim(); // Get order number from modal
         const statusId = $('#status_update').val();
         const qrInput = $('#qr-input').val();
 
         // Verify that the scanned QR matches the order ID
-        if (qrInput !== orderNumber) {
-            alert('Scanned QR code does not match the order number.');
-            $('.btn-rescan-order').fadeIn();
-            return;
-        }
+        // if (qrInput !== orderNumber) {
+        //     alert('Scanned QR code does not match the order number.');
+        //     $('.btn-rescan-order').fadeIn();
+        //     return;
+        // }
         let data  = new FormData();
         data.append('_token','{{@csrf_token()}}');
-        data.append('order_id',orderNumber);
+        data.append('order_id',qrInput);
         data.append('status_id',statusId);
 
         $.ajax({
@@ -394,39 +403,49 @@
         });
     }
 
-    function endOrderPhase() {
-        const id = @json($orderLog?->id ?? '');
-        const orderNumber = @json($orderLog?->order_id ?? '');
+    function endOrderPhase(id,orderNumber) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Are you sure?',
+            text: 'Do you really want to end this order phase?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, End it!',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let data  = new FormData();
+                data.append('_token','{{@csrf_token()}}');
+                data.append('id',id);
+                data.append('order_id',orderNumber);
 
-        let data  = new FormData();
-        data.append('_token','{{@csrf_token()}}');
-        data.append('id',id);
-        data.append('order_id',orderNumber);
-
-        $.ajax({
-            url: '{{route('order.end_log')}}',
-            type: 'POST',
-            data: data,
-            processData: false,
-            contentType: false,
-            cache: false,
-            beforeSend() {
-                show_loader();
-            },
-            success: function(response) {
-                if (response.status == 200) {
-                    $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
-                    location.reload();
-                } else {
-                    $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
-                }
-                hide_loader();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-                hide_loader();
+                $.ajax({
+                    url: '{{route('order.end_log')}}',
+                    type: 'POST',
+                    data: data,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    beforeSend() {
+                        show_loader();
+                    },
+                    success: function(response) {
+                        if (response.status == 200) {
+                            $('#current_order').append(`<p class="p14 text-success">${response.message}</p>`);
+                            location.reload();
+                        } else {
+                            $('#current_order').append(`<p class="error p14 text-danger">${response.message}</p>`);
+                        }
+                        hide_loader();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        hide_loader();
+                    }
+                });
             }
         });
+
     }
 
 
@@ -437,7 +456,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content w-100">
             <div class="modal-header">
-                <h5 class="modal-title mx-auto">Order #<span id="order_number_title"></span></h5>
+                <h5 class="modal-title mx-auto">Scan to start<span id="order_number_title"></span></h5>
                 <button type="button" class="btn-close position-absolute end-30" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

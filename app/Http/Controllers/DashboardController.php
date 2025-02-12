@@ -305,11 +305,11 @@ class DashboardController extends Controller
 
         $userId = auth()->id();
         // Fetch the associated OrderLogs to get the time_started
-        $orderLog = OrderLogs::with(['user','status'])
+        $orderLog = OrderLogs::with(['user','status','order'])
             ->where('user_id',$userId)
             ->whereNotNull('time_started')
             ->whereNull('time_end')
-            ->first();
+            ->get();
 
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',

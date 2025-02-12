@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-    <div>
-        <div id="current_order" class="text-center mb-4">
-            @if ($orderLog)
-                <h1>Working on Order #{{ $orderLog->order_id }}</h1>
+{{--    <div>--}}
+{{--        <div id="current_order" class="text-center mb-4">--}}
+{{--            @if ($orderLog)--}}
+{{--                <h1>Working on Order #{{ $orderLog->order_id }}</h1>--}}
 {{--                <div id="timer" class="mt-4">--}}
 {{--                    <h2>Time Worked: <span id="clock">00:00:00</span></h2>--}}
 {{--                </div>--}}
-                <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>
-            @else
-                <p class="p20 text-center">No order in progress.</p>
-            @endif
-        </div>
-    </div>
+{{--                <button class="btn create-btn" onclick="endOrderPhase()">Complete</button>--}}
+{{--            @else--}}
+{{--                <p class="p20 text-center">No order in progress.</p>--}}
+{{--            @endif--}}
+{{--        </div>--}}
+{{--    </div>--}}
 <div class="orders">
   <h1>Order List</h1>
   <table id="" class="tablesorter">
