@@ -183,7 +183,7 @@
                                                 <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
                                             </button>
                                         @endif
-                                        <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},{{ $activeOrder->order_id }})">
+                                        <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},'{{ $activeOrder->order_id }}')">
                                             Current Station Complete
                                         </button>
                                     </div>
