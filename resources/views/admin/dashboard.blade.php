@@ -160,7 +160,8 @@
                 <div class="row">
                     @if(isset($orderLog) && $orderLog->isNotEmpty())
                         @foreach($orderLog as $activeOrder)
-                            <div class="col-12 border-bottom mb-2 pb-2">
+                            @if(isset($activeOrder->order->id))
+                                <div class="col-12 border-bottom mb-2 pb-2">
                                 <div class="row">
                                     <div class="col-6">
                                         <button class="p12 fw-bold my-3 edit-btn" onclick="viewDetails('{{ $activeOrder->order->id }}','{{ $activeOrder->order_id }}')">
@@ -189,6 +190,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
                         @endforeach
                     @else
                         <div class="col-12">

@@ -10,6 +10,9 @@ class Product extends Model
     use HasFactory;
 
     const possibleNoneValueAttributes = ['Gilding','Imprinting or Logo','Second Imprinting or Logo'];
+    protected $fillable = [
+        'name'
+    ];
 
     public function attributes()
     {
