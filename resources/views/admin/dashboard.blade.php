@@ -162,34 +162,34 @@
                         @foreach($orderLog as $activeOrder)
                             @if(isset($activeOrder->order->id))
                                 <div class="col-12 border-bottom mb-2 pb-2">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <button class="p12 fw-bold my-3 edit-btn" onclick="viewDetails('{{ $activeOrder->order->id }}','{{ $activeOrder->order_id }}')">
-                                            Order #{{ $activeOrder->order_id }} —
-                                            @php
-                                                $dateStarted = \Carbon\Carbon::parse($activeOrder->time_started);
-                                                $now = \Carbon\Carbon::now();
-                                                $workingTime = calculateWorkingTime($dateStarted, $now);
-                                            @endphp
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <button class="p12 fw-bold my-3 edit-btn" onclick="viewDetails('{{ $activeOrder->order->id }}','{{ $activeOrder->order_id }}')">
+                                                Order #{{ $activeOrder->order_id }} —
+                                                @php
+                                                    $dateStarted = \Carbon\Carbon::parse($activeOrder->time_started);
+                                                    $now = \Carbon\Carbon::now();
+                                                    $workingTime = calculateWorkingTime($dateStarted, $now);
+                                                @endphp
 
-                                            {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
-                                            {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
-                                            {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
-                                            {{ $workingTime['minutes'] . 'm' }}
-                                        </button>
-                                    </div>
-                                    <div class="col-6 text-end">
-                                        @if(Auth::user()->role_id == 1)
-                                            <button class="edit-btn" onclick="editStatus(this)" data-id="{{$activeOrder->order->id}}" data-status="{{$activeOrder->order->status_id}}" data-workstation="{{$activeOrder->order->workstation_id}}">
-                                                <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
+                                                {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
+                                                {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
+                                                {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
+                                                {{ $workingTime['minutes'] . 'm' }}
                                             </button>
-                                        @endif
-                                        <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},'{{ $activeOrder->order_id }}')">
-                                            Current Station Complete
-                                        </button>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            @if(Auth::user()->role_id == 1)
+                                                <button class="edit-btn" onclick="editStatus(this)" data-id="{{$activeOrder->order->id}}" data-status="{{$activeOrder->order->status_id}}" data-workstation="{{$activeOrder->order->workstation_id}}">
+                                                    <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
+                                                </button>
+                                            @endif
+                                            <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},'{{ $activeOrder->order_id }}')">
+                                                Current Station Complete
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             @endif
                         @endforeach
                     @else

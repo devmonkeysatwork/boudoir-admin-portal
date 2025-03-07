@@ -46,7 +46,7 @@ class SendDailySummary extends Command
                 ->whereIn('status_id',$issues)->get();
 
             $mailData['title']='Daily Summary Report';
-            Mail::to(env('ADMIN_EMAIL'))->send(new \App\Mail\OrderSummaryEmail($mailData));
+            Mail::to(env('ADMIN_EMAIL'))->cc([env('SUPPORT_EMAIL')])->send(new \App\Mail\OrderSummaryEmail($mailData));
             Log::info('Daily Summary Sent for ' . Carbon::now()->format('Y-m-d'));
         }catch (\Exception $e){
             Log::error('Error while sending daily summary' . $e->getMessage());
