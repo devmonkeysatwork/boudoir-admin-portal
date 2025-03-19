@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [OrdersController::class, 'index'])->name('admin.orders');
 
 
-    Route::get('/notification', [AdminController::class, 'notification'])->name('admin.notification');
+    Route::get('/notifications', [AdminController::class, 'notification'])->name('admin.notification');
 
     Route::get('/search_orders', [OrdersController::class, 'search'])->name('search.orders');
     Route::post('/update_order_status', [AdminController::class, 'updateOrderStatus'])->name('admin.update_order_status');
