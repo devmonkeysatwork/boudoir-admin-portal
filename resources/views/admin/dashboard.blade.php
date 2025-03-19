@@ -215,7 +215,7 @@
                         <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
                     </div>
                     <div class="sort-dropdown">
-                        <select class="sort-select form-select pe-5" id="">
+                        <select class="sort-select form-select pe-5" id="order_sort">
                             <option value="" disabled selected>Sort By</option>
                             <option {{$filter_date && $filter_date =='oldest'?'selected':''}} value="oldest">Oldest</option>
                             <option {{$filter_date && $filter_date =='newest'?'selected':''}} value="newest">Newest</option>
@@ -334,11 +334,12 @@
                     <div class="team-top">
                         <h2>Team</h2>
                         <div class="sort-dropdown">
-                            <select class="sort-select" id="team-sort">
-                                <option value="week" selected>Week</option>
-                                <option value="day">Day</option>
-                                <option value="month">Month</option>
-                                <option value="year">Year</option>
+                            <select class="sort-select form-select pe-5" name="team_sort" id="team-sort">
+                                <option>Sort</option>
+                                <option {{$team_sort && $team_sort =='day'?'selected':''}} value="day">Day</option>
+                                <option {{$team_sort && $team_sort =='week'?'selected':''}} value="week">Week</option>
+                                <option {{$team_sort && $team_sort =='month'?'selected':''}} value="month">Month</option>
+                                <option {{$team_sort && $team_sort =='year'?'selected':''}} value="year">Year</option>
                             </select>
                         </div>
                     </div>
@@ -347,7 +348,7 @@
                         <tr>
                             <th>Name</th>
                             <th># of Orders</th>
-                            <th>Time Spent</th>
+                            <th>Time Spent(hours)</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -366,11 +367,12 @@
                     <div class="workstations-top">
                         <h2>Areas</h2>
                         <div class="sort-dropdown">
-                            <select class="sort-select" id="workstation-sort">
-                                <option value="week" selected>Week</option>
-                                <option value="day">Day</option>
-                                <option value="month">Month</option>
-                                <option value="year">Year</option>
+                            <select class="sort-select form-select pe-5" name="workstation_sort" id="workstation-sort">
+                                <option>Sort</option>
+                                <option {{$workstation_sort && $workstation_sort =='day'?'selected':''}} value="day">Day</option>
+                                <option {{$workstation_sort && $workstation_sort =='week'?'selected':''}} value="week">Week</option>
+                                <option {{$workstation_sort && $workstation_sort =='month'?'selected':''}} value="month">Month</option>
+                                <option {{$workstation_sort && $workstation_sort =='year'?'selected':''}} value="year">Year</option>
                             </select>
                         </div>
                     </div>
@@ -545,9 +547,40 @@
 @endsection
 @section('footer_scripts')
     <script>
-        $('.sort-select').on('change',function() {
-            window.location.href = '{{route('dashboard')}}?filter_date='+ $(this).val();
-        })
+        function updateUrlParameter(param, value) {
+            var currentUrl = window.location.href;
+            var baseUrl = currentUrl.split('?')[0];
+            var queryString = currentUrl.split('?')[1] || '';
+            var params = new URLSearchParams(queryString);
+
+            // Update or append the parameter
+            if (value === 'Sort') {
+                params.delete(param);
+            } else {
+                // Otherwise, update or add the parameter
+                params.set(param, value);
+            }
+
+            // Create the new URL with updated parameters
+            var newUrl = baseUrl + '?' + params.toString();
+            window.location.href = newUrl;
+        }
+
+        $('#order_sort').on('change', function() {
+            var filterDate = $(this).val();
+            updateUrlParameter('filter_date', filterDate);
+        });
+
+        $('#team-sort').on('change', function() {
+            var teamSort = $(this).val();
+            updateUrlParameter('team_sort', teamSort);
+        });
+
+        $('#workstation-sort').on('change', function() {
+            var workstationSort = $(this).val();
+            updateUrlParameter('workstation_sort', workstationSort);
+        });
+
         $(document).ready(function() {
             function performSearch(query) {
                 $.ajax({

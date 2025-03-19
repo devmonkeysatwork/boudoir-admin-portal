@@ -88,40 +88,6 @@ class AdminController extends Controller
             ->where('orderType','=',Orders::parentType);
         $orders = $query->paginate(10);
 
-        $teamMembersResult = OrderLogs::select(
-            'order_logs.user_id',
-            'users.name as user_name', // Select user name
-            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
-            DB::raw('SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)) AS total_time_seconds')
-        )
-            ->join('users', 'order_logs.user_id', '=', 'users.id') // Join with users table
-            ->whereNotNull('order_logs.time_started')
-            ->whereNotNull('order_logs.time_end')
-            ->groupBy('order_logs.user_id', 'users.name')
-            ->get();
-
-        // If you want to further aggregate for total time across all orders
-        $teamMembers = $teamMembersResult->groupBy('user_id')->map(function ($items, $userId) {
-            return [
-                'id' => $userId,
-                'user_name' => $items->first()->user_name,
-                'order_count' => $items->sum('order_count'),
-                'total_time' => $items->sum('total_time_seconds'),
-            ];
-        });
-
-        $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs'])->get();
-
-        foreach ($workstations as $workstation) {
-            $workstation->time_spent = 0;
-            foreach ($workstation->logs as $log) {
-                if ($log->time_started) {
-                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end??Carbon::now()));
-                    $workstation->time_spent += $timeDiff;
-                }
-            }
-        }
-
 
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
@@ -203,8 +169,11 @@ class AdminController extends Controller
             ->whereNotNull('time_started')
             ->whereNull('time_end')
             ->get();
-
-
+        $now = Carbon::now();
+        $team_sort = $request->input('team_sort');
+        $workstation_sort = $request->input('workstation_sort');
+        $teamMembers = $this->getTeamCounts($team_sort,$now);
+        $workstations = $this->getWorkstationCounts($workstation_sort, $now, $excludedStatusIds);
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',
             'inProductionOrdersCount',
@@ -213,7 +182,9 @@ class AdminController extends Controller
             'qualityControlOrdersCount',
             'orders',
             'teamMembers',
+            'team_sort',
             'workstations',
+            'workstation_sort',
             'edit_statuses',
             'sub_statuses',
             'filter_date',
@@ -221,6 +192,120 @@ class AdminController extends Controller
             'statuses',
             'orderLog',
         ));
+    }
+
+    function getTeamCounts($filter,$now){
+
+        $teamMembersQuery = OrderLogs::select(
+            'order_logs.user_id',
+            'users.name as user_name', // Select user name
+            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
+            DB::raw('SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)) AS total_time_seconds')
+        )
+            ->join('users', 'order_logs.user_id', '=', 'users.id') // Join with users table
+            ->whereNotNull('order_logs.time_started')
+            ->whereNotNull('order_logs.time_end');
+
+        // Apply the filter based on team_count
+        switch ($filter) {
+            case 'day':
+                // Filter for today
+                $teamMembersQuery->whereDate('order_logs.time_started', $now->toDateString());
+                break;
+
+            case 'week':
+                // Filter for the current week
+                $teamMembersQuery->whereBetween('order_logs.time_started', [
+                    $now->startOfWeek()->toDateString(),
+                    $now->endOfWeek()->toDateString(),
+                ]);
+                break;
+
+            case 'month':
+                // Filter for the current month
+                $teamMembersQuery->whereMonth('order_logs.time_started', $now->month)
+                    ->whereYear('order_logs.time_started', $now->year);
+                break;
+
+            case 'year':
+                // Filter for the current year
+                $teamMembersQuery->whereYear('order_logs.time_started', $now->year);
+                break;
+
+            default:
+                // No filter if the value is invalid or empty
+                break;
+        }
+
+        $teamMembersResult = $teamMembersQuery->groupBy('order_logs.user_id', 'users.name')
+            ->get();
+
+        // Further aggregate the results
+        $teamMembers = $teamMembersResult->groupBy('user_id')->map(function ($items, $userId) {
+            return [
+                'id' => $userId,
+                'user_name' => $items->first()->user_name,
+                'order_count' => $items->sum('order_count'),
+                'total_time' => $items->sum('total_time_seconds'),
+            ];
+        });
+        return $teamMembers;
+    }
+
+    function getWorkstationCounts($filter, $now, $excludedStatusIds){
+
+        $workstationsQuery = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs']);
+        switch ($filter) {
+            case 'this day':
+                // Filter for today's date
+                $workstationsQuery->whereHas('logs', function ($query) use ($now) {
+                    $query->whereDate('time_started', $now->toDateString());
+                });
+                break;
+
+            case 'this week':
+                // Filter for the current week
+                $workstationsQuery->whereHas('logs', function ($query) use ($now) {
+                    $query->whereBetween('time_started', [
+                        $now->startOfWeek()->toDateString(),
+                        $now->endOfWeek()->toDateString(),
+                    ]);
+                });
+                break;
+
+            case 'this month':
+                // Filter for the current month
+                $workstationsQuery->whereHas('logs', function ($query) use ($now) {
+                    $query->whereMonth('time_started', $now->month)
+                        ->whereYear('time_started', $now->year);
+                });
+                break;
+
+            case 'this year':
+                // Filter for the current year
+                $workstationsQuery->whereHas('logs', function ($query) use ($now) {
+                    $query->whereYear('time_started', $now->year);
+                });
+                break;
+
+            default:
+                // No filter if the value is invalid or empty
+                break;
+        }
+
+        // Execute the query
+        $workstations = $workstationsQuery->get();
+
+        foreach ($workstations as $workstation) {
+            $workstation->time_spent = 0;
+            foreach ($workstation->logs as $log) {
+                if ($log->time_started) {
+                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end??Carbon::now()));
+                    $workstation->time_spent += $timeDiff;
+                }
+            }
+        }
+        return $workstations;
     }
 
     public function orders()
