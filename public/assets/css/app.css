@@ -2224,5 +2224,34 @@ button.btn_loader.clicked:after{
 }
 
 
-
+.product_flows{
+    display: flex;
+    list-style: none;
+    width: 100%;
+    justify-content: start;
+    align-items: center;
+    gap: 40px;
+}
+.product_flows li{
+    position: relative;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 10px;
+    background: #000;
+    color: #FFF;
+    text-align: start;
+    min-width: fit-content !important;
+}
+.product_flows li:not(:last-child):after{
+    content: '>>';
+    position: absolute;
+    display: block;
+    width: 20px;
+    height: 20px;
+    right: -27px;
+    top: 5px;
+    color: #000;
+}
 

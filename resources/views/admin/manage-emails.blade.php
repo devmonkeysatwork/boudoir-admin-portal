@@ -15,6 +15,11 @@
           <img src="{{ asset('icons/email.png') }}" alt="Email Icon">Manage Emails
         </a>
       </li>
+{{--        <li>--}}
+{{--            <a href="{{ route('admin.product-flows') }}">--}}
+{{--                <img src="{{ asset('icons/email.png') }}" alt="Email Icon">Product Flows--}}
+{{--            </a>--}}
+{{--        </li>--}}
 {{--      <li>--}}
 {{--        <a href="javascript:void(0);" class="adminSettingsBtn">--}}
 {{--          <img src="{{ asset('icons/settings.png') }}" alt="Settings Icon">Admin Settings--}}

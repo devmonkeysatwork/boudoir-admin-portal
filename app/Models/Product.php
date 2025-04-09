@@ -23,4 +23,11 @@ class Product extends Model
     {
         return $this->hasMany(ProductFlows::class,'product_id','id');
     }
+
+    public function orderStatuses()
+    {
+        return $this->belongsToMany(OrderStatus::class, 'product_flows', 'product_id', 'step_id')
+            ->withPivot('step_no')
+            ->orderBy('pivot_step_no');
+    }
 }

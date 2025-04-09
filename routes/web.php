@@ -67,6 +67,8 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('admin.manage-statuses');
     })->name('admin.settings');
     Route::get('/settings/manage-statuses', [AdminController::class, 'manageStatuses'])->name('admin.manage-statuses');
+    Route::get('/settings/product-flows', [AdminController::class, 'productFlows'])->name('admin.product-flows');
+    Route::post('add-product-flow', [AdminController::class, 'addProductFlow'])->name('add.product-flow');
     Route::post('/add_status', [AdminController::class, 'addStatuses'])->name('admin.add_status');
     Route::post('/delete_status', [AdminController::class, 'deleteStatus'])->name('admin.delete_status');
     Route::post('/update_status', [AdminController::class, 'updateStatus'])->name('admin.update_status');

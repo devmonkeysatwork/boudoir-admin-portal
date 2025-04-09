@@ -16,11 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
-            return redirect('login');
-        });
-        $exceptions->render(function (Throwable $e, Request $request) {
-            \Illuminate\Support\Facades\Mail::to(env('SUPPORT_EMAIL'))->send(new \App\Mail\ExceptionReportEmail($e));
-            return response()->view('error.server_error', status: 500);
-        });
+        if (!\Illuminate\Support\Facades\App::environment('local')){
+            $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
+                return redirect('login');
+            });
+            $exceptions->render(function (Throwable $e, Request $request) {
+                \Illuminate\Support\Facades\Mail::to(env('SUPPORT_EMAIL'))->send(new \App\Mail\ExceptionReportEmail($e));
+                return response()->view('error.server_error', status: 500);
+            });
+        }
     })->create();

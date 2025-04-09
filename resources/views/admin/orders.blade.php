@@ -229,7 +229,12 @@
             @endif
         </div>
         <div class="col-6 text-end">
-            {{ $orders->links() }}
+            {{ $orders->appends([
+            'filter_date' => request()->input('filter_date'),
+            'filter_product' => request()->input('filter_product'),
+            'filter_status' => request()->input('filter_status'),
+            'filter_priority' => request()->input('filter_priority'),
+        ])->links() }}
         </div>
     </div>
 

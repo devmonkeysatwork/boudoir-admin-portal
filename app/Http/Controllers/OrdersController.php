@@ -48,7 +48,7 @@ class OrdersController extends Controller
         $filter_date = $request->input('filter_date');
         $filter_status = $request->input('filter_status');
         $filter_priority = $request->input('filter_priority');
-
+        $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->first();
 
 
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
@@ -74,7 +74,8 @@ class OrdersController extends Controller
             ->when($filter_status,function ($q) use ($filter_status){
                     $q->where('status_id', $filter_status);
             })
-            ->where('orderType','=',Orders::parentType);
+            ->where('orderType','=',Orders::parentType)
+            ->where('status_id','!=',$completedStatusId);
         $orders = $query->paginate(10);
 //        dd($orders);
         $workstations = Workstations::all();

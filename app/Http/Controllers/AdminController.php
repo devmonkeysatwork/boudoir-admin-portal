@@ -85,7 +85,8 @@ class AdminController extends Controller
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
             })
-            ->where('orderType','=',Orders::parentType);
+            ->where('orderType','=',Orders::parentType)
+            ->where('status_id','!=',$completedStatusId[0]);
         $orders = $query->paginate(10);
 
 
@@ -530,6 +531,35 @@ class AdminController extends Controller
     {
         $data['statuses'] = OrderStatus::all();
         return view('admin.manage-statuses', $data);
+    }
+    public function productFlows()
+    {
+        $data['flows'] = Product::with('orderStatuses')->get();
+        $data['availableSteps'] = OrderStatus::all();
+        return view('admin.manage-product-flows', $data);
+    }
+    public function addProductFlow(Request $request)
+    {
+        // Fetch the product
+        $product = Product::findOrFail($request->product_id);
+
+        // Validate that the steps are selected
+        $request->validate([
+            'steps' => 'required|array',
+            'steps.*' => 'exists:order_status,id',
+        ]);
+
+        // Attach the selected steps to the product
+        foreach ($request->steps as $stepId) {
+            $stepNo = $product->orderStatuses()->count() + 1; // Get the next step number
+            $product->orderStatuses()->attach($stepId, ['step_no' => $stepNo]);
+        }
+        $response = [
+            'status' => 200,
+            'message' => 'Flow added successfully.',
+        ];
+
+        return response()->json($response);
     }
 
     public function addStatuses(Request $request){

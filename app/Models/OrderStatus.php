@@ -47,4 +47,12 @@ class OrderStatus extends Model
         return $this->hasOne(OrderLogs::class, 'status_id', 'id')
             ->latest('time_started');
     }
+
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_flows', 'step_id', 'product_id')
+            ->withPivot('step_no')
+            ->orderBy('pivot_step_no');
+    }
 }
