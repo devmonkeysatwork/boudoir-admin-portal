@@ -103,7 +103,7 @@ class OrdersController extends Controller
             ->first();
 //        dd($data);
         return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id',
-            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog'));
+            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog','completedStatusId'));
     }
 
     /**

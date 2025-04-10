@@ -31,7 +31,9 @@
               <select class="sort-select" id="filter-status" name="filter_status">
                   <option value="" disabled selected>Order Status</option>
                   @foreach($statuses??[] as $status)
-                      <option value="{{$status->id}}" {{$filter_status && $filter_status == $status->id?'Selected':''}}>{{$status->status_name}}</option>
+                      @if($status->id != $completedStatusId)
+                        <option value="{{$status->id}}" {{$filter_status && $filter_status == $status->id?'Selected':''}}>{{$status->status_name}}</option>
+                      @endif
                   @endforeach
               </select>
           </div>
