@@ -1157,7 +1157,7 @@ input:checked+.slider:before {
     cursor: pointer;
 }
 
-#orderModal .modal-content {
+#orderModal .modal-content{
     width: 1200px;
     height: 800px;
 }
@@ -1939,19 +1939,26 @@ input:checked+.slider:before {
     vertical-align: middle;
     border-bottom: none;
 }
-.page-item .page-link{
-    color: #202224;
+.page-item .page-link,
+.orders div.dt-container .dt-paging .dt-paging-button{
+    color: #202224 !important;
 }
-.page-item.active .page-link{
-    color: #fff;
-    background-color: #FAFBFD;
-    border-color: #D5D5D5;
+.page-item.active .page-link,
+.orders div.dt-container .dt-paging .dt-paging-button{
+    background-color: #FAFBFD !important;
+    border-color: #D5D5D5 !important;
 }
-.page-item.active .page-link{
-    background-color: #BD7F7F;
+.page-item.active .page-link,
+.orders div.dt-container .dt-paging .dt-paging-button.current,
+.orders div.dt-container .dt-paging .dt-paging-button:hover{
+    background-color: #BD7F7F !important;
+    background: #BD7F7F !important;
+    color: #fff !important;
 }
-.page-item.disabled .page-link{
-    color: #202224;
+.page-item.disabled .page-link,
+.orders div.dt-container .dt-paging .dt-paging-button.disabled{
+    color: #202224 !important;
+    background-color: #bebebe !important;
 }
 #notification_list p > a{
     margin-top: 15px;
@@ -1965,12 +1972,12 @@ input:checked+.slider:before {
 
 
 tbody {
-    display: block;
-    max-height: 500px;
+    /*display: block;*/
+    /*height: 500px;*/
     overflow: auto;
 }
 thead, tbody tr {
-    display: table;
+    /*display: table;*/
     width: 100%;
     table-layout: fixed;/* even columns width , fix width of table too*/
 }
@@ -2255,3 +2262,10 @@ button.btn_loader.clicked:after{
     color: #000;
 }
 
+#childOrdersModal{
+    max-width: 90%;
+}
+#childOrdersModal .modal-content{
+    margin: 0px;
+    width: 100%;
+}

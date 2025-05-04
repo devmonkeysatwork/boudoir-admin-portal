@@ -315,21 +315,21 @@
                     </tbody>
                 </table>
             </div>
-            <div class="row justify-content-end" id="order_paginations">
-                <div class="col-6 text-start">
-                    @if($orders->count())
-                        <p class="py-4 mb-0">
-                            Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }}
-                        </p>
-                    @endif
-                </div>
-                <div class="col-6 text-end">
-                    {{ $orders->appends([
-                        'filter_date' => request()->input('filter_date'),
-                    ])->links()
-                    }}
-                </div>
-            </div>
+{{--            <div class="row justify-content-end" id="order_paginations">--}}
+{{--                <div class="col-6 text-start">--}}
+{{--                    @if($orders->count())--}}
+{{--                        <p class="py-4 mb-0">--}}
+{{--                            Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }}--}}
+{{--                        </p>--}}
+{{--                    @endif--}}
+{{--                </div>--}}
+{{--                <div class="col-6 text-end">--}}
+{{--                    {{ $orders->appends([--}}
+{{--                        'filter_date' => request()->input('filter_date'),--}}
+{{--                    ])->links()--}}
+{{--                    }}--}}
+{{--                </div>--}}
+{{--            </div>--}}
         </div>
         @if(Auth::user()->role_id == 1)
             <div class="team-workstations">
@@ -585,6 +585,24 @@
         });
 
         $(document).ready(function() {
+            let table = new DataTable('#dashboardOrdersTable', {
+                autoWidth: false,
+                columns: [
+                    { title: "Order #" },
+                    { title: "Phase" },
+                    { title: "Team Member" },
+                    { title: "Date Started" },
+                    { title: "Time in Production" },
+                    { title: "Late" },
+                    { title: "Actions", defaultContent: "" }
+                ],
+                columnDefs: [
+                    {
+                        targets: -1,         // -1 targets the last column
+                        orderable: false     // Disable sorting on it
+                    }
+                ]
+            });
             function performSearch(query) {
                 $.ajax({
                     url: '{{ route('search.orders') }}',
@@ -956,7 +974,7 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            $("#dashboardOrdersTable").tablesorter();
+            // $("#dashboardOrdersTable").tablesorter();
             $("#dashboardTeamTable").tablesorter();
             $("#dashboardWorkstationsTable").tablesorter();
         });

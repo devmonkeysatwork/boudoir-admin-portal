@@ -87,7 +87,7 @@ class AdminController extends Controller
             })
             ->where('orderType','=',Orders::parentType)
             ->where('status_id','!=',$completedStatusId[0]);
-        $orders = $query->paginate(10);
+        $orders = $query->get();
 
 
         $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();

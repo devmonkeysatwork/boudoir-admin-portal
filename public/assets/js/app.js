@@ -64,18 +64,18 @@ function hide_loader(){
 
 // TABLESORTER
 $(document).ready(function() {
-    $("#dashboardOrdersTable").tablesorter({
-        headers: { // Exclude the first column (Order ID)
-            6: { sorter: false }  // Exclude the third column (Order Date)
-        }
-    });
+    // $("#dashboardOrdersTable").tablesorter({
+    //     headers: { // Exclude the first column (Order ID)
+    //         6: { sorter: false }  // Exclude the third column (Order Date)
+    //     }
+    // });
     $("#dashboardTeamTable").tablesorter();
     $("#dashboardWorkstationsTable").tablesorter();
-    $("#ordersTable").tablesorter({
-        headers: { // Exclude the first column (Order ID)
-            6: { sorter: false }  // Exclude the third column (Order Date)
-        }
-    });
+    // $("#ordersTable").tablesorter({
+    //     headers: { // Exclude the first column (Order ID)
+    //         6: { sorter: false }  // Exclude the third column (Order Date)
+    //     }
+    // });
     $("#areasTable").tablesorter();
     $("#teamTable").tablesorter();
 });

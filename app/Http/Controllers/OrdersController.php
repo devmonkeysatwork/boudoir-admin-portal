@@ -76,7 +76,7 @@ class OrdersController extends Controller
             })
             ->where('orderType','=',Orders::parentType)
             ->where('status_id','!=',$completedStatusId);
-        $orders = $query->paginate(10);
+        $orders = $query->get();
 //        dd($orders);
         $workstations = Workstations::all();
         if(Auth::user()->role_id == 1){
@@ -415,6 +415,10 @@ class OrdersController extends Controller
 
         return response()->json(['status' => 200,'order' => $order,'status_log' => $status_log,'comments_vew' => $comments_vew]);
 
+    }
+
+    public function getChildOrder(Orders $order){
+        return view('admin.partials.order_child', compact('order'));
     }
 
     public function search(Request $request)

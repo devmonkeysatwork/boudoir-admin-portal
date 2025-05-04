@@ -22,8 +22,9 @@
     <!-- notyf -->
     <link rel="stylesheet" href="{{ asset('assets/css/notyf.css')}}" />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
     <link rel="stylesheet" href="{{asset('assets/css/sweetAlert.css')}}">
+    <link rel="stylesheet" href="{{'assets/css/datatables.css'}}">
+    <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
     {{--    @vite(['resources/css/app.css', 'resources/js/app.js'])--}}
 </head>
 
@@ -57,6 +58,7 @@
 <script src="{{asset('assets/js/app.js')}}"></script>
 <script src="{{asset('assets/js/qrCode.js')}}"></script>
 <script src="{{asset('assets/js/sweetAlert.js')}}"></script>
+<script src="{{asset('assets/js/datatables.js')}}"></script>
 <script>
     function toggleSidebar(){
         $('.sidebar').toggleClass('active');

@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/get_order_details', [OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
     Route::post('/comment_add_reply', [OrdersController::class, 'addComment'])->name('order.add_reply');
+    Route::get('/get_child_order/{order}', [OrdersController::class, 'getChildOrder'])->name('order.get_child_order');
 
     Route::get('/my_orders', [OrdersController::class, 'myOrders'])->name('worker.my_orders');
     Route::post('/update_order_log', [OrdersController::class, 'updateOrderStatus'])->name('order.add_log');

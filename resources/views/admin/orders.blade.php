@@ -1,349 +1,405 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="orders">
-  <h1>Order List</h1>
+    <div class="dashboard">
+        <h1>Order List</h1>
 
-  <div class="filters">
-      <form class="filter-bar" action="">
-          <div class="filter-item">
-              <button class="filter-btn">
-                  <img src="{{ asset('icons/filter.png') }}" alt="Filter Icon">
-                  <span>Filter By</span>
-              </button>
-          </div>
-          <div class="filter-item">
-              <select class="sort-select" id="filter-date" name="filter_date">
-                  <option value="" disabled selected>Date</option>
-                  <option value="oldest" {{$filter_date && $filter_date == 'oldest'?'Selected':''}}>Oldest</option>
-                  <option value="newest" {{$filter_date && $filter_date == 'newest'?'Selected':''}}>Newest</option>
-              </select>
-          </div>
-          <div class="filter-item">
-              <select class="sort-select" id="filter-product" name="filter_product">
-                  <option value="" disabled selected>Product</option>
-                  @foreach($products as $product)
-                      <option value="{{ $product->product_name }}" {{$filter_product && $filter_product == $product->product_name?'Selected':''}}>{{ $product->product_name }}</option>
-                  @endforeach
-              </select>
-          </div>
-          <div class="filter-item">
-              <select class="sort-select" id="filter-status" name="filter_status">
-                  <option value="" disabled selected>Order Status</option>
-                  @foreach($statuses??[] as $status)
-                      @if($status->id != $completedStatusId)
-                        <option value="{{$status->id}}" {{$filter_status && $filter_status == $status->id?'Selected':''}}>{{$status->status_name}}</option>
-                      @endif
-                  @endforeach
-              </select>
-          </div>
-          <div class="filter-item">
-              <select class="sort-select" id="filter-priority" name="filter_priority">
-                  <option value="" disabled selected>Priority</option>
-                  <option value="2" {{$filter_priority && $filter_priority == '2'?'Selected':''}}>Normal</option>
-                  <option value="1" {{$filter_priority && $filter_priority == '1'?'Selected':''}}>Rush</option>
-              </select>
-          </div>
-          <div class="filter-item">
-              <button class="reset-btn" type="button">
-                  <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
-              </button>
-          </div>
-      </form>
-    <div class="orders-search">
-      <input type="text" id="searchInput" placeholder="Search">
-      <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
-    </div>
-  </div>
-
-    <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.pdf')}}">
-        <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as PDF
-    </a>
-    <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.csv')}}">
-        <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as CSV
-    </a>
-  <table id="ordersTable" class="tablesorter">
-    <thead>
-      <tr>
-        <th>Order #</th>
-        <th>Phase</th>
-        <th>Team Member</th>
-        <th>Date Started</th>
-        <th>Time in Production</th>
-        <th>Late</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="ordersBody">
-        @foreach($orders as $order)
-          <tr>
-              <td>
-                  @if($order->is_rush)
-                      <img src="{{asset('icons/rush.svg')}}" alt="Rush">
-                  @endif
-                  <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
-                      {{ $order->order_id }}
-                  </button>
-              </td>
-            <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
-                    @if(isset($order->last_log->sub_status))
-                        {{$order->last_log?->sub_status?->name ?? null}}
-                    @elseif(isset($order->last_log->status))
-                        {{$order->last_log?->status?->status_name ?? null}}
-                    @else
-                        {{$order->status?->status_name ?? null}}
-                    @endif
-                </span>
-            </td>
-            <td>
-                @if(isset($order->last_log->user))
-                    {{$order->last_log?->user?->name ?? null}}
-                @else
-                    {{$order->station?->worker?->name ?? null}}
-                @endif
-            </td>
-            <td>{{$order->date_started}}</td>
-            <td>
-                @php
-                    $dateStarted = \Carbon\Carbon::parse($order->created_at);
-                    $now = \Carbon\Carbon::now();
-                    $workingTime = calculateWorkingTime($dateStarted, $now);
-                @endphp
-
-                {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
-                {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
-                {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
-                {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
-            </td>
-              <td>
-                  @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
-                    <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
-                  @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
-                      <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
-                  @else
-                      -
-                  @endif
-              </td>
-              <td>
-                  @if(Auth::user()->role_id == 1)
-                      <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
-                          <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
-                      </button>
-                  @endif
-
-                  @if(isset($orderLog) && $orderLog->order_id == $order->order_id)
-                      <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
-                          <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
-                      </button>
-                  @else
-                      <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
-                          Start order
-                      </button>
-                  @endif
-                  @if(isset($order->children) && count($order->children))
-                      <button class="edit-btn" onclick="viewChildren('children_{{$order->id}}')">
-                          <img src="{{ asset('icons/chevron-down.svg') }}" alt="Expand Icon">
-                      </button>
-                  @endif
-              </td>
-          </tr>
-            @if(isset($order) && isset($order->children) && count($order->children))
-                <tr style="display: none;border: 1px solid #191919;" id="children_{{$order->id}}">
-                    <td colspan="8" style="border: 1px solid #191919;padding: 0px;">
-                        <table>
-                            <tbody>
-                            @foreach($order?->children as $child_order)
-                                <tr style="border-bottom: none;">
-                                    <td>
-                                        @if($child_order->is_rush == 1)
-                                            <img src="{{asset('icons/rush.svg')}}" alt="Rush">
-                                        @endif
-                                        <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">
-                                            {{ $child_order->order_id }}
-                                        </button>
-                                    </td>
-                                    <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">
-                                        @if(isset($child_order->last_log->sub_status))
-                                            {{$child_order->last_log?->sub_status?->name ?? null}}
-                                        @elseif(isset($child_order->last_log->status))
-                                            {{$child_order->last_log?->status?->status_name ?? null}}
-                                        @else
-                                            {{$child_order->status?->status_name ?? null}}
-                                        @endif
-                                    </span>
-                                    </td>
-                                    <td>{{$child_order->station?->worker?->name ?? null}}</td>
-                                    <td>{{$child_order->date_started}}</td>
-                                    <td>
-                                        @php
-                                            $dateStarted = \Carbon\Carbon::parse($order->created_at);
-                                            $now = \Carbon\Carbon::now();
-                                            $workingTime = calculateWorkingTime($dateStarted, $now);
-                                        @endphp
-
-                                        {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
-                                        {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
-                                        {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
-                                        {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
-                                    </td>
-                                    <td>
-                                        @if(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)))
-                                            <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
-                                        @elseif(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)->subDays(2)))
-                                            <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($child_order->deadline)),0)}} hours left</span>
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if(Auth::user()->role_id == 1)
-                                            <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">
-                                                <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
-                                            </button>
-                                        @endif
-                                        @if(isset($orderLog) && $orderLog->order_id == $child_order->order_id)
-                                            <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
-                                                <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
-                                            </button>
-                                        @else
-                                            <button data-id="{{$child_order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
-                                                Start order
-                                            </button>
-                                        @endif
-
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            @endif
-        @endforeach
-    </tbody>
-  </table>
-    <div class="row justify-content-end" id="order_paginations">
-        <div class="col-6 text-start">
-            @if($orders->count())
-                <p class="py-4 mb-0">
-                    Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }}
-                </p>
-            @endif
+        <div class="filters">
+            <form class="filter-bar" action="">
+                <div class="filter-item">
+                    <button class="filter-btn">
+                        <img src="{{ asset('icons/filter.png') }}" alt="Filter Icon">
+                        <span>Filter By</span>
+                    </button>
+                </div>
+                <div class="filter-item">
+                    <select class="sort-select" id="filter-date" name="filter_date">
+                        <option value="" disabled selected>Date</option>
+                        <option value="oldest" {{$filter_date && $filter_date == 'oldest'?'Selected':''}}>Oldest</option>
+                        <option value="newest" {{$filter_date && $filter_date == 'newest'?'Selected':''}}>Newest</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <select class="sort-select" id="filter-product" name="filter_product">
+                        <option value="" disabled selected>Product</option>
+                        @foreach($products as $product)
+                            <option value="{{ $product->product_name }}" {{$filter_product && $filter_product == $product->product_name?'Selected':''}}>{{ $product->product_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <select class="sort-select" id="filter-status" name="filter_status">
+                        <option value="" disabled selected>Order Status</option>
+                        @foreach($statuses??[] as $status)
+                            @if($status->id != $completedStatusId)
+                                <option value="{{$status->id}}" {{$filter_status && $filter_status == $status->id?'Selected':''}}>{{$status->status_name}}</option>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <select class="sort-select" id="filter-priority" name="filter_priority">
+                        <option value="" disabled selected>Priority</option>
+                        <option value="2" {{$filter_priority && $filter_priority == '2'?'Selected':''}}>Normal</option>
+                        <option value="1" {{$filter_priority && $filter_priority == '1'?'Selected':''}}>Rush</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <button class="reset-btn" type="button">
+                        <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
+                    </button>
+                </div>
+            </form>
+            <div class="orders-search">
+                <input type="text" id="searchInput" placeholder="Search">
+                <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
+            </div>
         </div>
-        <div class="col-6 text-end">
-            {{ $orders->appends([
-            'filter_date' => request()->input('filter_date'),
-            'filter_product' => request()->input('filter_product'),
-            'filter_status' => request()->input('filter_status'),
-            'filter_priority' => request()->input('filter_priority'),
-        ])->links() }}
-        </div>
-    </div>
 
-
-
-  <x-modal id="orderModal" title="Order #00001">
-    <span class="status" id="modal_status_text">Completed</span>
-    <div class="orderModal-flex">
-      <div class="activity-logs">
-        <div class="activity-log">
-            <h3>Activity Log</h3>
-            <ul id="order_logs">
-            </ul>
-        </div>
-        <div class="sub-orders">
-            <div id="child_order">
-                <h3>Sub-Orders</h3>
-                <table class="border-1 border-dark">
+        <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.pdf')}}">
+            <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as PDF
+        </a>
+        <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.csv')}}">
+            <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as CSV
+        </a>
+        <div class="orders">
+            <table id="ordersTable" class="tablesorter">
                 <thead>
-                    <tr>
-                        <th>Order #</th>
-                        <th>Status</th>
-                        <th>Completion</th>
-                    </tr>
+                <tr>
+                    <th>Order #</th>
+                    <th>Phase</th>
+                    <th>Team Member</th>
+                    <th>Date Started</th>
+                    <th>Time in Production</th>
+                    <th>Late</th>
+                    <th>Actions</th>
+                </tr>
                 </thead>
-                <tbody>
+                <tbody id="ordersBody">
+                @foreach($orders as $order)
+                    <tr>
+                        <td>
+                            @if($order->is_rush)
+                                <img src="{{asset('icons/rush.svg')}}" alt="Rush">
+                            @endif
+                            <button class="edit-btn" onclick="viewDetails('{{$order->id}}','{{$order->order_id}}')">
+                                {{ $order->order_id }}
+                            </button>
+                        </td>
+                        <td><span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
+                    @if(isset($order->last_log->sub_status))
+                                    {{$order->last_log?->sub_status?->name ?? null}}
+                                @elseif(isset($order->last_log->status))
+                                    {{$order->last_log?->status?->status_name ?? null}}
+                                @else
+                                    {{$order->status?->status_name ?? null}}
+                                @endif
+                </span>
+                        </td>
+                        <td>
+                            @if(isset($order->last_log->user))
+                                {{$order->last_log?->user?->name ?? null}}
+                            @else
+                                {{$order->station?->worker?->name ?? null}}
+                            @endif
+                        </td>
+                        <td>{{$order->date_started}}</td>
+                        <td>
+                            @php
+                                $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                                $now = \Carbon\Carbon::now();
+                                $workingTime = calculateWorkingTime($dateStarted, $now);
+                            @endphp
 
+                            {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
+                            {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
+                            {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
+                            {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
+                        </td>
+                        <td>
+                            {{--                  {{\Carbon\Carbon::parse($order->deadline)->format('Y-m-d')}}<br>--}}
+
+                            @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
+                                <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
+
+                                {{--                      @php--}}
+                                {{--                          $now = \Carbon\Carbon::now();--}}
+                                {{--                          $deadline = \Carbon\Carbon::parse($order->deadline);--}}
+                                {{--                          $microseconds = $now->diffInUTCMicroseconds($deadline);--}}
+                                {{--                          $signedMicroseconds = $now->lessThan($deadline) ? -$microseconds : $microseconds;--}}
+                                {{--                          echo $signedMicroseconds;--}}
+                                {{--                      @endphp--}}
+
+                            @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
+                                <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td>
+                            @if(Auth::user()->role_id == 1)
+                                <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                    <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
+                                </button>
+                            @endif
+
+                            @if(isset($orderLog) && $orderLog->order_id == $order->order_id)
+                                <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
+                                    <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
+                                </button>
+                            @else
+                                <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                    Start order
+                                </button>
+                            @endif
+{{--                            @if(isset($order->children) && count($order->children))--}}
+{{--                                <button class="edit-btn" onclick="viewChildren('children_{{$order->id}}')">--}}
+{{--                                    <img src="{{ asset('icons/chevron-down.svg') }}" alt="Expand Icon">--}}
+{{--                                </button>--}}
+{{--                            @endif--}}
+                                @if(isset($order->children) && count($order->children))
+                                    <button class="edit-btn" data-order-id="{{ $order->id }}" onclick="openChildrenModal($(this))">
+                                        <img src="{{ asset('icons/chevron-down.svg') }}" alt="View Children">
+                                    </button>
+                                @endif
+
+                        </td>
+                    </tr>
+{{--                    @if(isset($order) && isset($order->children) && count($order->children))--}}
+{{--                        <tr style="display: none;border: 1px solid #191919;" id="children_{{$order->id}}">--}}
+{{--                            <td colspan="8" style="border: 1px solid #191919;padding: 0px;">--}}
+{{--                                <table style="height: auto;">--}}
+{{--                                    <tbody>--}}
+{{--                                    @foreach($order?->children as $child_order)--}}
+{{--                                        <tr style="border-bottom: none;">--}}
+{{--                                            <td>--}}
+{{--                                                @if($child_order->is_rush == 1)--}}
+{{--                                                    <img src="{{asset('icons/rush.svg')}}" alt="Rush">--}}
+{{--                                                @endif--}}
+{{--                                                <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">--}}
+{{--                                                    {{ $child_order->order_id }}--}}
+{{--                                                </button>--}}
+{{--                                            </td>--}}
+{{--                                            <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">--}}
+{{--                                        @if(isset($child_order->last_log->sub_status))--}}
+{{--                                                        {{$child_order->last_log?->sub_status?->name ?? null}}--}}
+{{--                                                    @elseif(isset($child_order->last_log->status))--}}
+{{--                                                        {{$child_order->last_log?->status?->status_name ?? null}}--}}
+{{--                                                    @else--}}
+{{--                                                        {{$child_order->status?->status_name ?? null}}--}}
+{{--                                                    @endif--}}
+{{--                                    </span>--}}
+{{--                                            </td>--}}
+{{--                                            <td>{{$child_order->station?->worker?->name ?? null}}</td>--}}
+{{--                                            <td>{{$child_order->date_started}}</td>--}}
+{{--                                            <td>--}}
+{{--                                                @php--}}
+{{--                                                    $dateStarted = \Carbon\Carbon::parse($order->created_at);--}}
+{{--                                                    $now = \Carbon\Carbon::now();--}}
+{{--                                                    $workingTime = calculateWorkingTime($dateStarted, $now);--}}
+{{--                                                @endphp--}}
+
+{{--                                                {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}--}}
+{{--                                                {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}--}}
+{{--                                                {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}--}}
+{{--                                                {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}--}}
+{{--                                            </td>--}}
+{{--                                            <td>--}}
+{{--                                                @if(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)))--}}
+{{--                                                    <img src="{{asset('icons/exclaimatio.svg')}}" alt="">--}}
+{{--                                                @elseif(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)->subDays(2)))--}}
+{{--                                                    <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($child_order->deadline)),0)}} hours left</span>--}}
+{{--                                                @else--}}
+{{--                                                    ---}}
+{{--                                                @endif--}}
+{{--                                            </td>--}}
+{{--                                            <td>--}}
+{{--                                                @if(Auth::user()->role_id == 1)--}}
+{{--                                                    <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">--}}
+{{--                                                        <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">--}}
+{{--                                                    </button>--}}
+{{--                                                @endif--}}
+{{--                                                @if(isset($orderLog) && $orderLog->order_id == $child_order->order_id)--}}
+{{--                                                    <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">--}}
+{{--                                                        <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">--}}
+{{--                                                    </button>--}}
+{{--                                                @else--}}
+{{--                                                    <button data-id="{{$child_order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">--}}
+{{--                                                        Start order--}}
+{{--                                                    </button>--}}
+{{--                                                @endif--}}
+
+{{--                                            </td>--}}
+{{--                                        </tr>--}}
+{{--                                    @endforeach--}}
+{{--                                    </tbody>--}}
+{{--                                </table>--}}
+{{--                            </td>--}}
+{{--                        </tr>--}}
+{{--                    @endif--}}
+                @endforeach
                 </tbody>
-                </table>
+            </table>
+        </div>
+        {{--    <div class="row justify-content-end" id="order_paginations">--}}
+        {{--        <div class="col-6 text-start">--}}
+        {{--            @if($orders->count())--}}
+        {{--                <p class="py-4 mb-0">--}}
+        {{--                    Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }}--}}
+        {{--                </p>--}}
+        {{--            @endif--}}
+        {{--        </div>--}}
+        {{--        <div class="col-6 text-end">--}}
+        {{--            {{ $orders->appends([--}}
+        {{--            'filter_date' => request()->input('filter_date'),--}}
+        {{--            'filter_product' => request()->input('filter_product'),--}}
+        {{--            'filter_status' => request()->input('filter_status'),--}}
+        {{--            'filter_priority' => request()->input('filter_priority'),--}}
+        {{--        ])->links() }}--}}
+        {{--        </div>--}}
+        {{--    </div>--}}
+
+
+
+        <x-modal id="orderModal" title="Order #00001">
+            <span class="status" id="modal_status_text">Completed</span>
+            <div class="orderModal-flex">
+                <div class="activity-logs">
+                    <div class="activity-log">
+                        <h3>Activity Log</h3>
+                        <ul id="order_logs">
+                        </ul>
+                    </div>
+                    <div class="sub-orders">
+                        <div id="child_order">
+                            <h3>Sub-Orders</h3>
+                            <table class="border-1 border-dark">
+                                <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Status</th>
+                                    <th>Completion</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="comments">
+                    <h3>Comments</h3>
+                    <div id="comments_container">
+
+                    </div>
+                </div>
+
+                <x-slot name="footer">
+                    <button class="btn pdf-btn" id="download-pdf">
+                        <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
+                    </button>
+                    <div class="new-comment">
+                        <textarea placeholder="Write a message..." id="comment_input"></textarea>
+                        {{-- <button class="msg-btn">
+                          <img src="{{ asset('icons/attach.png') }}" alt="Attach file">
+                        </button>
+                        <button class="msg-btn">
+                          <img src="{{ asset('icons/media.png') }}" alt="Media">
+                        </button> --}}
+                        <button class="send-btn" onclick="addComment()">
+                            Send
+                            <img src="{{ asset('icons/send.png') }}" alt="Send">
+                        </button>
+                    </div>
+                </x-slot>
             </div>
+        </x-modal>
 
-        </div>
-      </div>
-      <div class="comments">
-        <h3>Comments</h3>
-        <div id="comments_container">
+        <x-modal id="editStatusModal" title="Update Status">
+            <form id="editStatusForm" action="javascript:void(0);" method="post" class="d-block">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <input type="hidden" id="edit_id" name="id">
+                            <label for="status-name">Status</label>
+                            <select name="edit_status" class="form-select" id="edit_status">
+                                <option value="0">Select One</option>
+                                @foreach($edit_statuses as $status)
+                                    <option value="{{$status->id}}">{{$status->status_name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-6" id="sub_status_div" style="display: none;">
+                        <div class="form-group">
+                            <label for="">Sub Status</label>
+                            <select name="edit_sub_status" class="form-select" id="edit_sub_status">
+                                <option value="">Select One</option>
+                                @foreach($sub_statuses as $sub_status)
+                                    <option value="{{$sub_status->id}}" data-parent="{{$sub_status->status_id}}" style="display: none;">
+                                        {{$sub_status->name}}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <textarea name="notes"class="form-control" placeholder="Notes..."></textarea>
+                    </div>
+                </div>
+            </form>
+            <x-slot name="footer">
+                <div class="form-group buttons">
+                    <button type="submit" class="btn save-btn" onclick="updateStatus()">Update Status</button>
+                    <button type="button" class="btn cancel-btn" onclick="document.getElementById('editStatusModal').style.display='none'">Cancel</button>
+                </div>
+            </x-slot>
+        </x-modal>
 
-        </div>
-      </div>
 
-      <x-slot name="footer">
-        <button class="btn pdf-btn" id="download-pdf">
-          <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
-        </button>
-        <div class="new-comment">
-          <textarea placeholder="Write a message..." id="comment_input"></textarea>
-          {{-- <button class="msg-btn">
-            <img src="{{ asset('icons/attach.png') }}" alt="Attach file">
-          </button>
-          <button class="msg-btn">
-            <img src="{{ asset('icons/media.png') }}" alt="Media">
-          </button> --}}
-          <button class="send-btn" onclick="addComment()">
-            Send
-            <img src="{{ asset('icons/send.png') }}" alt="Send">
-          </button>
+        <div class="modal fade" id="childOrdersModal" tabindex="-1" aria-labelledby="childOrdersModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Child Orders</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="childOrdersModalBody">
+
+                    </div>
+                </div>
+            </div>
         </div>
-      </x-slot>
+
     </div>
-  </x-modal>
-
-  <x-modal id="editStatusModal" title="Update Status">
-        <form id="editStatusForm" action="javascript:void(0);" method="post" class="d-block">
-            <div class="row">
-                <div class="col-6">
-                    <div class="form-group">
-                        <input type="hidden" id="edit_id" name="id">
-                        <label for="status-name">Status</label>
-                        <select name="edit_status" class="form-select" id="edit_status">
-                            <option value="0">Select One</option>
-                            @foreach($edit_statuses as $status)
-                                <option value="{{$status->id}}">{{$status->status_name}}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-6" id="sub_status_div" style="display: none;">
-                    <div class="form-group">
-                        <label for="">Sub Status</label>
-                        <select name="edit_sub_status" class="form-select" id="edit_sub_status">
-                            <option value="">Select One</option>
-                            @foreach($sub_statuses as $sub_status)
-                                <option value="{{$sub_status->id}}" data-parent="{{$sub_status->status_id}}" style="display: none;">
-                                    {{$sub_status->name}}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-12 mt-2">
-                    <textarea name="notes"class="form-control" placeholder="Notes..."></textarea>
-                </div>
-            </div>
-        </form>
-        <x-slot name="footer">
-            <div class="form-group buttons">
-                <button type="submit" class="btn save-btn" onclick="updateStatus()">Update Status</button>
-                <button type="button" class="btn cancel-btn" onclick="document.getElementById('editStatusModal').style.display='none'">Cancel</button>
-            </div>
-        </x-slot>
-    </x-modal>
-</div>
 @endsection
 @section('footer_scripts')
     <script>
         const order_id = '{{$order_id??null}}';
         $(document).ready(function() {
+            let table = new DataTable('#ordersTable', {
+                autoWidth: false,
+                columns: [
+                    { title: "Order #" },
+                    { title: "Phase" },
+                    { title: "Team Member" },
+                    { title: "Date Started" },
+                    { title: "Time in Production" },
+                    { title: "Late" },
+                    { title: "Actions", defaultContent: "" }
+                ],
+                columnDefs: [
+                    {
+                        targets: -1,         // -1 targets the last column
+                        orderable: false     // Disable sorting on it
+                    }
+                ]
+            });
+
+
+
             var url = window.location.href;
             var urlObj = new URL(url);
             var orderId = urlObj.searchParams.get('order_id');
@@ -416,6 +472,23 @@
         function viewChildren(row_id){
             $('#'+row_id).toggle();
         }
+
+        function openChildrenModal(button) {
+            var orderId = button.data('order-id');
+
+            $.ajax({
+                url: `/get_child_order/${orderId}`,
+                type: 'GET',
+                success: function (response) {
+                    $('#childOrdersModalBody').html(response);
+                    $('#childOrdersModal').modal('show');
+                },
+                error: function () {
+                    show_toast('Failed to load child orders. Please try again.','error');
+                }
+            });
+        }
+
 
 
         let activeOrder = 0;
