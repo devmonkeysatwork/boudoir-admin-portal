@@ -2,6 +2,18 @@
 <link rel="stylesheet" href="{{asset('assets/css/date-range.css')}}">
 @section('content')
 
+    <div class="row report_page_links my-3 justify-content-center align-items-center">
+        <div class="col-lg-6">
+            <h1 class="fs-32">Order Reports <span class="fw-normal p12">- Show Insights from <b>This Month</b></span></h1>
+        </div>
+        <div class="col-lg-6">
+            <div class="d-flex gap-3 justify-content-end">
+                <a href="{{route('dashboard.reports')}}" class="create-btn {{ request()->routeIs('dashboard.reports') ? 'active_url' : '' }}">Order Reports</a>
+                <a href="{{route('dashboard.compare')}}" class="create-btn {{ request()->routeIs('dashboard.compare') ? 'active_url' : '' }}">Production Reports</a>
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white rounded-5 py-3 px-4 w-100">
         <form action="{{route('dashboard.reports')}}" method="GET" id="report_filter_form">
             <div class="row">
@@ -44,7 +56,7 @@
                         <div class="col">
                             <label for="product_attribute_select">Product Option:</label>
                             <select class="form-select" name="product_attribute" aria-label="Default select example" id="product_attribute_select">
-                                <option selected>All</option>
+                                <option selected value="0">All</option>
                                 @foreach($attributes as $attribut)
                                     <option {{isset($productAttribute) && $productAttribute ==$attribut->id ?'Selected':''}} value="{{$attribut->id}}">{{$attribut->name}}</option>
                                 @endforeach
@@ -53,7 +65,7 @@
                         <div class="col">
                             <label for="attribute_select">Attributes:</label>
                             <select class="form-select" name="attribute" aria-label="Default select example" id="attribute_select">
-                                <option selected>All</option>
+                                <option selected value="0">All</option>
                                 @foreach($attributesValues as $attributesValue)
                                     <option {{isset($attribute) && $attribute ==$attributesValue->id ?'Selected':''}} value="{{$attributesValue->id}}">{{$attributesValue->value}}</option>
                                 @endforeach
@@ -70,7 +82,7 @@
                         </div>
                         <div class="col">
                             <label for="date_select">Date Range:</label>
-                            <input type="text" id="date-range" class="form-control">
+                            <input type="text" id="date-range" name="date_range" class="form-control">
                         </div>
                         {{--                        <div class="col">--}}
                         {{--                            <label for="group_select">Group By:</label>--}}
@@ -135,13 +147,13 @@
         </div>
         <div class="col-6 col-md-3 report_small_boxes mt-5">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">{{$order_with_issues[1]??0}}</h2>
+                <h2 class="text-center text-danger">{{$reprinting_orders[1]??0}}</h2>
                 <p class="text-center">Total Items Resent for Printing</p>
             </div>
         </div>
         <div class="col-6 col-md-3 report_small_boxes mt-5">
             <div class="bg-white rounded-5">
-                <h2 class="text-center">{{array_sum($order_with_issues)}}</h2>
+                <h2 class="text-center text-danger">{{$error_count_per_user['totalErrors']??0}}</h2>
                 <p class="text-center">Total Orders with Errors</p>
             </div>
         </div>
@@ -162,8 +174,21 @@
     <script src="{{asset('assets/js/date-range.js')}}"></script>
     <script>
         $(document).ready(function() {
+            var dateRangeStr = '{{$date_range??""}}';
+            if (dateRangeStr) {
+                var dates = dateRangeStr.split(' - ');
+                var startDate = moment(dates[0], 'MM/DD/YYYY');
+                var endDate = moment(dates[1], 'MM/DD/YYYY');
+            } else {
+                var startDate = moment().startOf('day');
+                var endDate = moment().endOf('day');
+            }
             $('#date-range').daterangepicker({
-                "opens": "center",
+                opens: 'left',
+                startDate: startDate,
+                endDate: endDate,
+            }, function(start, end, label) {
+                $(this).closest('form').submit();
             });
         });
         $('#report_filter_form select').on('change',function (){
@@ -179,7 +204,7 @@
                 name: 'All orders',
                 data: all_orders_data
             }, {
-                name: 'Order with Album',
+                name: 'Orders with {{$selected_product}}',
                 data: album_orders_data
             }],
             chart: {
@@ -318,10 +343,11 @@
         var chart3 = new ApexCharts(document.querySelector("#lineChart"), options3);
         chart3.render();
 
-        const order_with_issues = @json($order_with_issues ?? []);
+        const order_with_issues = @json($reprinting_orders ?? []);
 
         var options4 = {
             series: [{
+                name:'',
                 data: order_with_issues
             }],
             chart: {
@@ -339,7 +365,7 @@
                 enabled: false
             },
             xaxis: {
-                categories: ['On Hold', 'Issues With Printing', 'Remake + Reasons',],
+                categories: ['On Hold', 'Issues With Printing', 'Remake + Reasons'],
 
             },
             title: {
@@ -351,23 +377,16 @@
         var chart4 = new ApexCharts(document.querySelector("#rightLineChart"), options4);
         chart4.render();
 
+        const errorData = @json($error_count_per_user ?? []);
+        const seriesData = (errorData.users || []).map((name, idx) => {
+            return {
+                name: name,
+                data: errorData.data[idx] || []
+            };
+        });
+
         var options5 = {
-            series: [{
-                name: 'Donatello Johnson',
-                data: [45, 32, 34, 52, 41,31, 40, 28, 51, 42, 109, 100]
-            }, {
-                name: 'Jason Price',
-                data: [11, 32, 45, 32, 34, 52, 41,65,45, 32, 34, 52]
-            }, {
-                name: 'Duane Dean',
-                data: [41,45, 32, 34, 52, 41,52,32,43,45,23,11]
-            }, {
-                name: 'Jonathan Barker',
-                data: [67, 45, 65,45, 32, 34, 52, 41, 23, 12, 67, 34]
-            }, {
-                name: 'Raphael Margerriti',
-                data: [34, 65,25,45, 32, 34, 52, 21, 43, 12, 90, 56]
-            }],
+            series: seriesData,
             chart: {
                 height: 350,
                 type: 'area'
@@ -383,7 +402,7 @@
                 curve: 'straight'
             },
             xaxis: {
-                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep','Oct','Nov','Dec']
+                categories: errorData.months
             },
             tooltip: {
                 x: {

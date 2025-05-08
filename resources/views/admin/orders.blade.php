@@ -50,10 +50,10 @@
                     </button>
                 </div>
             </form>
-            <div class="orders-search">
-                <input type="text" id="searchInput" placeholder="Search">
-                <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
-            </div>
+{{--            <div class="orders-search">--}}
+{{--                <input type="text" id="searchInput" placeholder="Search">--}}
+{{--                <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
+{{--            </div>--}}
         </div>
 
         <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.pdf')}}">
@@ -159,7 +159,7 @@
 {{--                            @endif--}}
                                 @if(isset($order->children) && count($order->children))
                                     <button class="edit-btn" data-order-id="{{ $order->id }}" onclick="openChildrenModal($(this))">
-                                        <img src="{{ asset('icons/chevron-down.svg') }}" alt="View Children">
+                                        <img src="{{ asset('icons/submenu.svg') }}" alt="View Children">
                                     </button>
                                 @endif
 
@@ -456,15 +456,15 @@
                 });
             }
 
-            $('#searchInput').on('keyup', function() {
-                var query = $(this).val();
-                performSearch(query);
-                if(query != ''){
-                    $('#order_paginations').hide();
-                }else{
-                    $('#order_paginations').show();
-                }
-            });
+            // $('#searchInput').on('keyup', function() {
+            //     var query = $(this).val();
+            //     performSearch(query);
+            //     if(query != ''){
+            //         $('#order_paginations').hide();
+            //     }else{
+            //         $('#order_paginations').show();
+            //     }
+            // });
 
         });
 

@@ -21,14 +21,26 @@ class DashboardController extends Controller
     //
 
     public function reports(Request $request){
-
-
-        $data['productName'] = $request->input('product_name');
-        $data['status_id'] = $request->input('status');
+        // Extract existing inputs
+        $data['productName'] = $request->input('product_name')??null;
+        $data['status_id'] = intval($request->input('status'));
         $data['productAttribute'] = $request->input('product_attribute');
         $data['attribute'] = $request->input('attribute');
         $data['teamMember'] = $request->input('team_member');
         $data['groupBy'] = $request->input('group_by');
+        $data['date_range'] = $request->input('date_range');
+        $dates = explode(' - ', $data['date_range']);
+
+        // Parse start and end dates
+        $data['start_date'] = isset($dates[0]) ? Carbon::parse($dates[0])->startOfDay() : null;
+        $data['end_date'] = isset($dates[1]) ? Carbon::parse($dates[1])->endOfDay() : null;
+
+        // For form display
+        $data['start_date_display'] = $data['start_date'] ? $data['start_date']->format('m/d/Y') : '';
+        $data['end_date_display'] = $data['end_date'] ? $data['end_date']->format('m/d/Y') : '';
+
+        // If date range is not provided, use default values or don't apply date filtering
+        $hasDateRange = $data['start_date'] && $data['end_date'];
 
         $data['statuses'] = OrderStatus::all();
         $data['products'] = Product::all();
@@ -36,85 +48,74 @@ class DashboardController extends Controller
         $data['attributes'] = ProductAttributes::where('product_id', $data['productName'])->get(['id', 'name']);
         $data['attributesValues'] = ProductAttributeValues::where('attribute_id', $data['productAttribute'])->get(['id', 'value']);
 
+        // Get the completed status ID once and reuse it
+        $completed_id = OrderStatus::whereTitle('Completed')->pluck('id')->first();
 
+        // Modified to use last_log with completed status consistently and include date filtering
+        $ordersCompletedQuery = Orders::whereHas('last_log', function ($query) use ($completed_id) {
+            $query->where('status_id', $completed_id);
+        })
+        ->whereHas('logs', function ($query) use ($data) {
+            // Apply filtering on user_id and status_id only if they're present
+            if (!empty($data['teamMember'])) {
+                $query->where('user_id', $data['teamMember']);
+            }
+            if (!empty($data['status_id'])) {
+                $query->where('status_id', $data['status_id']);
+            }
+        })
+        ->when($data['productName'], function ($query) use ($data) {
+            return $query->whereHas('items', function ($query) use ($data) {
+                $query->where('product_id', $data['productName']);
+            });
+        })
+        ->whereHas('items.attributes', function ($query) use ($data) {
+            if (!empty($data['productAttribute'])) {
+                $query->where('attribute_id', $data['productAttribute']);
+            }
+            if (!empty($data['attribute'])) {
+                $query->where('attribute_value_id', $data['attribute']);
+            }
+        });
 
+        // Apply date range filter if provided
+        if ($hasDateRange) {
+            $ordersCompletedQuery->whereHas('last_log', function ($query) use ($data) {
+                $query->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+            });
+        }
 
-        $data['orders_completed'] = Orders::with(['items'])
-            ->whereNotNull('date_completed')
-            ->when($data['productName'], function ($query) use ($data) {
-                // Only apply this condition if productName is set
-                return $query->whereHas('items', function ($query) use ($data) {
-                    $query->where('product_id', $data['productName']); // Use the actual product ID field
+        $data['orders_completed'] = $ordersCompletedQuery->count();
+
+        // Time spent calculations with date range
+        $totalTimeSpentQuery = OrderLogs::whereHas('order', function ($query) use ($completed_id) {
+            $query->whereHas('last_log', function ($q) use ($completed_id) {
+                $q->where('status_id', $completed_id);
+            });
+        })
+        ->when($data['status_id'], function ($query) use ($data) {
+            return $query->where('status_id', $data['status_id']);
+        })
+        ->when($data['teamMember'], function ($query) use ($data) {
+            return $query->where('user_id', $data['teamMember']);
+        })
+        ->whereNotNull('time_started')
+        ->whereNotNull('time_end');
+
+        // Apply date range filter to time spent
+        if ($hasDateRange) {
+            $totalTimeSpentQuery->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+        }
+
+        $data['total_time_spent'] = $totalTimeSpentQuery->sum('time_spent');
+
+        // Modified average time calculation with date range
+        $avgTimeSpentQuery = OrderLogs::select('order_id', DB::raw('SUM(time_spent) as total_time_spent'))
+            ->whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
                 });
             })
-            ->when($data['status_id'], function ($query) use ($data){
-                $query->where('status_id', $data['status_id']);
-            })
-            ->count();
-
-
-
-
-        $data['total_time_spent'] = OrderLogs::when($data['status_id'], function ($query) use ($data) {
-                return $query->where('status_id', $data['status_id']);
-            })->when($data['teamMember'], function ($query) use ($data) {
-                return $query->where('user_id', $data['teamMember']);
-            })
-            ->whereNotNull('time_started')->whereNotNull('time_end')->sum('time_spent');
-
-        $data['avg_time_spent_on_order'] = OrderLogs::select('order_id', DB::raw('SUM(time_spent) as total_time_spent'))
-            ->when($data['status_id'], function ($query) use ($data) {
-                return $query->where('status_id', $data['status_id']);
-            })->when($data['teamMember'], function ($query) use ($data) {
-                return $query->where('user_id', $data['teamMember']);
-            })
-            ->whereNotNull('time_started')
-            ->whereNotNull('time_end')
-            ->groupBy('order_id')
-            ->get()
-            ->avg('total_time_spent');
-
-
-
-
-        // Get the product ID for the album "The Album"
-        $album_id = Product::whereName('The Album')->pluck('id')->first();
-        $last12Months = Carbon::now()->subMonths(12)->startOfMonth();
-        $months = [];
-        for ($i = 0; $i < 12; $i++) {
-            $months[] = Carbon::now()->subMonths($i)->format('Y-m');
-        }
-        $total_orders = Orders::when($data['status_id'], function ($query) use ($data) {
-                $query->where('status_id', $data['status_id']);
-            })
-            ->where('created_at', '>=', $last12Months)
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as total_orders')
-            ->groupBy('month')
-            ->get();
-
-        $orders_with_album = Orders::with(['items'])
-            ->whereHas('items', function ($query) use ($album_id) {
-                $query->where('product_id', $album_id); // Use the actual product ID field
-            })
-            ->when($data['status_id'], function ($query) use ($data) {
-                $query->where('status_id', $data['status_id']);
-            })
-            ->where('created_at', '>=', $last12Months)
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as orders_with_album')
-            ->groupBy('month')
-            ->get();
-
-
-
-        //        ----------- Total time and Average time spent graph data
-        $startDate = Carbon::now()->subMonths(12)->startOfMonth();
-
-// Total time spent for each month in the last 12 months
-        $monthly_total_time_spent = OrderLogs::select(
-            DB::raw('YEAR(time_started) as year'),
-            DB::raw('MONTH(time_started) as month'),
-            DB::raw('SUM(time_spent) as total_time_spent')
-        )
             ->when($data['status_id'], function ($query) use ($data) {
                 return $query->where('status_id', $data['status_id']);
             })
@@ -122,8 +123,135 @@ class DashboardController extends Controller
                 return $query->where('user_id', $data['teamMember']);
             })
             ->whereNotNull('time_started')
-            ->whereNotNull('time_end')
-            ->where('time_started', '>=', $startDate) // Filter for the last 12 months
+            ->whereNotNull('time_end');
+
+        // Apply date range filter
+        if ($hasDateRange) {
+            $avgTimeSpentQuery->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+        }
+
+        $data['avg_time_spent_on_order'] = $avgTimeSpentQuery
+            ->groupBy('order_id')
+            ->get()
+            ->avg('total_time_spent');
+
+        // Get the product ID for the album product
+        $selected_product_id = $data['productName'] > 0 ?$data['productName']: 1;
+        $data['selected_product'] = Product::whereId($selected_product_id)->pluck('name')->first();
+        // For monthly breakdown charts, use either the selected date range or default to last 12 months
+        if ($hasDateRange) {
+            $startDate = $data['start_date'];
+            $endDate = $data['end_date'];
+            // Calculate number of months between start and end date
+            $monthsDiff = $startDate->diffInMonths($endDate) + 1; // +1 to include both start and end months
+            $months = [];
+            // Generate months array based on the specified range
+            for ($i = 0; $i < $monthsDiff; $i++) {
+                $months[] = $startDate->copy()->addMonths($i)->format('Y-m');
+            }
+        } else {
+            // Default: use last 12 months
+            $startDate = Carbon::now()->subMonths(11)->startOfMonth(); // to get 12 months including current
+            $endDate = Carbon::now()->endOfMonth();
+            $months = [];
+            for ($i = 0; $i < 12; $i++) {
+                $months[] = Carbon::now()->subMonths(11-$i)->format('Y-m'); // Start from 11 months ago to include current month
+            }
+        }
+
+        $teamMember = $data['teamMember'] ?? null;
+
+        // Total orders query with date range
+        $totalOrdersQuery = Orders::when($data['status_id'], function ($query) use ($data) {
+            $query->where('status_id', $data['status_id']);
+        })
+            ->whereHas('last_log', function ($query) use ($completed_id) {
+                $query->where('status_id', $completed_id);
+            })
+            ->when($teamMember, function ($query) use ($teamMember) {
+                $query->whereHas('logs', function ($q) use ($teamMember) {
+                    $q->where('user_id', $teamMember);
+                });
+            });
+
+        // Apply date range filter
+        if ($hasDateRange) {
+            $totalOrdersQuery->whereHas('last_log', function ($query) use ($data) {
+                $query->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+            });
+        } else {
+            $totalOrdersQuery->where('created_at', '>=', $startDate);
+        }
+
+        $total_orders = $totalOrdersQuery
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as total_orders')
+            ->groupBy('month')
+            ->get();
+
+        // Orders with specified product query with date range
+        $ordersWithAlbumQuery = Orders::with(['items'])
+            ->whereHas('items', function ($query) use ($selected_product_id) {
+                $query->where('product_id', $selected_product_id);
+            })
+            ->whereHas('last_log', function ($query) use ($completed_id) {
+                $query->where('status_id', $completed_id);
+            })
+            ->when($teamMember, function ($query) use ($teamMember) {
+                $query->whereHas('logs', function ($q) use ($teamMember) {
+                    $q->where('user_id', $teamMember);
+                });
+            })
+            ->when($data['status_id'], function ($query) use ($data) {
+                $query->where('status_id', $data['status_id']);
+            });
+
+        // Apply date range filter
+        if ($hasDateRange) {
+            $ordersWithAlbumQuery->whereHas('last_log', function ($query) use ($data) {
+                $query->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+            });
+        } else {
+            $ordersWithAlbumQuery->where('created_at', '>=', $startDate);
+        }
+
+        $orders_with_album = $ordersWithAlbumQuery
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as orders_with_album')
+            ->groupBy('month')
+            ->get();
+
+        // Monthly time spent totals with date range
+        $monthlyTotalTimeQuery = OrderLogs::select(
+            DB::raw('YEAR(time_started) as year'),
+            DB::raw('MONTH(time_started) as month'),
+            DB::raw('SUM(time_spent) as total_time_spent')
+        )
+            ->whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
+                });
+            })
+            ->when($data['status_id'], function ($query) use ($data) {
+                return $query->where('status_id', $data['status_id']);
+            })
+            ->when($data['teamMember'], function ($query) use ($data) {
+                return $query->where('user_id', $data['teamMember']);
+            })
+            ->when($data['productName'], function ($query) use ($data) {
+                $query->whereHas('order.items', function ($q) use ($data) {
+                    $q->where('product_id', $data['productName']);
+                });
+            })
+            ->whereNotNull('time_started')
+            ->whereNotNull('time_end');
+
+        // Apply date range filter
+        if ($hasDateRange) {
+            $monthlyTotalTimeQuery->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+        } else {
+            $monthlyTotalTimeQuery->where('time_started', '>=', $startDate);
+        }
+
+        $monthly_total_time_spent = $monthlyTotalTimeQuery
             ->groupBy(DB::raw('YEAR(time_started), MONTH(time_started)'))
             ->orderBy(DB::raw('YEAR(time_started), MONTH(time_started)'))
             ->get()
@@ -133,22 +261,39 @@ class DashboardController extends Controller
                 ];
             });
 
-
-// Average time spent per order in each month over the last 12 months
-        $monthly_avg_time_spent = OrderLogs::select(
+        // Monthly average time spent with date range
+        $monthlyAvgTimeQuery = OrderLogs::select(
             DB::raw('YEAR(time_started) as year'),
             DB::raw('MONTH(time_started) as month'),
             DB::raw('AVG(time_spent) as avg_time_spent')
         )
+            ->whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
+                });
+            })
             ->when($data['status_id'], function ($query) use ($data) {
                 return $query->where('status_id', $data['status_id']);
             })
             ->when($data['teamMember'], function ($query) use ($data) {
                 return $query->where('user_id', $data['teamMember']);
             })
+            ->when($data['productName'], function ($query) use ($data) {
+                $query->whereHas('order.items', function ($q) use ($data) {
+                    $q->where('product_id', $data['productName']);
+                });
+            })
             ->whereNotNull('time_started')
-            ->whereNotNull('time_end')
-            ->where('time_started', '>=', $startDate) // Filter for the last 12 months
+            ->whereNotNull('time_end');
+
+        // Apply date range filter
+        if ($hasDateRange) {
+            $monthlyAvgTimeQuery->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+        } else {
+            $monthlyAvgTimeQuery->where('time_started', '>=', $startDate);
+        }
+
+        $monthly_avg_time_spent = $monthlyAvgTimeQuery
             ->groupBy(DB::raw('YEAR(time_started), MONTH(time_started)'))
             ->orderBy(DB::raw('YEAR(time_started), MONTH(time_started)'))
             ->get()
@@ -157,11 +302,6 @@ class DashboardController extends Controller
                     Carbon::create($item->year, $item->month, 1)->format('Y-m') => $item->avg_time_spent
                 ];
             });
-
-
-
-
-
 
         $comparison = [];
         $time_graph_data = [];
@@ -174,16 +314,9 @@ class DashboardController extends Controller
             $ordersWithAlbum = $orders_with_album->firstWhere('month', $month);
             $ordersWithAlbumCount = $ordersWithAlbum ? $ordersWithAlbum->orders_with_album : 0;
 
-            // Add the comparison data for this month
-//            $comparison[] = [
-//                'month' => $month,
-//                'total_orders' => $totalOrdersCount,
-//                'orders_with_album' => $ordersWithAlbumCount,
-//            ];
             $comparison['months'][] = Carbon::parse($month)->format('M-Y');
             $comparison['total_orders'][] = $totalOrdersCount;
             $comparison['orders_with_album'][] = $ordersWithAlbumCount;
-
 
             $time_graph_data['total_time_spent'][] = isset($monthly_total_time_spent[$month]) ? round($monthly_total_time_spent[$month],2) : 0;
             $time_graph_data['avg_time_spent'][] = isset($monthly_avg_time_spent[$month]) ? round($monthly_avg_time_spent[$month],2)  : 0;
@@ -192,39 +325,256 @@ class DashboardController extends Controller
         $data['orders_graph_monthly'] = $comparison;
         $data['time_graph_data'] = $time_graph_data;
 
+        // Get the status IDs for the three statuses
+        $onHoldStatusId = OrderStatus::where('status_name', OrderStatus::adminStatuses[0])->pluck('id')->first();
+        $printIssueStatusId = OrderStatus::where('status_name', OrderStatus::adminStatuses[1])->pluck('id')->first();
+        $remakeReasonStatusId = OrderStatus::where('status_name', OrderStatus::adminStatuses[2])->pluck('id')->first();
 
-        $onHoldStatusId = OrderStatus::where('status_name',OrderStatus::adminStatuses[0])->pluck('id')->first();
-        $printIssueStatusId = OrderStatus::where('status_name',OrderStatus::adminStatuses[1])->pluck('id')->first();
-        $remakeReasonStatusId = OrderStatus::where('status_name',OrderStatus::adminStatuses[2])->pluck('id')->first();
+        // Modified reprinting orders queries with date range
+        $reprintingOrdersQueries = [
+            // On Hold Orders
+            OrderLogs::whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
+                });
+            })
+                ->when($teamMember, function ($query) use ($teamMember) {
+                    return $query->where('user_id', $teamMember);
+                })
+                ->when($data['productName'], function ($query) use ($data) {
+                    $query->whereHas('order.items', function ($q) use ($data) {
+                        $q->where('product_id', $data['productName']);
+                    });
+                })
+                ->whereNotNull('time_started')
+                ->whereNotNull('time_end')
+                ->where('status_id', $onHoldStatusId),
 
-        $onHoldStatusOrders = Orders::where('status_id', $onHoldStatusId)->count();
-        $printIssueOrders = Orders::where('status_id', $printIssueStatusId)->count();
-        $remakeReasonOrders = Orders::where('status_id', $remakeReasonStatusId)->count();
+            // Print Issue Orders
+            OrderLogs::whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
+                });
+            })
+                ->when($teamMember, function ($query) use ($teamMember) {
+                    return $query->where('user_id', $teamMember);
+                })
+                ->when($data['productName'], function ($query) use ($data) {
+                    $query->whereHas('order.items', function ($q) use ($data) {
+                        $q->where('product_id', $data['productName']);
+                    });
+                })
+                ->whereNotNull('time_started')
+                ->whereNotNull('time_end')
+                ->where('error', 1)
+                ->where('status_id', $printIssueStatusId),
 
-        $data['order_with_issues'] = [$onHoldStatusOrders,$printIssueOrders,$remakeReasonOrders];
+            // Remake Reason Orders
+            OrderLogs::whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
+                });
+            })
+                ->when($teamMember, function ($query) use ($teamMember) {
+                    return $query->where('user_id', $teamMember);
+                })
+                ->when($data['productName'], function ($query) use ($data) {
+                    $query->whereHas('order.items', function ($q) use ($data) {
+                        $q->where('product_id', $data['productName']);
+                    });
+                })
+                ->whereNotNull('time_started')
+                ->whereNotNull('time_end')
+                ->where('status_id', $remakeReasonStatusId)
+        ];
 
-//        $results = OrderLogs::select('order_id', DB::raw('SUM(time_spent) as total_time_spent'))
-//            ->whereNotNull('time_started')
-//            ->whereNotNull('time_end')
-//            ->groupBy('order_id')
-//            ->pluck('total_time_spent');
-//        dd($results);
+        // Apply date range filter to all three queries
+        if ($hasDateRange) {
+            foreach ($reprintingOrdersQueries as &$query) {
+                $query->whereBetween('time_end', [$data['start_date'], $data['end_date']]);
+            }
+        }
 
+        // Execute each query and store results
+        $data['reprinting_orders'] = [
+            $reprintingOrdersQueries[0]->count(),
+            $reprintingOrdersQueries[1]->count(),
+            $reprintingOrdersQueries[2]->count()
+        ];
 
-        $error_count_per_user = $this->getErrorCountPerUSer($data['teamMember']);
-//        dd($error_count_per_user);
+        // Call the modified getErrorCountPerUser method with date range
+        $data['error_count_per_user'] = $this->getErrorCountPerUser(
+            $data['teamMember'],
+            $data['productName'],
+            $data['status_id'],
+            $completed_id,
+            $hasDateRange ? $data['start_date'] : null,
+            $hasDateRange ? $data['end_date'] : null
+        );
 
-
-
-
-
-        return view('admin.reports.reports',$data);
+        return view('admin.reports.reports', $data);
     }
     public function compare(Request $request){
+        $data['team_members'] = User::whereRoleId(2)->get();
+        $data['teamMember1'] = $request->input('team_member_1');
+        $data['teamMember2'] = $request->input('team_member_2');
+
+        $data['group_by'] = $request->input('group');
+        $data['date_range'] = $request->input('date_range');
+        $dates = explode(' - ', $data['date_range']);
+
+        // Parse start and end dates
+        $data['start_date'] = isset($dates[0]) ? Carbon::parse($dates[0])->startOfDay() : null;
+        $data['end_date'] = isset($dates[1]) ? Carbon::parse($dates[1])->endOfDay() : null;
 
 
-        return view('admin.reports.comparison');
+        // First, get all orders that have last_log with status_id = completed_status_id
+        $completed_status_id = OrderStatus::whereTitle('Completed')->pluck('id')->first();
+        $completedOrderIds = OrderLogs::whereHas('order', function ($query) use ($completed_status_id) {
+            $query->whereHas('last_log', function ($q) use ($completed_status_id) {
+                $q->where('status_id', $completed_status_id);
+            });
+        })
+            ->pluck('order_id')
+            ->unique();
+
+        $userIds = [$data['teamMember1'], $data['teamMember2']];
+        $users = User::whereIn('id', $userIds)->pluck('name', 'id');
+        $data['employees'] = array_map(function ($id) use ($users) {
+            return $users[$id] ?? null;
+        }, $userIds);
+
+
+        $data['performanceData'] = $this->getUserPerformanceComparison(
+            $completedOrderIds,
+            $data['teamMember1'],
+            $data['teamMember2'],
+            $data['start_date'],
+            $data['end_date'],
+            $data['group_by'],
+        );
+//        dd($data['performanceData']);
+
+        // Format data for the chart
+//        $chartData = $this->formatDataForChart($performanceData);
+
+//        $result = [
+//            'chart_data' => $chartData,
+//            'users' => [
+//                'user1' => [
+//                    'id' => $data['teamMember1'],
+//                    'name' => $performanceData['user1']['name'],
+//                    'total_orders' => array_sum($performanceData['user1']['counts']),
+//                    'avg_per_day' => round(array_sum($performanceData['user1']['counts']) / count($performanceData['dates']), 2)
+//                ],
+//                'user2' => [
+//                    'id' => $data['teamMember2'],
+//                    'name' => $performanceData['user2']['name'],
+//                    'total_orders' => array_sum($performanceData['user2']['counts']),
+//                    'avg_per_day' => round(array_sum($performanceData['user2']['counts']) / count($performanceData['dates']), 2)
+//                ]
+//            ]
+//        ];
+
+
+        // First, get all orders that have last_log with status_id = 21
+//        $completedOrderIds = OrderLogs::whereHas('order', function ($query) use ($completed_status_id) {
+//            $query->whereHas('last_log', function ($q) use ($completed_status_id) {
+//                $q->where('status_id', $completed_status_id);
+//            });
+//        })
+//            ->pluck('order_id')
+//            ->unique();
+//
+//        // Get date range for the query
+//        $dates = $this->generateDateRange($data['start_date'], $data['end_date'],$data['group_by']);
+//
+//        // Initialize result array with dates and zero counts
+//        $result = [
+//            'dates' => $dates,
+//            'user1' => [
+//                'name' => User::find($data['teamMember1'])->name ?? "User {$data['teamMember1']}",
+//                'counts' => array_fill(0, count($dates), 0)
+//            ],
+//            'user2' => [
+//                'name' => User::find($data['teamMember2'])->name ?? "User {$data['teamMember2']}",
+//                'counts' => array_fill(0, count($dates), 0)
+//            ]
+//        ];
+//
+//        // Query for user 1
+//        $user1Data = $this->getUserOrderCounts($data['teamMember1'], $completedOrderIds, $data['start_date'], $data['end_date'],$data['group_by']);
+//
+//        // Query for user 2
+//        $user2Data = $this->getUserOrderCounts($data['teamMember2'], $completedOrderIds, $data['start_date'], $data['end_date'],$data['group_by']);
+//
+//        // Fill in the actual counts
+//        foreach ($dates as $index => $date) {
+//            $formattedDate = $date->format('Y-m-d');
+//            $result['user1']['counts'][$index] = $user1Data[$formattedDate] ?? 0;
+//            $result['user2']['counts'][$index] = $user2Data[$formattedDate] ?? 0;
+//        }
+//
+//        $data['data'] =  $result;
+
+
+
+        // Get time metrics for both users
+        $user1TimeData = $this->getUserTimeData($data['teamMember1'], $completedOrderIds, $data['start_date'], $data['end_date'], $data['group_by']);
+        $user2TimeData = $this->getUserTimeData($data['teamMember2'], $completedOrderIds, $data['start_date'], $data['end_date'], $data['group_by']);
+        $dates = $this->generateDateRange($data['start_date'], $data['end_date'], $data['group_by']);
+        // Fill in the dates and actual time metrics
+        foreach ($dates as $index => $date) {
+            $dateKey = $this->getDateKeyForGrouping($date, $data['group_by']);
+            $result['dates'][] = $dateKey;
+            $result['user1']['total_time'][$index] = $user1TimeData[$dateKey]['total_time'] ?? 0;
+            $result['user1']['avg_time'][$index] = $user1TimeData[$dateKey]['avg_time'] ?? 0;
+            $result['user2']['total_time'][$index] = $user2TimeData[$dateKey]['total_time'] ?? 0;
+            $result['user2']['avg_time'][$index] = $user2TimeData[$dateKey]['avg_time'] ?? 0;
+        }
+        $data['timeData'] = $result;
+
+
+//        dd($data['timeData']);
+        return view('admin.reports.comparison',$data);
     }
+    private function getUserPerformanceComparison($completedOrderIds, $user1_id, $user2_id, $start_date, $end_date, $group_by = 'daily')
+    {
+        // Get date range for the query based on grouping
+        $dates = $this->generateDateRange($start_date, $end_date, $group_by);
+
+
+
+        // Initialize result array with dates and zero counts
+        $result = [
+            'dates' => [],
+            'group_by' => $group_by,
+            'user1' => [
+//                'name' => $user1Name,
+                'counts' => array_fill(0, count($dates), 0)
+            ],
+            'user2' => [
+//                'name' => $user2Name,
+                'counts' => array_fill(0, count($dates), 0)
+            ]
+        ];
+
+        // Query for user 1
+        $user1Data = $this->getUserOrderCounts($user1_id, $completedOrderIds, $start_date, $end_date, $group_by);
+
+        // Query for user 2
+        $user2Data = $this->getUserOrderCounts($user2_id, $completedOrderIds, $start_date, $end_date, $group_by);
+
+        // Fill in the actual counts based on the grouping
+        foreach ($dates as $index => $date) {
+            $dateKey = $this->getDateKeyForGrouping($date, $group_by);
+            $result['dates'][] = $dateKey;
+            $result['user1']['counts'][$index] = $user1Data[$dateKey] ?? 0;
+            $result['user2']['counts'][$index] = $user2Data[$dateKey] ?? 0;
+        }
+        return $result;
+    }
+
 
     public function dashboard(Request $request)
     {
@@ -325,107 +675,356 @@ class DashboardController extends Controller
         ));
     }
 
-    function getErrorCountPerUser($teamMember)
+    function getErrorCountPerUser($teamMember, $product_id, $status_id, $completed_id, $startDate = null, $endDate = null)
     {
-        // Determine the range for the last 12 months (from the current month back to 12 months ago)
-        $endDate = now();  // Current date (e.g., November 2024)
-        $startDate = now()->subMonths(12);  // 12 months before the current date (e.g., November 2023)
+        // If no date range specified, use last 12 months
+        if (!$startDate || !$endDate) {
+            $endDate = now();  // Current date
+            $startDate = now()->copy()->subMonths(12);  // 12 months before the current date
+        }
 
-        // Retrieve data for the specified user(s) with error counts over the last 12 months
+        $totalErrors = 0;
+
+        // Modified to include date range filter
         $dataResult = OrderLogs::when($teamMember, function ($query) use ($teamMember) {
             return $query->where('user_id', $teamMember);
         })
+            ->when($product_id, function ($query) use ($product_id) {
+                $query->whereHas('order.items', function ($q) use ($product_id) {
+                    $q->where('product_id', $product_id);
+                });
+            })
+            ->whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
+                });
+            })
+            ->when($status_id, function ($query) use ($status_id) {
+                return $query->where('status_id', $status_id);
+            })
+            ->with('user')
             ->whereNotNull('time_started')
             ->whereNotNull('time_end')
-            ->where('error', 1)  // Only select orders where error = 1
-            ->whereBetween('time_started', [$startDate->startOfMonth(), $endDate->endOfMonth()])  // Last 12 months
+            ->where('error', 1)
+            ->whereBetween('time_end', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->selectRaw('
-            user_id,
-            COUNT(DISTINCT order_id) as order_count,
-            YEAR(time_started) as year,
-            MONTH(time_started) as month
-        ')
+        user_id,
+        COUNT(DISTINCT order_id) as order_count,
+        YEAR(time_started) as year,
+        MONTH(time_started) as month
+    ')
             ->groupBy('user_id', 'year', 'month')
             ->orderBy('user_id')
             ->orderBy('year', 'desc')
             ->orderBy('month', 'desc')
             ->get();
 
-        // Prepare the data in a more usable format
+        // Format data by user and month
         $formattedData = [];
 
         foreach ($dataResult as $entry) {
             $userId = $entry->user_id;
+            $userName = $entry->user->name;
             $year = $entry->year;
             $month = $entry->month;
             $orderCount = $entry->order_count;
-
-            // Initialize user's data array if not already set
             if (!isset($formattedData[$userId])) {
                 $formattedData[$userId] = [
                     'user_id' => $userId,
+                    'userName' => $userName,
                     'orders' => []
                 ];
             }
-
-            // Set the order count for the given month (1 to 12)
-            $formattedData[$userId]['orders'][$month] = $orderCount;
+            $totalErrors += $orderCount;
+            $formattedData[$userId]['orders']["$year-$month"] = $orderCount;
         }
 
-        // Define the months array (1 to 12 mapped to month names)
-        $monthsArray = [
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December',
-        ];
-
-        // Get the last 12 months dynamically in reverse order
+        // Calculate months array based on date range
+        $monthDiff = $startDate->diffInMonths($endDate) + 1; // +1 to include both start and end months
         $last12Months = [];
-        for ($i = 0; $i < 12; $i++) {
-            $month = $endDate->subMonth()->month;  // Get the month in reverse order (starting from the last month)
-            $last12Months[] = [
-                'month' => $month,
-                'name' => $monthsArray[$month],  // Get the month name
+        $monthLabels = [];
+        $dateCursor = $startDate->copy()->startOfMonth();
+
+        for ($i = 0; $i < $monthDiff; $i++) {
+            $key = $dateCursor->format('Y-n'); // E.g., 2024-5
+            $last12Months[] = $key;
+            $monthLabels[] = $dateCursor->format('F'); // E.g., May
+            $dateCursor->addMonth();
+        }
+
+        // Final data format
+        $finalData = [];
+        $userIds = [];
+
+        foreach ($formattedData as $userId => $userData) {
+            $userOrders = [];
+
+            foreach ($last12Months as $monthKey) {
+                $userOrders[] = $userData['orders'][$monthKey] ?? 0;
+            }
+
+            $finalData[] = $userOrders;
+            $userIds[] = $userData['userName'];
+        }
+
+        return [
+            'data' => $finalData,
+            'months' => $monthLabels,     // Month names for x-axis
+            'users' => $userIds,           // User IDs for labeling the graph
+            'totalErrors' => $totalErrors  // Total error count
+        ];
+    }
+
+    /**
+     * Get order counts for a specific user based on time grouping
+     * Count orders where time_started and time_end are on the same day
+     *
+     * @param int $user_id User ID
+     * @param Collection $completedOrderIds Collection of order IDs
+     * @param string $start_date Start date
+     * @param string $end_date End date
+     * @param string $group_by Group by option (daily, weekly, monthly, yearly)
+     * @return array Order counts grouped by time period
+     */
+    private function getUserOrderCounts($user_id, $completedOrderIds, $start_date, $end_date, $group_by = 'daily')
+    {
+        $query = OrderLogs::whereIn('order_id', $completedOrderIds);
+            // Filter by user_id only if a valid user ID is provided
+            if (!empty($user_id)) {
+                $query->where('user_id', $user_id);
+            } else {
+                // If user_id is empty, get data for all team members (role_id = 2)
+                $teamMemberIds = User::whereRoleId(2)->pluck('id')->toArray();
+                $query->whereIn('user_id', $teamMemberIds);
+            }
+            $query->whereNotNull('time_started')
+            ->whereNotNull('time_end')
+            // Only count logs where time_started and time_end are on the same day
+            ->whereRaw('DATE(time_started) = DATE(time_end)')
+            ->whereBetween(DB::raw('DATE(time_started)'), [$start_date, $end_date]);
+
+        // Define the appropriate date format and grouping based on group_by parameter
+        switch ($group_by) {
+            case 'weekly':
+                $dateFormat = "DATE_FORMAT(time_started, '%Y-%u')"; // Year-Week format (ISO week)
+                $labelFormat = 'yearweek';
+                break;
+            case 'monthly':
+                $dateFormat = "DATE_FORMAT(time_started, '%Y-%m')"; // Year-Month format
+                $labelFormat = 'yearmonth';
+                break;
+            case 'yearly':
+                $dateFormat = "YEAR(time_started)"; // Year format
+                $labelFormat = 'year';
+                break;
+            case 'daily':
+            default:
+                $dateFormat = "DATE(time_started)"; // Daily format
+                $labelFormat = 'date';
+                break;
+        }
+
+        $counts = $query->select(DB::raw("{$dateFormat} as {$labelFormat}"), DB::raw('COUNT(DISTINCT order_id) as order_count'))
+            ->groupBy($labelFormat)
+            ->pluck('order_count', $labelFormat)
+            ->toArray();
+
+        return $counts;
+    }
+
+    /**
+     * Generate array of Carbon objects between two dates based on group_by parameter
+     *
+     * @param string $start_date Start date
+     * @param string $end_date End date
+     * @param string $group_by Group by option (daily, weekly, monthly, yearly)
+     * @return array Array of Carbon objects
+     */
+    private function generateDateRange($start_date, $end_date, $group_by = 'daily')
+    {
+        $start = Carbon::parse($start_date);
+        $end = Carbon::parse($end_date);
+
+        switch ($group_by) {
+            case 'weekly':
+                $start = $start->startOfWeek();
+                $end = $end->endOfWeek()->startOfDay();
+                $interval = 'week';
+                break;
+            case 'monthly':
+                $start = $start->startOfMonth();
+                $end = $end->endOfMonth()->startOfDay();
+                $interval = 'month';
+                break;
+            case 'yearly':
+                $start = $start->startOfYear();
+                $end = $end->endOfYear()->startOfDay();
+                $interval = 'year';
+                break;
+            case 'daily':
+            default:
+                $start = $start->startOfDay();
+                $end = $end->startOfDay();
+                $interval = 'day';
+                break;
+        }
+
+        $dates = [];
+        $currentDate = $start->copy();
+
+        while ($currentDate->lte($end)) {
+            $dates[] = $currentDate->copy();
+            $currentDate->add(1, $interval);
+        }
+
+        return $dates;
+    }
+
+    /**
+     * Get the appropriate key for the current date based on grouping
+     *
+     * @param Carbon $date Date to format
+     * @param string $group_by Group by option
+     * @return string Formatted date key
+     */
+    private function getDateKeyForGrouping(Carbon $date, $group_by)
+    {
+        switch ($group_by) {
+            case 'weekly':
+                return $date->format('Y-W'); // Year-Week format
+            case 'monthly':
+                return $date->format('Y-m'); // Year-Month format
+            case 'yearly':
+                return $date->format('Y'); // Year format
+            case 'daily':
+            default:
+                return $date->format('Y-m-d'); // Default daily format
+        }
+    }
+
+    /**
+     * Format data for chart display based on grouping
+     *
+     * @param array $performanceData Performance data from getUserPerformanceComparison
+     * @return array Chart-ready data
+     */
+    private function formatDataForChart($performanceData)
+    {
+//        dd($performanceData );
+        $chartData = [];
+        $groupBy = $performanceData['group_by'] ?? 'daily';
+
+        foreach ($performanceData['dates'] as $index => $date) {
+            // Format the date label based on grouping
+            $dateLabel = $this->formatDateForDisplay($date, $groupBy);
+
+            $chartData[] = [
+                'date' => $dateLabel,
+                'rawDate' => $this->getDateKeyForGrouping($date, $groupBy),
+                'user1Orders' => $performanceData['user1']['counts'][$index],
+                'user2Orders' => $performanceData['user2']['counts'][$index],
+                'user1Name' => $performanceData['user1']['name'],
+                'user2Name' => $performanceData['user2']['name'],
             ];
         }
 
-        // Reverse the array so it starts from the most recent month
-        $last12Months = array_reverse($last12Months);
+        return $chartData;
+    }
 
-        // Extract just the months array for the final result
-        $months = array_column($last12Months, 'name');
+    /**
+     * Format date for display based on grouping
+     *
+     * @param Carbon $date Date to format
+     * @param string $group_by Group by option
+     * @return string Formatted date for display
+     */
+    private function formatDateForDisplay(Carbon $date, $group_by)
+    {
+        switch ($group_by) {
+            case 'weekly':
+                $weekStart = $date->copy()->startOfWeek()->format('M d');
+                $weekEnd = $date->copy()->endOfWeek()->format('M d, Y');
+                return "{$weekStart} - {$weekEnd}";
+            case 'monthly':
+                return $date->format('F Y');
+            case 'yearly':
+                return $date->format('Y');
+            case 'daily':
+            default:
+                return $date->format('Y-m-d');
+        }
+    }
 
-        // Finalize the data for each user (orders in the format [month1, month2, ..., month12])
-        $finalData = [];
-        foreach ($formattedData as $userData) {
-            $userId = $userData['user_id'];
-            $orders = $userData['orders'];
 
-            // Create an array for the 12 months, filling missing months with 0
-            $userOrdersForGraph = [];
-            foreach ($last12Months as $monthData) {
-                $month = $monthData['month'];  // Get the month number (1-12)
-                $userOrdersForGraph[] = $orders[$month] ?? 0;  // Get order count or 0 if missing
+
+    /**
+     * Get time spent data for a specific user on completed orders
+     *
+     * @param int $user_id User ID
+     * @param array $completedOrderIds Array of completed order IDs
+     * @param Carbon $start_date Start date
+     * @param Carbon $end_date End date
+     * @param string $group_by Group by option (daily, weekly, monthly, yearly)
+     * @return array Time data grouped by date
+     */
+    private function getUserTimeData($user_id, $completedOrderIds, $start_date, $end_date, $group_by = 'daily')
+    {
+        $query = OrderLogs::whereIn('order_id', $completedOrderIds);
+            // Filter by user_id only if a valid user ID is provided
+            if (!empty($user_id)) {
+                $query->where('user_id', $user_id);
+            } else {
+                $teamMemberIds = User::whereRoleId(2)->pluck('id')->toArray();
+                $query->whereIn('user_id', $teamMemberIds);
             }
+        $query->whereNotNull('time_started')
+            ->whereNotNull('time_end')
+            // Only count logs where time_started and time_end are present
+            ->whereRaw('time_end > time_started')
+            ->whereBetween(DB::raw('DATE(time_started)'), [$start_date, $end_date]);
 
-            // Add the user orders for the graph
-            $finalData[] = $userOrdersForGraph;
+        // Define the appropriate date format and grouping based on group_by parameter
+        switch ($group_by) {
+            case 'weekly':
+                $dateFormat = "DATE_FORMAT(time_started, '%Y-%u')"; // Year-Week format (ISO week)
+                $labelFormat = 'yearweek';
+                break;
+            case 'monthly':
+                $dateFormat = "DATE_FORMAT(time_started, '%Y-%m')"; // Year-Month format
+                $labelFormat = 'yearmonth';
+                break;
+            case 'yearly':
+                $dateFormat = "YEAR(time_started)"; // Year format
+                $labelFormat = 'year';
+                break;
+            case 'daily':
+            default:
+                $dateFormat = "DATE(time_started)"; // Daily format
+                $labelFormat = 'date';
+                break;
         }
 
-        // Return the final data which includes the user order counts for each month
-        return [
-            'data' => $finalData,  // Array of user order counts for the last 12 months
-            'months' => $months,    // Array of month names (from the most recent month)
-        ];
+        // Calculate time difference in minutes between time_started and time_end
+        $timeData = $query->select(
+            DB::raw("{$dateFormat} as {$labelFormat}"),
+            DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_started, time_end)) as total_minutes'),
+            DB::raw('AVG(TIMESTAMPDIFF(MINUTE, time_started, time_end)) as avg_minutes'),
+            DB::raw('COUNT(DISTINCT order_id) as order_count')
+        )
+            ->groupBy($labelFormat)
+            ->get();
+
+        // Format the results into an associative array
+        $formattedData = [];
+        foreach ($timeData as $item) {
+            $formattedData[$item->{$labelFormat}] = [
+                'total_time' => round($item->total_minutes, 2),
+                'avg_time' => round($item->avg_minutes, 2),
+                'order_count' => $item->order_count
+            ];
+        }
+        return $formattedData;
     }
+
 
 }

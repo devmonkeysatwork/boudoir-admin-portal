@@ -327,19 +327,22 @@ class AdminController extends Controller
             $order->status_id = $request->edit_status;
             $order->save();
 
-//            $lastLog = Orders::whereId($order->id)->with(['last_log'])->first();
-            $lastLog = OrderLogs::whereOrderId($order->order_id)->orderBy('id','DESC')->first();
-            if(!$lastLog){
-                return response()->json([
-                    'status' => 400,
-                    'message' => 'No activity so far on this order'
-                ]);
-            }
             $engravingId = OrderStatus::where('status_name',OrderStatus::ENGRAVING)->pluck('id')->first();
-            if($engravingId != $request->edit_status){
-                $lastLog->error = 1;
+            //If there is sub status for on-hold or any other then it should mark the previous step as an error occurred
+            if($request->edit_sub_status){
+                //            $lastLog = Orders::whereId($order->id)->with(['last_log'])->first();
+                $lastLog = OrderLogs::whereOrderId($order->order_id)->orderBy('id','DESC')->first();
+                if(!$lastLog){
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'No activity so far on this order'
+                    ]);
+                }
+                if($engravingId != $request->edit_status){
+                    $lastLog->error = 1;
+                }
+                $lastLog->save();
             }
-            $lastLog->save();
 
             $orderStatus = new OrderLogs();
             $orderStatus->order_id = $order->order_id;

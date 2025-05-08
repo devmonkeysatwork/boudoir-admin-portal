@@ -210,10 +210,10 @@
             <div class="orders-top">
                 <h2>List of Orders</h2>
                 <div class="orders-filter">
-                    <div class="orders-search">
-                        <input type="text" id="searchInput" placeholder="Search">
-                        <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
-                    </div>
+{{--                    <div class="orders-search">--}}
+{{--                        <input type="text" id="searchInput" placeholder="Search">--}}
+{{--                        <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
+{{--                    </div>--}}
                     <div class="sort-dropdown">
                         <select class="sort-select form-select pe-5" id="order_sort">
                             <option value="" disabled selected>Sort By</option>
@@ -290,25 +290,22 @@
                                     @endif
                                 </td>
                                 <td>
+                                    @if(Auth::user()->role_id == 1)
+                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
+                                        </button>
+                                    @endif
 
+                                    @if(isset($orderLog) && isset($orderLog->order_id) && $orderLog->order_id == $order->order_id)
+                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
+                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
+                                        </button>
+                                    @else
+                                        <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                            Start order
+                                        </button>
+                                    @endif
                                 </td>
-{{--                                <td>--}}
-{{--                                    @if(Auth::user()->role_id == 1)--}}
-{{--                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">--}}
-{{--                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">--}}
-{{--                                        </button>--}}
-{{--                                    @endif--}}
-
-{{--                                    @if(isset($orderLog) && $orderLog->order_id == $order->order_id)--}}
-{{--                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">--}}
-{{--                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">--}}
-{{--                                        </button>--}}
-{{--                                    @else--}}
-{{--                                        <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">--}}
-{{--                                            Start order--}}
-{{--                                        </button>--}}
-{{--                                    @endif--}}
-{{--                                </td>--}}
                             </tr>
                         @endforeach
                     @endif
@@ -622,15 +619,15 @@
                 });
             }
 
-            $('#searchInput').on('keyup', function() {
-                var query = $(this).val();
-                performSearch(query);
-                if(query != ''){
-                    $('#order_paginations').hide();
-                }else{
-                    $('#order_paginations').show();
-                }
-            });
+            // $('#searchInput').on('keyup', function() {
+            //     var query = $(this).val();
+            //     performSearch(query);
+            //     if(query != ''){
+            //         $('#order_paginations').hide();
+            //     }else{
+            //         $('#order_paginations').show();
+            //     }
+            // });
         });
         const order_id = '{{$order_id??null}}';
         $(document).ready(function() {

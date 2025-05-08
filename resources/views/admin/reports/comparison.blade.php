@@ -1,72 +1,97 @@
 @extends('layouts.app')
-
+<link rel="stylesheet" href="{{asset('assets/css/date-range.css')}}">
 @section('content')
 
-    <div class="bg-white rounded-5 py-3 px-4 w-100">
+    <div class="row report_page_links my-3 justify-content-center align-items-center">
+        <div class="col-lg-6">
+            <h1 class="fs-32">Production Reports</h1>
+        </div>
+        <div class="col-lg-6">
+            <div class="d-flex gap-3 justify-content-end">
+                <a href="{{route('dashboard.reports')}}" class="create-btn {{ request()->routeIs('dashboard.reports') ? 'active_url' : '' }}">Order Reports</a>
+                <a href="{{route('dashboard.compare')}}" class="create-btn {{ request()->routeIs('dashboard.compare') ? 'active_url' : '' }}">Production Reports</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-5 w-100">
         <div class="row justify-content-between">
-            <div class="col-3 mb-3">
-                <h2 class="fs-32">Production Reports</h2>
-            </div>
-            <div class="col-6 mb-3">
-                <div class="d-flex gap-3 flex-row justify-content-end align-items-center">
-                    <button class="btn">
-                        <img src="{{asset('icons/print.svg')}}" alt="">
-                        Print
-                    </button>
-                    <button class="btn">
-                        <img src="{{asset('icons/export.svg')}}" alt="">
-                        Export
-                    </button>
-                </div>
-            </div>
-            <div class="col-12 mb-3">
-                <div class="row justify-content-between">
-                    <div class="col-5">
-                        <div class="row">
-                            <div class="col-6">
-                                <label for="team_member_1">Team Member 1</label>
-                                <select class="form-select" aria-label="Default select example" id="team_member_1">
-                                    <option selected>All</option>
-                                </select>
+{{--            <div class="col-6 mb-3">--}}
+{{--                <h2 class="fs-32">Production Reports</h2>--}}
+{{--            </div>--}}
+{{--            <div class="col-6 mb-3">--}}
+{{--                <div class="d-flex gap-3 flex-row justify-content-end align-items-center">--}}
+{{--                    <button class="btn">--}}
+{{--                        <img src="{{asset('icons/print.svg')}}" alt="">--}}
+{{--                        Print--}}
+{{--                    </button>--}}
+{{--                    <button class="btn">--}}
+{{--                        <img src="{{asset('icons/export.svg')}}" alt="">--}}
+{{--                        Export--}}
+{{--                    </button>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+            <div class="col-12 my-3">
+                <form action="{{route('dashboard.compare')}}" method="GET" id="report_filter_form">
+                    <div class="row justify-content-between">
+                        <div class="col-5">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label for="team_member_1">Team Member 1</label>
+                                    <select class="form-select" aria-label="Default select example" name="team_member_1" id="team_member_1">
+                                        <option selected value="">All</option>
+                                        @foreach($team_members as $team_member)
+                                            <option {{isset($teamMember1) && $teamMember1 == $team_member->id?'Selected':''}} value="{{$team_member->id}}">{{$team_member->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label for="team_member_2">Team Member 2</label>
+                                    <select class="form-select" aria-label="Default select example" name="team_member_2" id="team_member_2">
+                                        <option selected value="">All</option>
+                                        @foreach($team_members as $team_member)
+                                            <option {{isset($teamMember2) && $teamMember2 == $team_member->id?'Selected':''}} value="{{$team_member->id}}">{{$team_member->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-6">
-                                <label for="team_member_2">Team Member 2</label>
-                                <select class="form-select" aria-label="Default select example" id="team_member_2">
-                                    <option selected>All</option>
-                                </select>
+                        </div>
+                        <div class="col-6">
+                            <div class="row">
+                                <div class="col-4">
+                                    <label for="date_select">Date Range:</label>
+                                    <input type="text" id="date-range" class="form-control" name="date_range">
+                                </div>
+                                <div class="col-4">
+                                    <label for="group_select">Group By:</label>
+                                    <select class="form-select" aria-label="Default select example" id="group_select" name="group">
+                                        <option {{isset($group_by) && $group_by == 'daily'?'Selected':''}} value="daily">Daily</option>
+                                        <option {{isset($group_by) && $group_by == 'weekly'?'Selected':''}} value="weekly">Weekly</option>
+                                        <option {{isset($group_by) && $group_by == 'monthly'?'Selected':''}} value="monthly">Monthly</option>
+                                        <option {{isset($group_by) && $group_by == 'yearly'?'Selected':''}} value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <label for="compare_based">Compare</label>
+                                    <select class="form-select" aria-label="Default select example" id="compare_based" name="comparison">
+                                        <option selected>Productivity</option>
+                                        <option>Efficiency</option>
+                                        <option>Quality</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="row">
-                            <div class="col-4">
-                                <label for="date_select">Date Range:</label>
-                                <input type="date" class="form-control">
-                            </div>
-                            <div class="col-4">
-                                <label for="group_select">Group By:</label>
-                                <select class="form-select" aria-label="Default select example" id="group_select">
-                                    <option selected>All</option>
-                                </select>
-                            </div>
-                            <div class="col-4">
-                                <label for="compare_based">Compare</label>
-                                <select class="form-select" aria-label="Default select example" id="compare_based">
-                                    <option selected>Productivity</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 
     <div class="row my-5">
 
-        <div class="col-12 mt-5">
+        <div class="col-12">
             <div class="bg-white rounded-5 px-4">
-                <h2 class="p12 pt-4 fw-bold d-block">Total Orders Completed per Day by Employees</h2>
+                <h2 class="p12 pt-4 fw-bold d-block text-capitalize">{{$performanceData['group_by']??'Day'}} orders completed by Employees</h2>
                 <div class="">
                     <div id="chart"></div>
                 </div>
@@ -92,15 +117,41 @@
 
 @endsection
 @section('footer_scripts')
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="{{asset('assets/js/date-range.js')}}"></script>
     <script src="{{asset('assets/js/apexCharts.js')}}"></script>
     <script>
+
+        $(document).ready(function() {
+            var dateRangeStr = '{{$date_range??""}}';
+            if (dateRangeStr) {
+                var dates = dateRangeStr.split(' - ');
+                var startDate = moment(dates[0], 'MM/DD/YYYY');
+                var endDate = moment(dates[1], 'MM/DD/YYYY');
+            } else {
+                var startDate = moment().startOf('day');
+                var endDate = moment().endOf('day');
+            }
+            $('#date-range').daterangepicker({
+                opens: 'left',
+                startDate: startDate,
+                endDate: endDate,
+            }, function(start, end, label) {
+                $(this).closest('form').submit();
+            });
+        });
+
+        $('#report_filter_form select').on('change',function (){
+            $(this).closest('form').submit();
+        })
+        const comparison_data = @json($performanceData??[]);
         var options = {
             series: [{
-                name: 'Employee One',
-                data: [4,6,2,8,6,9,1]
+                name: '{{$employees[0]??'All'}}',
+                data: comparison_data.user1.counts
             }, {
-                name: 'Employee two',
-                data: [5,10,6,3,2,7,5]
+                name: '{{$employees[1]??'All'}}',
+                data: comparison_data.user2.counts
             }],
             chart: {
                 type: 'bar',
@@ -123,13 +174,13 @@
             },
             xaxis: {
                 title:{
-                    text: 'Day of the Week'
+                    text: comparison_data.group_by + ' comparison'
                 },
-                categories: ['Mon','Tue','Wed','Thur','Fri','Sat','Sun'],
+                categories: comparison_data.dates,
             },
             yaxis: {
                 title: {
-                    text: '# of Albums'
+                    text: 'Orders completed'
                 }
             },
             fill: {
@@ -148,20 +199,23 @@
         var chart = new ApexCharts(document.querySelector("#chart"), options);
         chart.render();
 
+
+
+        const timeData = @json($timeData??[]);
         var options2 = {
             series: [{
-                name: 'Employee One',
-                data: [31, 40, 28, 51, 42, 109, 100]
+                name: '{{$employees[0]??'All'}}',
+                data: timeData.user1.avg_time
             }, {
-                name: 'Employee Two',
-                data: [11, 32, 45, 32, 34, 52, 41]
+                name: '{{$employees[1]??'All'}}',
+                data: timeData.user2.avg_time
             }],
             chart: {
                 height: 350,
                 type: 'area'
             },
             title: {
-                text: 'Avg Time Spent',
+                text: 'Avg Time Spent(minutes)',
                 align: 'left'
             },
             dataLabels: {
@@ -171,13 +225,7 @@
                 curve: 'smooth'
             },
             xaxis: {
-                type: 'datetime',
-                categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
-            },
-            tooltip: {
-                x: {
-                    format: 'dd/MM/yy HH:mm'
-                },
+                categories: timeData.dates
             },
             colors: ['#8D87CE', '#BD7F7F']
         };
@@ -187,11 +235,11 @@
 
         var options3 = {
             series: [{
-                name: 'Employee One',
-                data: [400,250,378,567,430,390,400]
-            },{
-                name: 'Employee Two',
-                data: [210,350,450,510,530,360,310]
+                name: '{{$employees[0]??'All'}}',
+                data: timeData.user1.total_time
+            }, {
+                name: '{{$employees[1]??'All'}}',
+                data: timeData.user2.total_time
             }],
             chart: {
                 height: 350,
@@ -207,7 +255,7 @@
                 curve: 'straight'
             },
             title: {
-                text: 'Total Time Spent',
+                text: 'Total Time Spent(minutes)',
                 align: 'left'
             },
             grid: {
@@ -217,7 +265,7 @@
                 },
             },
             xaxis: {
-                categories: ['Mon','Tue','Wed','Thur','Fri','Sat','Sun'],
+                categories: timeData.dates,
                 lines: {
                     show: true // Enable x-axis lines
                 }

@@ -1,4 +1,4 @@
-<table class="table table-bordered">
+<table class="table table-bordered tablesorter">
     <thead>
     <tr>
         <th>Order ID</th>

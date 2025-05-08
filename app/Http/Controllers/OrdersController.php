@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Picqer\Barcode\BarcodeGeneratorJPG;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -119,6 +120,10 @@ class OrdersController extends Controller
      */
     public function store(Request $request)
     {
+        if(!$this->authenticateToken($request)){
+            return response()->json(['message' => 'You are not authorized.'], 401);
+        }
+
         try {
             DB::beginTransaction();
             $production_days = 0;
@@ -287,6 +292,20 @@ class OrdersController extends Controller
         }
 
         return $currentDate;
+    }
+
+    private function authenticateToken($request){
+        $key = 'Authorization';
+        $header = $request->header($key, '');
+        $token = '';
+        if (Str::of($header)->startsWith('Bearer')) {
+            $token = Str::of($header)->substr(7);
+            $tokenValid = hash_equals(env('TOKEN'), $token->value());
+            if($tokenValid){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

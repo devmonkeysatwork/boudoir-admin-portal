@@ -37,7 +37,7 @@ class Orders extends Model
         return $this->hasMany(CostumerAddress::class,'order_id','id');
     }
     function logs(){
-        return $this->hasMany(OrderLogs::class,'order_id','order_id');
+        return $this->hasMany(OrderLogs::class,'order_id','order_id')->orderBy('time_started');
     }
     function last_log(){
         return $this->hasOne(OrderLogs::class, 'order_id', 'order_id')

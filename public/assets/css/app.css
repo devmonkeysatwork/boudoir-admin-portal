@@ -2262,10 +2262,29 @@ button.btn_loader.clicked:after{
     color: #000;
 }
 
-#childOrdersModal{
+#childOrdersModal .modal-dialog{
     max-width: 90%;
 }
 #childOrdersModal .modal-content{
     margin: 0px;
     width: 100%;
+}
+
+
+
+.report_page_links a{
+    display: inline-block;
+    width: 200px;
+    background-color: #BD7F7F;
+    text-decoration: none;
+    color: #FFF;
+    text-align: center;
+}
+.report_page_links a:hover,
+.report_page_links a.active_url{
+    background-color: #BD7F7F66;
+    color: #BD7F7F;
+}
+.daterangepicker .drp-calendar{
+    max-width: unset !important;
 }
