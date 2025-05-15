@@ -538,6 +538,100 @@ class DashboardController extends Controller
 //        dd($data['timeData']);
         return view('admin.reports.comparison',$data);
     }
+
+    public function efficiency(Request $request){
+        $data['team_members'] = User::whereRoleId(2)->get();
+        $data['teamMember1'] = $request->input('team_member_1');
+        $data['teamMember2'] = $request->input('team_member_2');
+
+        $data['group_by'] = $request->input('group');
+        $data['date_range'] = $request->input('date_range');
+        $dates = explode(' - ', $data['date_range']);
+
+        // Parse start and end dates
+        $startDate = $data['start_date'] = isset($dates[0]) ? Carbon::parse($dates[0])->startOfDay() : Carbon::now();
+        $endDate = $data['end_date'] = isset($dates[1]) ? Carbon::parse($dates[1])->endOfDay() : Carbon::now();
+
+
+        $all_remake_statuses = OrderStatus::where('title',OrderStatus::adminStatuses[2])->with('sub_status')->pluck('id')->first();
+        $all_remake_sub_statuses = SubStatus::where('status_id',$all_remake_statuses)->pluck('sub_status.id');
+
+
+        $teamMember = $data['teamMember1'] ?? null;
+        $completed_id = OrderStatus::whereTitle('Completed')->pluck('id')->first();
+
+        $dataResult = OrderLogs::where('status_id', $all_remake_statuses)
+            ->when($teamMember, function ($query) use ($teamMember) {
+                return $query->where('user_id', $teamMember);
+            })
+            ->whereHas('order', function ($query) use ($completed_id) {
+                $query->whereHas('last_log', function ($q) use ($completed_id) {
+                    $q->where('status_id', $completed_id);
+                });
+            })
+            ->whereNotNull('time_started')
+            ->whereNotNull('time_end')
+//            ->whereBetween('time_end', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->select(
+                'order_logs.user_id',
+                'order_logs.sub_status_id',
+                'order_logs.status_id',
+                DB::raw('(
+            SELECT prev.status_id
+            FROM order_logs prev
+            WHERE prev.id = (
+                SELECT MAX(ol.id)
+                FROM order_logs ol
+                WHERE ol.order_id = order_logs.order_id
+                AND ol.created_at < order_logs.created_at
+            )
+        ) AS previous_status_id'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('order_logs.user_id', 'order_logs.sub_status_id', 'order_logs.status_id', 'previous_status_id')
+            ->with('user')
+            ->with('sub_status')
+//            ->orderBy('order_logs.user_id')
+            ->orderBy('order_logs.sub_status_id')
+            ->orderBy('previous_status_id')
+            ->get();
+
+        $workstationIds = $dataResult->pluck('previous_status_id')->filter()->unique()->toArray();
+        $subStatusIds = $dataResult->pluck('sub_status_id')->filter()->unique()->toArray();
+        $statusTitles = OrderStatus::whereIn('id', $workstationIds)
+            ->pluck('status_name', 'id')
+            ->toArray();
+        $subStatusTitles = SubStatus::whereIn('id', $subStatusIds)
+            ->pluck('name', 'id')
+            ->toArray();
+        $graph = [];
+
+        foreach ($dataResult as $res) {
+            $statusKey = $res->previous_status_id;
+            $subStatusKey = $res->sub_status_id;
+
+            if (isset($statusTitles[$statusKey]) && isset($subStatusTitles[$subStatusKey])) {
+                $statusTitle = $statusTitles[$statusKey];
+                $subStatusTitle = $subStatusTitles[$subStatusKey];
+
+                if (!isset($graph[$statusTitle][$subStatusTitle])) {
+                    $graph[$statusTitle][$subStatusTitle] = 0;
+                }
+
+                $graph[$statusTitle][$subStatusTitle] += $res->count;
+            }
+        }
+
+        $data['workstations'] = $statusTitles;
+        $data['issues'] = $subStatusTitles;
+        $data['issues_count'] = $graph;
+
+//        dd($dataResult,$all_remake_statuses);
+
+        return view('admin.reports.comparison_efficiency',$data);
+    }
+
+
     private function getUserPerformanceComparison($completedOrderIds, $user1_id, $user2_id, $start_date, $end_date, $group_by = 'daily')
     {
         // Get date range for the query based on grouping

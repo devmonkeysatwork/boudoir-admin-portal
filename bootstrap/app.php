@@ -21,6 +21,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 return redirect('login');
             });
             $exceptions->render(function (Throwable $e, Request $request) {
+                if (
+                    $e instanceof \Illuminate\Auth\AuthenticationException ||
+                    $e instanceof \Illuminate\Validation\ValidationException ||
+                    $e instanceof \Illuminate\Session\TokenMismatchException ||
+                    $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                ) {
+                    return null;
+                }
+
+
                 \Illuminate\Support\Facades\Mail::to(env('SUPPORT_EMAIL'))->send(new \App\Mail\ExceptionReportEmail($e));
                 return response()->view('error.server_error', status: 500);
             });
