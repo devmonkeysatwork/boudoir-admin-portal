@@ -16,7 +16,17 @@
         <tr onclick="loadWorkstationDetails({{ $workstation->id }})">
             <td>{{ $workstation->status_name }}</td>
             <td>{{ $workstation->orders_count() }}</td>
-            <td>{{ round($workstation->time_spent,2) }}</td>
+{{--            <td>{{ round($workstation->time_spent,2) }}</td>--}}
+            <td>
+                <?php
+                $time_spent = $workstation->time_spent; // Assuming this is in hours as a decimal
+                $hours = floor($time_spent);
+                $minutes = floor(($time_spent - $hours) * 60);
+                $seconds = round((($time_spent - $hours) * 60 - $minutes) * 60);
+
+                echo "{$hours}h {$minutes}m {$seconds}s";
+                ?>
+            </td>
         </tr>
       @endforeach
     </tbody>

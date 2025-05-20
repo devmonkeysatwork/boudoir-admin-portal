@@ -21,7 +21,17 @@
                 <tr>
                     <td>{{ $teamMember->name }}</td>
                     <td>{{ $teamMember->order_count }}</td>
-                    <td>{{ $teamMember->total_time }}</td>
+{{--                    <td>{{ $teamMember->total_time }}</td>--}}
+                    <td>
+                        <?php
+                        $time_spent = $teamMember->total_time; // Assuming this is in hours as a decimal
+                        $hours = floor($time_spent);
+                        $minutes = floor(($time_spent - $hours) * 60);
+                        $seconds = round((($time_spent - $hours) * 60 - $minutes) * 60);
+
+                        echo "{$hours}h {$minutes}m {$seconds}s";
+                        ?>
+                    </td>
                     <td>
                         <button onclick="openUserWorkingStatusModal('{{$teamMember->id}}','{{$teamMember->name}}','{{$teamMember->product_status_id}}')">Edit</button>
                         <button onclick="loadTeamDetails({{ $teamMember->id }})">Details</button>

@@ -32,7 +32,7 @@
 {{--                </div>--}}
 {{--            </div>--}}
             <div class="col-12 my-3">
-                <form action="{{route('dashboard.compare')}}" method="GET" id="report_filter_form">
+                <form action="{{route('dashboard.quality')}}" method="GET" id="report_filter_form">
                     <div class="row justify-content-between">
                         <div class="col-5">
                             <div class="row">
@@ -123,15 +123,8 @@
     <script>
 
         $(document).ready(function() {
-            var dateRangeStr = '{{$date_range??""}}';
-            if (dateRangeStr) {
-                var dates = dateRangeStr.split(' - ');
-                var startDate = moment(dates[0], 'MM/DD/YYYY');
-                var endDate = moment(dates[1], 'MM/DD/YYYY');
-            } else {
-                var startDate = moment().startOf('day');
-                var endDate = moment().endOf('day');
-            }
+            var startDate = moment('{{$start_date}}', 'MM/DD/YYYY');
+            var endDate = moment('{{$end_date}}', 'MM/DD/YYYY');
             $('#date-range').daterangepicker({
                 opens: 'left',
                 startDate: startDate,
