@@ -94,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports', [DashboardController::class, 'reports'])->name('dashboard.reports');
     Route::get('/compare', [DashboardController::class, 'compare'])->name('dashboard.compare');
     Route::get('/efficiency', [DashboardController::class, 'efficiency'])->name('dashboard.efficiency');
+    Route::get('/quality', [DashboardController::class, 'quality'])->name('dashboard.quality');
 });
 
 //Route::get('/barcode-scanner', function () {

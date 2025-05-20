@@ -63,6 +63,22 @@
 
 @section('footer_scripts')
   <script>
+      function initDatatable(){
+          let table = new DataTable('#workers_area_modal', {
+              autoWidth: false,
+              columns: [
+                  {title: "#"},
+                  {title: "Order #"},
+                  {title: "Total time(hours)"}
+              ],
+              columnDefs: [
+                  {
+                      targets: -1,         // -1 targets the last column
+                      orderable: false     // Disable sorting on it
+                  }
+              ]
+          });
+      }
     function loadWorkstationDetails(workstationId) {
       // Update the modal title
       $('#workstationModal .modal-title').text('Workstation #' + workstationId);
@@ -72,10 +88,14 @@
           url: '/workstations/' + workstationId,
           method: 'GET',
           success: function(response) {
+              if ($.fn.DataTable.isDataTable('#workers_area_modal')) {
+                  $('#workers_area_modal').DataTable().clear().destroy();
+              }
               // Populate the modal with the response
               $('#workstationOrders').html(response.ordersHtml); // Assuming response has ordersHtml as HTML structure
               $('#orderCount').text('Showing 1-' + response.orderCount + ' of ' + response.orderCount); // Update count dynamically as needed
 
+              initDatatable();
               // Show the modal
               $('#workstationModal').show();
           },

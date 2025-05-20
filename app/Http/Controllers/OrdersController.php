@@ -52,7 +52,7 @@ class OrdersController extends Controller
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->first();
 
 
-        $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
+        $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status'])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');
@@ -79,7 +79,6 @@ class OrdersController extends Controller
             ->where('status_id','!=',$completedStatusId);
         $orders = $query->get();
 //        dd($orders);
-        $workstations = Workstations::all();
         if(Auth::user()->role_id == 1){
             $statuses = OrderStatus::whereNotIn('status_name',OrderStatus::adminStatuses)->get();
         }else{
@@ -103,7 +102,7 @@ class OrdersController extends Controller
             ->whereNull('time_end')
             ->first();
 //        dd($data);
-        return view('admin.orders',compact('orders', 'workstations', 'statuses', 'edit_statuses','users','order_id',
+        return view('admin.orders',compact('orders',  'statuses', 'edit_statuses','users','order_id',
             'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog','completedStatusId'));
     }
 
