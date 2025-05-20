@@ -32,7 +32,7 @@
 {{--                </div>--}}
 {{--            </div>--}}
             <div class="col-12 my-3">
-                <form action="{{route('dashboard.compare')}}" method="GET" id="report_filter_form">
+                <form action="{{route('dashboard.efficiency')}}" method="GET" id="report_filter_form">
                     <div class="row justify-content-between">
                         <div class="col-5">
                             <div class="row">

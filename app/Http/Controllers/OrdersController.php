@@ -442,36 +442,58 @@ class OrdersController extends Controller
     public function search(Request $request)
     {
         $term = $request->input('query');
+        $page = $request->input('page','orders');
+        $term = '%'. $term .'%';
 
-        // Perform search based on your logic
-        $term = '%'. $term .'%'; // assuming $term is already sanitized and defined
-        $query = Orders::with([
-            'status',
-            'station',
-            'station.worker'
-        ])
-            ->where('order_id', 'like', $term)
-            ->orWhereHas('status', function ($query) use ($term) {
-                $query->where('status_name', 'like', $term);
-            })
-            ->orWhereHas('station.worker', function ($query) use ($term) {
-                $query->where('name', 'like', $term);
-            })
-            ->orderBy('is_rush', 'DESC')
-            ->orderBy('deadline', 'DESC')
-            ->orderBy('date_started', 'DESC')
-            ->where('orderType', '=', Orders::parentType);
-        $orders = $query->get();
+        if(isset($page) && $page == 'orders'){
+            $query = Orders::with([
+                'status',
+                'station',
+                'station.worker'
+            ])
+                ->where('order_id', 'like', $term)
+                ->orWhereHas('status', function ($query) use ($term) {
+                    $query->where('status_name', 'like', $term);
+                })
+                ->orWhereHas('station.worker', function ($query) use ($term) {
+                    $query->where('name', 'like', $term);
+                })
+                ->orderBy('is_rush', 'DESC')
+                ->orderBy('deadline', 'DESC')
+                ->orderBy('date_started', 'DESC')
+                ->where('orderType', '=', Orders::parentType);
+            $orders = $query->get();
 
-        $userId = auth()->id();
-        // Fetch the associated OrderLogs to get the time_started
-        $orderLog = OrderLogs::with(['user','status'])
-            ->where('user_id',$userId)
-            ->whereNotNull('time_started')
-            ->whereNull('time_end')
-            ->first();
+            $userId = auth()->id();
+            // Fetch the associated OrderLogs to get the time_started
+            $orderLog = OrderLogs::with(['user','status'])
+                ->where('user_id',$userId)
+                ->whereNotNull('time_started')
+                ->whereNull('time_end')
+                ->first();
+        }else{
+            $orderLog = null;
+            $completedID = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
 
-        $order_vew = view('admin.partials.order_table',['orders'=>$orders,'orderLog'=>$orderLog])->render();
+            $query = Orders::with([
+                'status',
+                'station',
+                'station.worker'
+            ])
+                ->where('status_id', $completedID) // <-- Always required
+                ->where(function ($q) use ($term) {
+                    $q->where('order_id', 'like', $term)
+                        ->orWhereHas('station.worker', function ($subQuery) use ($term) {
+                            $subQuery->where('name', 'like', $term);
+                        });
+                });
+
+            $orders = $query->get();
+
+        }
+
+
+        $order_vew = view('admin.partials.order_table',['orders'=>$orders,'orderLog'=>$orderLog,'page'=>$page])->render();
         // Return JSON response
         return response()->json(['status'=>200,'orders_view' => $order_vew]);
     }
@@ -916,4 +938,60 @@ class OrdersController extends Controller
 
         return view('workers.orders', compact('myOrders', ['orderLog','statuses','edit_statuses','sub_statuses']));
     }
+
+    /**
+     * Display a listing of the completed orders.
+     */
+    public function completed_orders(Request $request)
+    {
+        $filter_product = $request->input('filter_product');
+        $filter_date = $request->input('filter_date');
+        $filter_priority = $request->input('filter_priority');
+        $per_page = $request->input('per_page', 10);
+        $search = $request->input('search');
+        $completedStatusId = OrderStatus::where('status_name', 'Completed')->pluck('id')->first();
+
+        $query = Orders::with(['children', 'items', 'status', 'last_log', 'last_log.status', 'last_log.sub_status'])
+//            ->when($filter_date, function ($q) use ($filter_date) {
+//                if ($filter_date == 'oldest') {
+//                    $q->orderBy(\DB::raw('DATE(date_started)'), 'ASC');
+//                } elseif ($filter_date == 'newest') {
+//                    $q->orderBy(\DB::raw('DATE(date_started)'), 'DESC');
+//                }
+//            }, function ($q) {
+//                $q->orderBy('is_rush', 'DESC')
+//                    ->orderBy(\DB::raw('DATE(deadline)'), 'DESC')
+//                    ->orderBy(\DB::raw('DATE(date_started)'), 'DESC');
+//            })
+//            ->when($filter_product, function ($q) use ($filter_product) {
+//                $q->whereHas('items', function ($query) use ($filter_product) {
+//                    $query->where('product_name', $filter_product);
+//                });
+//            })
+//            ->when($filter_priority, function ($q) use ($filter_priority) {
+//                $q->where('is_rush', $filter_priority == 1 ? 1 : 0);
+//            })
+            ->where('orderType', '=', Orders::parentType)
+            ->where('status_id', '=', $completedStatusId)
+            ->when($search, function ($q) use ($search) {
+                $term = "%$search%";
+                $q->where(function ($q) use ($term) {
+                    $q->where('order_id', 'like', $term);
+                });
+            });
+
+        $orders = $query->paginate($per_page)->appends($request->all());
+
+        if (Auth::user()->role_id == 1) {
+            $statuses = OrderStatus::whereNotIn('status_name', OrderStatus::adminStatuses)->get();
+        } else {
+            $myWorkStatusIDs = auth()->user()->workstations->pluck('status_id')->toArray();
+            $statuses = OrderStatus::whereIn('id', $myWorkStatusIDs)->get();
+        }
+
+        return view('admin.lists.completed_orders', compact(
+            'orders', 'statuses', 'filter_product', 'filter_date', 'filter_priority', 'completedStatusId'
+        ));
+    }
+
 }

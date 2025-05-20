@@ -558,8 +558,15 @@ class DashboardController extends Controller
         $dates = explode(' - ', $data['date_range']);
 
         // Parse start and end dates
-        $startDate = $data['start_date'] = isset($dates[0]) ? Carbon::parse($dates[0])->startOfDay() : Carbon::now();
-        $endDate = $data['end_date'] = isset($dates[1]) ? Carbon::parse($dates[1])->endOfDay() : Carbon::now();
+        $startDate = !empty($dates[0])
+            ? Carbon::parse($dates[0])->startOfMonth()
+            : Carbon::now()->startOfYear();
+
+        $endDate = !empty($dates[1])
+            ? Carbon::parse($dates[1])->endOfDay()
+            : Carbon::now();
+        $data['start_date'] = Carbon::parse($startDate)->format('m-d-Y');
+        $data['end_date'] = Carbon::parse($endDate)->format('m-d-Y');
 
 
         $all_remake_statuses = OrderStatus::where('title',OrderStatus::adminStatuses[2])->with('sub_status')->pluck('id')->first();
@@ -580,7 +587,7 @@ class DashboardController extends Controller
             })
             ->whereNotNull('time_started')
             ->whereNotNull('time_end')
-//            ->whereBetween('time_end', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->whereBetween('time_end', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->select(
                 'order_logs.user_id',
                 'order_logs.sub_status_id',
