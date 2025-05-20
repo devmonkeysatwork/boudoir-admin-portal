@@ -424,8 +424,15 @@ class DashboardController extends Controller
         $dates = explode(' - ', $data['date_range']);
 
         // Parse start and end dates
-        $data['start_date'] = isset($dates[0]) ? Carbon::parse($dates[0])->startOfDay() : null;
-        $data['end_date'] = isset($dates[1]) ? Carbon::parse($dates[1])->endOfDay() : null;
+        $startDate = !empty($dates[0])
+            ? Carbon::parse($dates[0])->startOfDay()
+            : Carbon::now()->startOfMonth();
+
+        $endDate = !empty($dates[1])
+            ? Carbon::parse($dates[1])->endOfDay()
+            : Carbon::now();
+        $data['start_date'] = Carbon::parse($startDate);
+        $data['end_date'] = Carbon::parse($endDate);
 
 
         // First, get all orders that have last_log with status_id = completed_status_id
@@ -536,6 +543,8 @@ class DashboardController extends Controller
 
 
 //        dd($data['timeData']);
+        $data['start_date'] = Carbon::parse($startDate)->format('m-d-Y');
+        $data['end_date'] = Carbon::parse($endDate)->format('m-d-Y');
         return view('admin.reports.comparison',$data);
     }
 
