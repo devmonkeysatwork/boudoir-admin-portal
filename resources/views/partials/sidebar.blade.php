@@ -53,28 +53,28 @@
             </a>
         </li>
         @if(Auth::user()->role_id == 1)
-            <li class="item-with-dropdown">
-                <a class="sub-btn {{ Request::routeIs('dashboard.reports') || Request::routeIs('dashboard.compare') ? 'active' : '' }}" href="javascript:void(0);">
-                    <span>
-                        <img src="{{ asset('icons/reports.png') }}" alt="Reports">Analytics
-                    </span>
-                    <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-                        <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/>
-                    </svg>
-                </a>
-                <ul class="sub-menu {{Request::routeIs('dashboard.reports') || Request::routeIs('dashboard.compare') ? 'd-block' : '' }}">
-                    <li>
-                        <a href="{{ route('dashboard.reports') }}" class="{{ Request::routeIs('dashboard.reports')|| Request::routeIs('dashboard.compare') ? 'active' : '' }}">
-                            <img src="{{ asset('icons/reports.svg') }}" alt="Reports">Reports
-                        </a>
-                    </li>
+{{--            <li class="item-with-dropdown">--}}
+{{--                <a class="sub-btn {{ Request::routeIs('dashboard.reports') || Request::routeIs('dashboard.compare') ? 'active' : '' }}" href="javascript:void(0);">--}}
+{{--                    <span>--}}
+{{--                        <img src="{{ asset('icons/reports.png') }}" alt="Reports">Analytics--}}
+{{--                    </span>--}}
+{{--                    <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">--}}
+{{--                        <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/>--}}
+{{--                    </svg>--}}
+{{--                </a>--}}
+{{--                <ul class="sub-menu {{Request::routeIs('dashboard.reports') || Request::routeIs('dashboard.compare') ? 'd-block' : '' }}">--}}
+{{--                    <li>--}}
+{{--                        <a href="{{ route('dashboard.reports') }}" class="{{ Request::routeIs('dashboard.reports')|| Request::routeIs('dashboard.compare') ? 'active' : '' }}">--}}
+{{--                            <img src="{{ asset('icons/reports.svg') }}" alt="Reports">Reports--}}
+{{--                        </a>--}}
+{{--                    </li>--}}
 {{--                    <li>--}}
 {{--                        <a href="{{ route('dashboard.compare') }}" class="{{ Request::routeIs('dashboard.compare') ? 'active' : '' }}">--}}
 {{--                            <img src="{{ asset('icons/reports.png') }}" alt="Reports">Compare Members--}}
 {{--                        </a>--}}
 {{--                    </li>--}}
-                </ul>
-            </li>
+{{--                </ul>--}}
+{{--            </li>--}}
 
             <hr>
             <li>
