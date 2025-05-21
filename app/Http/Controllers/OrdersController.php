@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -952,25 +953,6 @@ class OrdersController extends Controller
         $completedStatusId = OrderStatus::where('status_name', 'Completed')->pluck('id')->first();
 
         $query = Orders::with(['children', 'items', 'status', 'last_log', 'last_log.status', 'last_log.sub_status'])
-//            ->when($filter_date, function ($q) use ($filter_date) {
-//                if ($filter_date == 'oldest') {
-//                    $q->orderBy(\DB::raw('DATE(date_started)'), 'ASC');
-//                } elseif ($filter_date == 'newest') {
-//                    $q->orderBy(\DB::raw('DATE(date_started)'), 'DESC');
-//                }
-//            }, function ($q) {
-//                $q->orderBy('is_rush', 'DESC')
-//                    ->orderBy(\DB::raw('DATE(deadline)'), 'DESC')
-//                    ->orderBy(\DB::raw('DATE(date_started)'), 'DESC');
-//            })
-//            ->when($filter_product, function ($q) use ($filter_product) {
-//                $q->whereHas('items', function ($query) use ($filter_product) {
-//                    $query->where('product_name', $filter_product);
-//                });
-//            })
-//            ->when($filter_priority, function ($q) use ($filter_priority) {
-//                $q->where('is_rush', $filter_priority == 1 ? 1 : 0);
-//            })
             ->where('orderType', '=', Orders::parentType)
             ->where('status_id', '=', $completedStatusId)
             ->when($search, function ($q) use ($search) {
@@ -992,6 +974,53 @@ class OrdersController extends Controller
         return view('admin.lists.completed_orders', compact(
             'orders', 'statuses', 'filter_product', 'filter_date', 'filter_priority', 'completedStatusId'
         ));
+    }
+
+    public function exportCompletedOrders(Request $request)
+    {
+        $search = $request->input('search');
+        $completedStatusId = OrderStatus::where('status_name', 'Completed')->pluck('id')->first();
+
+        $query = Orders::with(['status'])
+            ->where('orderType', '=', Orders::parentType)
+            ->where('status_id', '=', $completedStatusId)
+            ->when($search, function ($q) use ($search) {
+                $term = "%$search%";
+                $q->where(function ($q) use ($term) {
+                    $q->where('order_id', 'like', $term);
+                });
+            });
+
+        $orders = $query->get();
+//        foreach ($orders as $order) {
+//            dd($order);
+//        }
+        $filename = "completed_orders_" . now()->format('Y_m_d_His') . ".csv";
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $columns = ['Order ID', 'Status', 'Date Started', 'Completed Date'];
+
+        $callback = function () use ($orders, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($orders as $order) {
+                fputcsv($file, [
+                    $order->order_id,
+                    $order->status?->status_name ?? '',
+                    Carbon::parse($order->created_at)->format('Y-m-d'),
+                    Carbon::parse($order->date_completed)->format('Y-m-d'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return Response::stream($callback, 200, $headers);
     }
 
 }

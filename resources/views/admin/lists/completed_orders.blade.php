@@ -53,7 +53,10 @@
                                 <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
                             </select>
                     </div>
-                    <div class="col-12 col-lg-8 d-flex justify-content-lg-end">
+                    <div class="col-12 col-lg-8 d-flex justify-content-lg-end align-items-center">
+                        <a href="{{ route('admin.completed_orders.export', request()->query()) }}" class="btn btn-outline-dark pdf-btn me-3">
+                            Export as CSV
+                        </a>
                         <div class="orders-search">
                             <input type="text" id="searchInput" name="search" value="{{ request('search') }}" placeholder="Search">
                             <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon" onclick="this.closest('form').submit()">
