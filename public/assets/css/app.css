@@ -132,6 +132,7 @@ button {
     padding-top: 20px;
     height: 100vh;
     position: fixed;
+    overflow-y: auto;
 }
 
 .sidebar-logo {
@@ -164,7 +165,7 @@ button {
     align-items: center;
     justify-content: flex-start;
     color: #000;
-    padding: 15px;
+    padding: 8px 15px;
     text-decoration: none;
     border-radius: 5px;
     width: 80%;
@@ -181,7 +182,7 @@ button {
 .sidebar-menu li a.active::before {
     content: "";
     position: absolute;
-    left: -29px;
+    left: -26px;
     top: 0;
     bottom: 0;
     width: 5px;
@@ -206,7 +207,36 @@ button {
 .sidebar-menu li a.active img {
     filter: brightness(0) invert(1);
 }
-
+.sub-btn{
+    justify-content: space-between !important;
+}
+.sub-btn svg{
+    transition: all 0.3s;
+    fill: #0c0c0c;
+}
+.sub-btn:hover svg{
+    fill: #FFF;
+}
+.sub-menu{
+    margin-top: 10px;
+    display: none;
+    width: 100%;
+    padding-left: 10px;
+}
+.item-with-dropdown{
+    flex-direction: column;
+    align-items: center;
+}
+.rotate{
+    transform: rotate(90deg);
+}
+.sub-menu li a{
+    font-size: 13px !important;
+}
+/*.sub-btn.active,*/
+/*.sub-btn.hover{*/
+/*    background-color: unset !important;*/
+/*}*/
 /* HEADER */
 .header {
     background-color: #fff;
@@ -2287,4 +2317,22 @@ button.btn_loader.clicked:after{
 }
 .daterangepicker .drp-calendar{
     max-width: unset !important;
+}
+
+
+#dashboardTeamTable tbody ,
+#dashboardWorkstationsTable tbody {
+    display: block;
+    height: 500px;
+    overflow: auto;
+}
+#dashboardWorkstationsTable thead,#dashboardWorkstationsTable  tbody tr ,
+#dashboardTeamTable thead,#dashboardTeamTable  tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;/* even columns width , fix width of table too*/
+}
+#dashboardWorkstationsTable thead ,
+#dashboardTeamTable thead {
+    width: calc( 100% - 1em )/* scrollbar is average 1em/16px width, remove it from thead width */
 }

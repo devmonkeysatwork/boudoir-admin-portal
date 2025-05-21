@@ -64,6 +64,14 @@
         $('.sidebar').toggleClass('active');
     }
     document.addEventListener("DOMContentLoaded", function() {
+
+        $('.sub-btn').click(function(){
+            $(this).next('.sub-menu').slideToggle();
+            $(this).find('svg').toggleClass('rotate');
+        });
+
+
+
         // Initialize Pickr for create status modal
         const createPickr = Pickr.create({
             el: '#create-status-color-picker',
