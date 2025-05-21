@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/notyf.css')}}" />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{asset('assets/css/sweetAlert.css')}}">
-    <link rel="stylesheet" href="{{'assets/css/datatables.css'}}">
+    <link rel="stylesheet" href="{{asset('assets/css/datatables.css')}}">
     <link rel="stylesheet" href="{{asset('assets/css/app.css')}}">
     {{--    @vite(['resources/css/app.css', 'resources/js/app.js'])--}}
 </head>
