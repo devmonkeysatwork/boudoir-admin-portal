@@ -1423,7 +1423,7 @@ input:checked+.slider:before {
 
 
 #workstationModal .modal-content {
-    max-width: 500px;
+    max-width: 700px;
     background-color: #fff;
 }
 
@@ -1450,8 +1450,8 @@ input:checked+.slider:before {
 }
 
 #workstationModal .modal-content table th {
-    background-color: transparent;
-    color: #202224;
+    /*background-color: transparent;*/
+    /*color: #202224;*/
     border: none;
     border-bottom: 1px solid #000;
     text-align: left;
@@ -1970,23 +1970,23 @@ input:checked+.slider:before {
     border-bottom: none;
 }
 .page-item .page-link,
-.orders div.dt-container .dt-paging .dt-paging-button{
+div.dt-container .dt-paging .dt-paging-button{
     color: #202224 !important;
 }
 .page-item.active .page-link,
-.orders div.dt-container .dt-paging .dt-paging-button{
+div.dt-container .dt-paging .dt-paging-button{
     background-color: #FAFBFD !important;
     border-color: #D5D5D5 !important;
 }
 .page-item.active .page-link,
-.orders div.dt-container .dt-paging .dt-paging-button.current,
-.orders div.dt-container .dt-paging .dt-paging-button:hover{
+div.dt-container .dt-paging .dt-paging-button.current,
+div.dt-container .dt-paging .dt-paging-button:hover{
     background-color: #BD7F7F !important;
     background: #BD7F7F !important;
     color: #fff !important;
 }
 .page-item.disabled .page-link,
-.orders div.dt-container .dt-paging .dt-paging-button.disabled{
+div.dt-container .dt-paging .dt-paging-button.disabled{
     color: #202224 !important;
     background-color: #bebebe !important;
 }

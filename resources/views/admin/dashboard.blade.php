@@ -405,7 +405,7 @@
                 </div>
 
                 <div>
-                    <table class="table"  id="workers_area_modal">
+                    <table class="table tablesorter"  id="workers_area_modal">
                         <thead>
                         <tr>
                             <th>#</th>
@@ -873,12 +873,35 @@
             $('.'+id).toggleClass('open');
         }
 
+
+        function initDatatable(){
+            let table = new DataTable('#workers_area_modal', {
+                autoWidth: false,
+                pageLength: 10,          // Default to 10 entries per page
+                lengthChange: false,
+                columns: [
+                    {title: "#"},
+                    {title: "Order #"},
+                    {title: "Total time(hours)"}
+                ],
+                columnDefs: [
+                    {
+                        targets: -1,         // -1 targets the last column
+                        orderable: false     // Disable sorting on it
+                    }
+                ]
+            });
+        }
+
         function loadTeamDetails(teamMemberId,title) {
             // Make an AJAX request to fetch team details
             $.ajax({
                 url: '/team/' + teamMemberId,
                 method: 'GET',
                 success: function(response) {
+                    if ($.fn.DataTable.isDataTable('#workers_area_modal')) {
+                        $('#workers_area_modal').DataTable().clear().destroy();
+                    }
                     // Populate the modal with the response
                     $('#workstationOrders').html(response.ordersHtml);
                     $('#orderCount').text('Showing 1-' + response.orderCount + ' of ' + response.orderCount);
@@ -886,6 +909,7 @@
                     // Show the modal
                     $('#workstationModal').show();
                     $('#workstationModal .modal-content > h2').text(title);
+                    initDatatable();
                 },
                 error: function() {
                     $('#workstationOrders').html('<tr><td colspan="3">Failed to load team details.</td></tr>');
@@ -900,6 +924,9 @@
                 url: '/workstations/' + workstationId,
                 method: 'GET',
                 success: function(response) {
+                    if ($.fn.DataTable.isDataTable('#workers_area_modal')) {
+                        $('#workers_area_modal').DataTable().clear().destroy();
+                    }
                     // Populate the modal with the response
                     $('#workstationOrders').html(response.ordersHtml);
                     $('#orderCount').text('Showing 1-' + response.orderCount + ' of ' + response.orderCount);
@@ -907,6 +934,7 @@
                     // Show the modal
                     $('#workstationModal').show();
                     $('#workstationModal .modal-content > h2').text(title);
+                    initDatatable();
                 },
                 error: function() {
                     $('#workstationOrders').html('<tr><td colspan="3">Failed to load workstation details.</td></tr>');

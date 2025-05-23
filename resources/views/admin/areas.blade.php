@@ -44,14 +44,14 @@
 <x-modal id="workstationModal" title="Workstation">
     <div class="modal-body">
         <!-- Search Bar -->
-        <div class="search-bar orders-search mb-3">
-            <input type="text" id="searchOrders" placeholder="Search" class="form-control" />
-            <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
-        </div>
+{{--        <div class="search-bar orders-search mb-3">--}}
+{{--            <input type="text" id="searchOrders" placeholder="Search" class="form-control" />--}}
+{{--            <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
+{{--        </div>--}}
 
         <!-- Scrollable Workstation Orders Table -->
-        <div>
-            <table class="table" id="workers_area_modal">
+        <div class="orders">
+            <table class="table tablesorter" id="workers_area_modal">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -76,6 +76,8 @@
       function initDatatable(){
           let table = new DataTable('#workers_area_modal', {
               autoWidth: false,
+              pageLength: 10,          // Default to 10 entries per page
+              lengthChange: false,
               columns: [
                   {title: "#"},
                   {title: "Order #"},
