@@ -1423,7 +1423,7 @@ input:checked+.slider:before {
 
 
 #workstationModal .modal-content {
-    max-width: 700px;
+    max-width: 800px;
     background-color: #fff;
 }
 
@@ -1492,7 +1492,10 @@ input:checked+.slider:before {
     color: #EF3826;
     border-radius: 4px;
 }
-
+#workstationModal .orders-search,
+.ordersTable_Search.orders-search{
+    float: right;
+}
 
 #createStatusModal .modal-content,
 #editStatusModal .modal-content {
@@ -1990,6 +1993,12 @@ div.dt-container .dt-paging .dt-paging-button.disabled{
     color: #202224 !important;
     background-color: #bebebe !important;
 }
+div.dt-container .dt-search{
+    display: none !important;
+}
+.dt-length > label{
+    margin-left: 10px;
+}
 #notification_list p > a{
     margin-top: 15px;
     display: inline-block;
@@ -2118,6 +2127,9 @@ thead {
         width: 90%;
         height: 90%;
         overflow: auto;
+    }
+    #workstationModal .modal-content {
+        width: 90%;
     }
 }
 

@@ -44,10 +44,10 @@
     <x-modal id="workstationModal" title="Team">
         <div class="modal-body">
             <!-- Search Bar -->
-{{--            <div class="search-bar orders-search mb-3">--}}
-{{--                <input type="text" id="searchOrders" placeholder="Search" class="form-control" />--}}
-{{--                <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
-{{--            </div>--}}
+            <div class="search-bar orders-search mb-3">
+                <input type="text" id="searchOrders" placeholder="Search" class="form-control" />
+                <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
+            </div>
 
             <!-- Scrollable Workstation Orders Table -->
             <div class="orders">
@@ -154,13 +154,10 @@
                     {title: "#"},
                     {title: "Order #"},
                     {title: "Total time(hours)"}
-                ],
-                columnDefs: [
-                    {
-                        targets: -1,         // -1 targets the last column
-                        orderable: false     // Disable sorting on it
-                    }
                 ]
+            });
+            document.querySelector('#searchOrders').addEventListener('keyup', function () {
+                table.search(this.value).draw();
             });
         }
         function loadTeamDetails(teamMemberId) {

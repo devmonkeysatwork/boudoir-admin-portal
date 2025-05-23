@@ -50,10 +50,6 @@
                     </button>
                 </div>
             </form>
-{{--            <div class="orders-search">--}}
-{{--                <input type="text" id="searchInput" placeholder="Search">--}}
-{{--                <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
-{{--            </div>--}}
         </div>
 
         <a id="pdf-export" class="btn btn-outline-dark pdf-btn d-inline-flex justify-content-center align-items-center gap-3" href="{{route('order.pdf')}}">
@@ -63,6 +59,10 @@
             <img src="{{ asset('icons/pdf.png') }}" alt="PDF">Export as CSV
         </a>
         <div class="orders">
+            <div class="orders-search ordersTable_Search">
+                <input type="text" id="searchInput" placeholder="Search">
+                <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
+            </div>
             <table id="ordersTable" class="tablesorter">
                 <thead>
                 <tr>
@@ -414,6 +414,9 @@
                         orderable: false     // Disable sorting on it
                     }
                 ]
+            });
+            document.querySelector('#searchInput').addEventListener('keyup', function () {
+                table.search(this.value).draw();
             });
 
 

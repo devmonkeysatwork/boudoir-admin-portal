@@ -210,10 +210,10 @@
             <div class="orders-top">
                 <h2>List of Orders</h2>
                 <div class="orders-filter">
-{{--                    <div class="orders-search">--}}
-{{--                        <input type="text" id="searchInput" placeholder="Search">--}}
-{{--                        <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
-{{--                    </div>--}}
+                    <div class="orders-search">
+                        <input type="text" id="searchInput" placeholder="Search">
+                        <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
+                    </div>
                     <div class="sort-dropdown">
                         <select class="sort-select form-select pe-5" id="order_sort">
                             <option value="" disabled selected>Sort By</option>
@@ -399,10 +399,10 @@
             </div>
             <x-modal id="workstationModal" title="Workstation">
             <div class="modal-body">
-{{--                <div class="search-bar orders-search mb-3">--}}
-{{--                    <input type="text" id="searchOrders" placeholder="Search" class="form-control" />--}}
-{{--                    <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
-{{--                </div>--}}
+                <div class="search-bar orders-search mb-3">
+                    <input type="text" id="searchOrdersInModal" placeholder="Search" class="form-control" />
+                    <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
+                </div>
 
                 <div>
                     <table class="table tablesorter"  id="workers_area_modal">
@@ -599,6 +599,10 @@
                         orderable: false     // Disable sorting on it
                     }
                 ]
+            });
+
+            document.querySelector('#searchInput').addEventListener('keyup', function () {
+                table.search(this.value).draw();
             });
             function performSearch(query) {
                 $.ajax({
@@ -877,19 +881,16 @@
         function initDatatable(){
             let table = new DataTable('#workers_area_modal', {
                 autoWidth: false,
-                pageLength: 10,          // Default to 10 entries per page
+                pageLength: 10,
                 lengthChange: false,
                 columns: [
                     {title: "#"},
                     {title: "Order #"},
                     {title: "Total time(hours)"}
-                ],
-                columnDefs: [
-                    {
-                        targets: -1,         // -1 targets the last column
-                        orderable: false     // Disable sorting on it
-                    }
                 ]
+            });
+            document.querySelector('#searchOrdersInModal').addEventListener('keyup', function () {
+                table.search(this.value).draw();
             });
         }
 
@@ -942,12 +943,12 @@
             });
         }
 
-        $('#searchOrders').on('keyup', function() {
-            var searchValue = $(this).val().toLowerCase();
-            $('#workstationOrders tr').filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(searchValue) > -1);
-            });
-        });
+        // $('#searchOrders').on('keyup', function() {
+        //     var searchValue = $(this).val().toLowerCase();
+        //     $('#workstationOrders tr').filter(function() {
+        //         $(this).toggle($(this).text().toLowerCase().indexOf(searchValue) > -1);
+        //     });
+        // });
         $('#download-pdf').on('click', function() {
             window.location.href = '/orders/' + activeOrder + '/download-pdf';
         });
