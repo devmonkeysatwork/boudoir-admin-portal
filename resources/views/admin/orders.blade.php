@@ -260,6 +260,20 @@
         {{--    </div>--}}
 
 
+        <div class="modal fade" id="childOrdersModal" tabindex="-1" aria-labelledby="childOrdersModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Child Orders</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="childOrdersModalBody">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <x-modal id="orderModal" title="Order #00001">
             <span class="status" id="modal_status_text">Completed</span>
@@ -357,21 +371,6 @@
                 </div>
             </x-slot>
         </x-modal>
-
-
-        <div class="modal fade" id="childOrdersModal" tabindex="-1" aria-labelledby="childOrdersModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Child Orders</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="childOrdersModalBody">
-
-                    </div>
-                </div>
-            </div>
-        </div>
 
     </div>
 @endsection
