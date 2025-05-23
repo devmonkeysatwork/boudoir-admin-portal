@@ -50,8 +50,6 @@
 <script src="{{asset('assets/js/bootstrap530.js')}}"></script>
 <!-- Pusher JS -->
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-<!-- Pickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 <!-- notyf JS -->
 <script src="{{asset('assets/js/notyf.js')}}"></script>
 <!-- Custom JS -->
@@ -69,149 +67,45 @@
             $(this).next('.sub-menu').slideToggle();
             $(this).find('svg').toggleClass('rotate');
         });
-
-
-
-        // Initialize Pickr for create status modal
-        const createPickr = Pickr.create({
-            el: '#create-status-color-picker',
-            theme: 'classic', // or 'monolith', or 'nano'
-            default: '#007BFF',
-            components: {
-                // Main components
-                preview: true,
-                opacity: true,
-                hue: true,
-
-                // Input / output Options
-                interaction: {
-                    hex: true,
-                    rgba: true,
-                    hsla: true,
-                    hsva: true,
-                    cmyk: true,
-                    input: true,
-                    clear: true,
-                    save: true
-                }
-            }
-        });
-
-        createPickr.on('change', (color, instance) => {
-            const colorValue = color.toHEXA().toString();
-            document.querySelector('#status-color').value = colorValue;
-            document.querySelector('#create-preview').style.backgroundColor = colorValue;
-        });
-
-        createPickr.on('save', (color, instance) => {
-            const colorValue = color.toHEXA().toString();
-            document.querySelector('#status-color').value = colorValue;
-            createPickr.hide();
-        });
     });
 </script>
-
-<script src="https://cdn.ckeditor.com/4.17.0/standard/ckeditor.js"></script>
+{{--<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>--}}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        CKEDITOR.replace('email-content', {
-            toolbar: [{
-                name: 'paragraph',
-                items: ['Format']
-            },
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', 'Blockquote']
-                },
-                {
-                    name: 'links',
-                    items: ['Link', 'Unlink']
-                },
-                {
-                    name: 'insert',
-                    items: ['Image', 'Table']
-                },
-                {
-                    name: 'tools',
-                    items: ['Maximize']
-                }
-            ],
-            removePlugins: 'elementspath',
-            resize_enabled: false,
-        });
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     const orderSort = new Choices('#order-sort', {
+    //         searchEnabled: false,
+    //         itemSelectText: '',
+    //     });
+    //
+    //     const teamSort = new Choices('#team-sort', {
+    //         searchEnabled: false,
+    //         itemSelectText: '',
+    //     });
+    //
+    //     const workstationSort = new Choices('#workstation-sort', {
+    //         searchEnabled: false,
+    //         itemSelectText: '',
+    //     });
+    // });
 
-        CKEDITOR.replace('edit-email-content', {
-            toolbar: [{
-                name: 'paragraph',
-                items: ['Format']
-            },
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', 'Blockquote']
-                },
-                {
-                    name: 'links',
-                    items: ['Link', 'Unlink']
-                },
-                {
-                    name: 'insert',
-                    items: ['Image', 'Table']
-                },
-                {
-                    name: 'tools',
-                    items: ['Maximize']
-                }
-            ],
-            removePlugins: 'elementspath',
-            resize_enabled: false,
-        });
-    });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const orderSort = new Choices('#order-sort', {
-            searchEnabled: false,
-            itemSelectText: '',
-        });
-
-        const teamSort = new Choices('#team-sort', {
-            searchEnabled: false,
-            itemSelectText: '',
-        });
-
-        const workstationSort = new Choices('#workstation-sort', {
-            searchEnabled: false,
-            itemSelectText: '',
-        });
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const filterDate = new Choices('#filter-date', {
-            searchEnabled: false,
-            itemSelectText: '',
-        });
-        const filterProduct = new Choices('#filter-product', {
-            searchEnabled: false,
-            itemSelectText: '',
-        });
-        const filterStatus = new Choices('#filter-status', {
-            searchEnabled: false,
-            itemSelectText: '',
-        });
-        const filterPriority = new Choices('#filter-priority', {
-            searchEnabled: false,
-            itemSelectText: '',
-        });
-    });
+    // document.addEventListener("DOMContentLoaded", function() {
+    //     const filterDate = new Choices('#filter-date', {
+    //         searchEnabled: false,
+    //         itemSelectText: '',
+    //     });
+    //     const filterProduct = new Choices('#filter-product', {
+    //         searchEnabled: false,
+    //         itemSelectText: '',
+    //     });
+    //     const filterStatus = new Choices('#filter-status', {
+    //         searchEnabled: false,
+    //         itemSelectText: '',
+    //     });
+    //     const filterPriority = new Choices('#filter-priority', {
+    //         searchEnabled: false,
+    //         itemSelectText: '',
+    //     });
+    // });
     function show_toast(message,type='warning'){
 
         var notyf = new Notyf({

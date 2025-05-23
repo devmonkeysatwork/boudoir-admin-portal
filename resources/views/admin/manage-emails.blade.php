@@ -152,7 +152,69 @@
 </div>
 @endsection
 @section('footer_scripts')
+    <script src="https://cdn.ckeditor.com/4.17.0/standard/ckeditor.js"></script>
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            CKEDITOR.replace('email-content', {
+                toolbar: [{
+                    name: 'paragraph',
+                    items: ['Format']
+                },
+                    {
+                        name: 'basicstyles',
+                        items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']
+                    },
+                    {
+                        name: 'paragraph',
+                        items: ['NumberedList', 'BulletedList', 'Blockquote']
+                    },
+                    {
+                        name: 'links',
+                        items: ['Link', 'Unlink']
+                    },
+                    {
+                        name: 'insert',
+                        items: ['Image', 'Table']
+                    },
+                    {
+                        name: 'tools',
+                        items: ['Maximize']
+                    }
+                ],
+                removePlugins: 'elementspath',
+                resize_enabled: false,
+            });
+
+            CKEDITOR.replace('edit-email-content', {
+                toolbar: [{
+                    name: 'paragraph',
+                    items: ['Format']
+                },
+                    {
+                        name: 'basicstyles',
+                        items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']
+                    },
+                    {
+                        name: 'paragraph',
+                        items: ['NumberedList', 'BulletedList', 'Blockquote']
+                    },
+                    {
+                        name: 'links',
+                        items: ['Link', 'Unlink']
+                    },
+                    {
+                        name: 'insert',
+                        items: ['Image', 'Table']
+                    },
+                    {
+                        name: 'tools',
+                        items: ['Maximize']
+                    }
+                ],
+                removePlugins: 'elementspath',
+                resize_enabled: false,
+            });
+        });
         // Initialize CKEditor for the create and edit modals
         CKEDITOR.replace('email-content');
         CKEDITOR.replace('edit-email-content', {

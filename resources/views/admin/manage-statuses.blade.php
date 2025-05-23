@@ -89,7 +89,7 @@
                         <input type="text" id="edit-status-name" name="edit-status-name">
                         <div class="form-group preview">
                             <label for="preview">Preview</label>
-                            <span class="status processing" id="edit-create-preview">Processing</span>
+                            <span class="status" id="edit-create-preview">Processing</span>
                         </div>
                     </div>
                     <div class="form-group color">
@@ -112,6 +112,8 @@
 
 @endsection
 @section('footer_scripts')
+    <!-- Pickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <script>
         // Initialize Pickr for edit status modal
         const editPickr = Pickr.create({
@@ -141,7 +143,7 @@
         editPickr.on('change', (color, instance) => {
             const colorValue = color.toHEXA().toString();
             document.querySelector('#edit-status-color').value = colorValue;
-            document.querySelector('#edit-preview').style.backgroundColor = colorValue;
+            document.querySelector('#edit-create-preview').style.backgroundColor = colorValue;
         });
 
         editPickr.on('save', (color, instance) => {
