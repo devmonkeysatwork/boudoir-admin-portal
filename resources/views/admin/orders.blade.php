@@ -376,7 +376,26 @@
     </div>
 @endsection
 @section('footer_scripts')
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const filterDate = new Choices('#filter-date', {
+                searchEnabled: false,
+                itemSelectText: '',
+            });
+            const filterProduct = new Choices('#filter-product', {
+                searchEnabled: false,
+                itemSelectText: '',
+            });
+            const filterStatus = new Choices('#filter-status', {
+                searchEnabled: false,
+                itemSelectText: '',
+            });
+            const filterPriority = new Choices('#filter-priority', {
+                searchEnabled: false,
+                itemSelectText: '',
+            });
+        });
         const order_id = '{{$order_id??null}}';
         $(document).ready(function() {
             let table = new DataTable('#ordersTable', {

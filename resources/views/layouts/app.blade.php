@@ -88,24 +88,7 @@
     //     });
     // });
 
-    // document.addEventListener("DOMContentLoaded", function() {
-    //     const filterDate = new Choices('#filter-date', {
-    //         searchEnabled: false,
-    //         itemSelectText: '',
-    //     });
-    //     const filterProduct = new Choices('#filter-product', {
-    //         searchEnabled: false,
-    //         itemSelectText: '',
-    //     });
-    //     const filterStatus = new Choices('#filter-status', {
-    //         searchEnabled: false,
-    //         itemSelectText: '',
-    //     });
-    //     const filterPriority = new Choices('#filter-priority', {
-    //         searchEnabled: false,
-    //         itemSelectText: '',
-    //     });
-    // });
+
     function show_toast(message,type='warning'){
 
         var notyf = new Notyf({
