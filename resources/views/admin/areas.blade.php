@@ -13,7 +13,7 @@
     </thead>
     <tbody>
       @foreach($workstations as $workstation)
-        <tr onclick="loadWorkstationDetails({{ $workstation->id }})">
+        <tr onclick="loadWorkstationDetails({{ $workstation->id }},'{{ $workstation->status_name }}')">
             <td>{{ $workstation->status_name }}</td>
             <td>{{ $workstation->orders_count() }}</td>
 {{--            <td>{{ round($workstation->time_spent,2) }}</td>--}}
@@ -88,7 +88,7 @@
               table.search(this.value).draw();
           });
       }
-    function loadWorkstationDetails(workstationId) {
+    function loadWorkstationDetails(workstationId, name) {
       // Update the modal title
       $('#workstationModal .modal-title').text('Workstation #' + workstationId);
 
@@ -106,6 +106,7 @@
 
               initDatatable();
               // Show the modal
+              $('#workstationModal .modal-content > h2').text(name);
               $('#workstationModal').show();
           },
           error: function() {
