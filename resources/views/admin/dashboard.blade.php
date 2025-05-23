@@ -399,10 +399,10 @@
             </div>
             <x-modal id="workstationModal" title="Workstation">
             <div class="modal-body">
-                <div class="search-bar orders-search mb-3">
-                    <input type="text" id="searchOrders" placeholder="Search" class="form-control" />
-                    <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">
-                </div>
+{{--                <div class="search-bar orders-search mb-3">--}}
+{{--                    <input type="text" id="searchOrders" placeholder="Search" class="form-control" />--}}
+{{--                    <img src="{{ asset('icons/search.png') }}" alt="Search Icon" class="search-icon">--}}
+{{--                </div>--}}
 
                 <div>
                     <table class="table tablesorter"  id="workers_area_modal">
