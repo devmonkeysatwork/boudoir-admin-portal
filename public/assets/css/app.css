@@ -2348,3 +2348,8 @@ button.btn_loader.clicked:after{
 #dashboardTeamTable thead {
     width: calc( 100% - 1em )/* scrollbar is average 1em/16px width, remove it from thead width */
 }
+
+#workers_area_modal.areas_modal_table thead tr th:first-child,
+#workers_area_modal.areas_modal_table tbody tr td:first-child {
+    display: none !important;
+}

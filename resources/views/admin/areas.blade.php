@@ -51,7 +51,7 @@
 
         <!-- Scrollable Workstation Orders Table -->
         <div class="orders">
-            <table class="table tablesorter" id="workers_area_modal">
+            <table class="table tablesorter areas_modal_table" id="workers_area_modal">
                 <thead>
                     <tr>
                         <th>#</th>
