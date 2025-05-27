@@ -54,7 +54,7 @@
                 <table class="table tablesorter" id="workers_area_modal">
                     <thead>
                     <tr>
-                        <th>#</th>
+{{--                        <th>#</th>--}}
                         <th>Order #</th>
                         <th>Time in Production</th>
                     </tr>
@@ -151,7 +151,7 @@
                 pageLength: 10,          // Default to 10 entries per page
                 lengthChange: false,
                 columns: [
-                    {title: "#"},
+                    // {title: "#"},
                     {title: "Order #"},
                     {title: "Total time(hours)"}
                 ]

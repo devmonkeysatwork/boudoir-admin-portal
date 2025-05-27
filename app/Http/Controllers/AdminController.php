@@ -445,7 +445,6 @@ class AdminController extends Controller
             foreach ($areas as $order) {
                 $ordersHtml .= '
                 <tr>
-                    <td>' . $counter++ . '</td>
                     <td>Order #' . $order->order_id . '</td>
                     <td>' . round(Carbon::parse($order->time_started)->diffInHours(Carbon::parse($order->time_end)),2) . '</td>
                 </tr>';
@@ -500,7 +499,6 @@ class AdminController extends Controller
         foreach ($teamMembersResult as $member) {
             $ordersHtml .= '
                 <tr>
-                    <td>' . $counter++ . '</td>
                     <td>Order #' . $member['order_id'] . '</td>
                     <td>' . $member['total_time'] . '</td>
                 </tr>';

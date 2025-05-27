@@ -51,10 +51,10 @@
 
         <!-- Scrollable Workstation Orders Table -->
         <div class="orders">
-            <table class="table tablesorter areas_modal_table" id="workers_area_modal">
+            <table class="table tablesorter" id="workers_area_modal">
                 <thead>
                     <tr>
-                        <th>#</th>
+{{--                        <th>#</th>--}}
                         <th>Order #</th>
                         <th>Total time(hours)</th>
                     </tr>
@@ -79,7 +79,7 @@
               pageLength: 10,          // Default to 10 entries per page
               lengthChange: false,
               columns: [
-                  {title: "#"},
+                  // {title: "#"},
                   {title: "Order #"},
                   {title: "Total time(hours)"}
               ]

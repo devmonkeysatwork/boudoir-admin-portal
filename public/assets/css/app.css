@@ -1468,10 +1468,10 @@ input:checked+.slider:before {
 #workers_area_modal tbody{
     max-height: 400px !important;
 }
-#workers_area_modal thead tr th:first-child,
-#workers_area_modal tbody tr td:first-child{
-    width: 50px !important;
-}
+/*#workers_area_modal thead tr th:first-child,*/
+/*#workers_area_modal tbody tr td:first-child{*/
+/*    width: 50px !important;*/
+/*}*/
 #workstationModal .modal-footer {
     border-top: none;
 }
