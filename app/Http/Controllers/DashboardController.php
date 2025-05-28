@@ -878,10 +878,8 @@ class DashboardController extends Controller
                 $percentageErrors = $row->total > 0 ? ($row->error_count / $row->total) * 100 : 0;
                 return [
                     'user_name' => $row->user_name,
-                    'total_logs' => $row->total,
-                    'error_logs' => $row->error_count,
-                    'percentage_errors' => round($percentageErrors, 2),
-                    'percentage_cleaned' => round(100 - $percentageErrors, 2),
+                    'total' => $row->total,
+                    'error_count' => $row->error_count,
                 ];
             });
         }

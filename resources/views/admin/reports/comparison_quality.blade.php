@@ -199,6 +199,11 @@
                 type: 'bar',
                 height: 350
             },
+            plotOptions: {
+                bar: {
+                    distributed: true
+                }
+            },
             series: [{
                 name: 'QC Pass Rate (%)',
                 data: @json($qcPassChart->pluck('rate'))
