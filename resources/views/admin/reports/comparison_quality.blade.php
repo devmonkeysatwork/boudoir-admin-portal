@@ -100,16 +100,10 @@
 
         <div class="col-12 col-md-6 mt-5">
             <div class="bg-white rounded-5 p-4">
-                <div id="lineChart"></div>
+                <h2 class="h24">QC Pass Rate by Employees</h2>
+                <div id="qcPassChart"></div>
             </div>
         </div>
-
-        <div class="col-12 col-md-6 mt-5">
-            <div class="bg-white rounded-5 p-4">
-                <div id="avgTimeChart"></div>
-            </div>
-        </div>
-
     </div>
 
 
@@ -197,6 +191,39 @@
 
         var chart = new ApexCharts(document.querySelector("#chart"), options);
         chart.render();
+
+
+
+        var options2 = {
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            series: [{
+                name: 'QC Pass Rate (%)',
+                data: @json($qcPassChart->pluck('rate'))
+            }],
+            xaxis: {
+                categories: @json($qcPassChart->pluck('name'))
+            },
+            yaxis: {
+                max: 100,
+                title: {
+                    text: 'Pass Rate (%)'
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val.toFixed(2) + "%"
+                    }
+                }
+            },
+            colors: ['#BD7F7F','#8D87CE']
+        };
+
+        var chart2 = new ApexCharts(document.querySelector("#qcPassChart"), options2);
+        chart2.render();
 
 
 

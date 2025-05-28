@@ -23,8 +23,8 @@ Route::get('/',[CustomAuthController::class, 'showLoginForm'])->name('home');
 
 //Route::get('/login', [CustomAuthController::class, 'showLoginForm'])->name('login');
 Route::post('/my_login', [CustomAuthController::class, 'login'])->name('custom.login');
-Route::get('/register', [CustomAuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [CustomAuthController::class, 'register'])->name('custom.register');
+//Route::get('/register', [CustomAuthController::class, 'showRegisterForm'])->name('register');
+//Route::post('/register', [CustomAuthController::class, 'register'])->name('custom.register');
 Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 
 // Authenticated routes
@@ -105,7 +105,7 @@ Route::middleware(['auth'])->group(function () {
 //Route::get('/barcode-scanner-mobile', function () {
 //    return view('barcode-scanner-mobile');
 //});
-Route::get('/send_email', [AdminController::class,'sendSummaryEmail'])->name('send-summary-email');
+//Route::get('/send_email', [AdminController::class,'sendSummaryEmail'])->name('send-summary-email');
 
 //Route::post('/product/attributes/import', [AdminController::class, 'import'])->name('product.attribute.import');
 

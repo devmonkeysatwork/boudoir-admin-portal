@@ -8,29 +8,32 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 
 class OrderSummaryEmail extends Mailable
 {
     use Queueable, SerializesModels;
     public $mailData;
+    public $filePath;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($mailData)
+    public function __construct($mailData,$filePath)
     {
         $this->title = $mailData['title']??'Daily Summary Report';
-        $this->production_order = $mailData['production_order']??null;
-        $this->orders_on_hold = $mailData['orders_on_hold']??null;
-        $this->order_with_issues = $mailData['order_with_issues']??null;
-        $this->rush_orders = $mailData['rush_orders']??null;
+        $this->mailData = $mailData;
+        $this->filePath = $filePath;
     }
 
     public function build()
     {
-        return $this->subject('Order Summary')
-            ->view('admin.email.summary_email',
-                ['title' => $this->title,'production_order' => $this->production_order,'orders_on_hold' => $this->orders_on_hold,'order_with_issues' => $this->order_with_issues,'rush_orders' => $this->rush_orders]);
+        return $this->subject('Daily Summary Report - ' . $this->mailData['date'])
+            ->view('admin.email.summary_email',['data'=>$this->mailData['summary']??[],'title' => $mailData['title']??'Daily Summary Report','date' => Carbon::now()->format('Y-m-d')])
+            ->attach($this->filePath, [
+                'as' => 'daily_summary_' . $this->mailData['date'] . '.xlsx',
+                'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
     }
 
     /**

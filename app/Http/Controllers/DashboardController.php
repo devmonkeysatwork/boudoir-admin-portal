@@ -574,11 +574,20 @@ class DashboardController extends Controller
 
 
         $teamMember = $data['teamMember1'] ?? null;
+        $teamMember2 = $data['teamMember2'] ?? null;
         $completed_id = OrderStatus::whereTitle('Completed')->pluck('id')->first();
 
+        //Query to get how many time an error on a specific workstation was reported for each reason.
         $dataResult = OrderLogs::where('status_id', $all_remake_statuses)
-            ->when($teamMember, function ($query) use ($teamMember) {
-                return $query->where('user_id', $teamMember);
+            ->when($teamMember || $teamMember2, function ($query) use ($teamMember,$teamMember2) {
+                return $query->where(function ($q) use ($teamMember, $teamMember2) {
+                    if ($teamMember) {
+                        $q->Where('user_id', $teamMember);
+                    }
+                    if ($teamMember2) {
+                        $q->orWhere('user_id', $teamMember2);
+                    }
+                });
             })
             ->whereHas('order', function ($query) use ($completed_id) {
                 $query->whereHas('last_log', function ($q) use ($completed_id) {
@@ -642,9 +651,69 @@ class DashboardController extends Controller
         $data['issues'] = $subStatusTitles;
         $data['issues_count'] = $graph;
 
-//        dd($graph,$all_remake_statuses);
+
+        $data['performance_stats'] = $this->getPerformanceStats($teamMember,$teamMember2);
+
+
+//        dd($data['performance_stats']);
 
         return view('admin.reports.comparison_efficiency',$data);
+    }
+    private function getPerformanceStats($teamMember = null, $teamMember2 = null)
+    {
+        $stats = [];
+
+        if ($teamMember || $teamMember2) {
+            if ($teamMember) {
+                $stats[] = $this->getUserTaskStats($teamMember);
+            }
+            if ($teamMember2) {
+                $stats[] = $this->getUserTaskStats($teamMember2);
+            }
+        } else {
+            $users = OrderLogs::select('user_id')->distinct()->pluck('user_id');
+            foreach ($users as $userId) {
+                $stats[] = $this->getUserTaskStats($userId);
+            }
+        }
+
+        return $stats;
+    }
+
+    private function getUserTaskStats($userId)
+    {
+        $logs = OrderLogs::select(
+            'users.name as user_name',
+            DB::raw('COUNT(*) as total_tasks'),
+            DB::raw('SUM(TIMESTAMPDIFF(SECOND, time_started, time_end)) as total_duration_sec'),
+            DB::raw('MIN(time_started) as first_task_time'),
+            DB::raw('MAX(time_end) as last_task_time')
+        )
+            ->join('users', 'order_logs.user_id', '=', 'users.id')
+            ->where('order_logs.user_id', $userId)
+            ->whereNotNull('time_started')
+            ->whereNotNull('time_end')
+            ->groupBy('users.name')
+            ->first();
+
+        if (!$logs) return null;
+
+        // Calculate total working hours
+        $totalSeconds = strtotime($logs->last_task_time) - strtotime($logs->first_task_time);
+        $totalHours = $totalSeconds > 0 ? $totalSeconds / 3600 : 1;
+
+        $tasksPerHour = $logs->total_tasks / $totalHours;
+
+        $avgCompletionMin = $logs->total_duration_sec > 0
+            ? ($logs->total_duration_sec / $logs->total_tasks) / 60
+            : 0;
+
+        return [
+            'user_name' => $logs->user_name,
+            'total_tasks' => $logs->total_tasks,
+            'avg_completion_time_min' => round($avgCompletionMin, 2),
+            'tasks_per_hour' => round($tasksPerHour, 2),
+        ];
     }
 
     public function quality(Request $request){
@@ -761,13 +830,72 @@ class DashboardController extends Controller
         $data['workstations'] = $userNames;
         $data['issues'] = $subStatusTitles;
         $data['issues_count'] = $graph;
-
-//        dd($dataResult, $graph);
+        $data['qcPassChart'] = $this->getErrorPercentage($teamMember1,$teamMember2);
+//        dd($data['qcPassChart']);
 
 
         return view('admin.reports.comparison_quality',$data);
     }
 
+    private function getErrorPercentage($teamMember = null, $teamMember2 = null){
+        $error_percentage = [];
+        if($teamMember || $teamMember2){
+            if($teamMember){
+                $error_percentage[] = OrderLogs::selectRaw('
+                    COUNT(*) as total,
+                    users.name as user_name,
+                    SUM(CASE WHEN error = 1 THEN 1 ELSE 0 END) as error_count
+                ')
+                    ->where('user_id', $teamMember)
+                    ->join('users', 'order_logs.user_id', '=', 'users.id')
+                    ->groupBy('users.name')
+                    ->first();
+            }
+            if($teamMember2){
+                $error_percentage[] = OrderLogs::selectRaw('
+                    COUNT(*) as total,
+                    users.name as user_name,
+                    SUM(CASE WHEN error = 1 THEN 1 ELSE 0 END) as error_count
+                ')
+                    ->where('user_id', $teamMember2)
+                    ->join('users', 'order_logs.user_id', '=', 'users.id')
+                    ->groupBy('users.name')
+                    ->first();
+            }
+        }else{
+            $results = OrderLogs::selectRaw('
+                    order_logs.user_id,
+                    users.name as user_name,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN error = 1 THEN 1 ELSE 0 END) as error_count
+                ')
+                ->join('users', 'order_logs.user_id', '=', 'users.id')
+                ->groupBy('order_logs.user_id', 'users.name')
+                ->get();
+
+            // Now format the output
+            $error_percentage = $results->map(function ($row) {
+                $percentageErrors = $row->total > 0 ? ($row->error_count / $row->total) * 100 : 0;
+                return [
+                    'user_name' => $row->user_name,
+                    'total_logs' => $row->total,
+                    'error_logs' => $row->error_count,
+                    'percentage_errors' => round($percentageErrors, 2),
+                    'percentage_cleaned' => round(100 - $percentageErrors, 2),
+                ];
+            });
+        }
+
+        $chartData = collect($error_percentage)->map(function ($error_percentage) {
+            $passRate = (($error_percentage['total'] - $error_percentage['error_count']) / $error_percentage['total']) * 100;
+            return [
+                'name' => $error_percentage['user_name'],
+                'rate' => round($passRate, 2),
+            ];
+        });
+
+        return $chartData;
+    }
 
     private function getUserPerformanceComparison($completedOrderIds, $user1_id, $user2_id, $start_date, $end_date, $group_by = 'daily')
     {

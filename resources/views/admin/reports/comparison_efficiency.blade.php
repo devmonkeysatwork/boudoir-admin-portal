@@ -93,20 +93,33 @@
             <div class="bg-white rounded-5 px-4">
                 <h2 class="p12 pt-4 fw-bold d-block text-capitalize">{{$performanceData['group_by']??'Day'}} orders completed by Employees</h2>
                 <div class="">
-                    <div id="chart"></div>
+                    <div id="chart">No data</div>
                 </div>
             </div>
         </div>
 
+        <div class="col-12 col-md-6 mt-5"></div>
         <div class="col-12 col-md-6 mt-5">
-            <div class="bg-white rounded-5 p-4">
-                <div id="lineChart"></div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 mt-5">
-            <div class="bg-white rounded-5 p-4">
-                <div id="avgTimeChart"></div>
+            <div class="">
+                <h2 class="h24">Task Completion Rate for Each Team Member</h2>
+                <table class="table tablesorter"  id="workers_area_modal">
+                    <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Task Completed per Hour</th>
+                        <th>Average Completion Time (min)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($performance_stats as $stats)
+                            <tr>
+                                <td>{{$stats['user_name']}}</td>
+                                <td>{{$stats['tasks_per_hour']}}</td>
+                                <td>{{$stats['avg_completion_time_min']}}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -123,15 +136,8 @@
     <script>
 
         $(document).ready(function() {
-            var dateRangeStr = '{{$date_range??""}}';
-            if (dateRangeStr) {
-                var dates = dateRangeStr.split(' - ');
-                var startDate = moment(dates[0], 'MM/DD/YYYY');
-                var endDate = moment(dates[1], 'MM/DD/YYYY');
-            } else {
-                var startDate = moment().startOf('day');
-                var endDate = moment().endOf('day');
-            }
+            var startDate = moment('{{$start_date}}', 'MM/DD/YYYY');
+            var endDate = moment('{{$end_date}}', 'MM/DD/YYYY');
             $('#date-range').daterangepicker({
                 opens: 'left',
                 startDate: startDate,

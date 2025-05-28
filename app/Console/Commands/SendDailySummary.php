@@ -2,12 +2,15 @@
 
 namespace App\Console\Commands;
 
+use App\Exports\DailySummaryExport;
 use App\Models\Orders;
 use App\Models\OrderStatus;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SendDailySummary extends Command
 {
@@ -30,26 +33,53 @@ class SendDailySummary extends Command
      */
     public function handle()
     {
-        try{
-            $completed_status = OrderStatus::where('status_name',Orders::statusCompleted)->pluck('id')->first();
-            $hold_status = OrderStatus::where('status_name',Orders::statusHold)->pluck('id')->first();
-            $issues = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->pluck('id');
+        try {
+            $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
+            $hold_status = OrderStatus::where('status_name', Orders::statusHold)->pluck('id')->first();
+            $issues = OrderStatus::whereIn('status_name', OrderStatus::adminStatuses)->pluck('id');
 
-            $mailData['rush_orders'] = Orders::with(['status','station','station.worker'])
-                ->where('is_rush','=',1)
-                ->where('status_id','!=',$completed_status)->get();
-            $mailData['production_order'] = Orders::with(['status','station','station.worker'])
-                ->where('status_id','!=',$completed_status)->get();
-            $mailData['orders_on_hold'] = Orders::with(['status','station','station.worker'])
-                ->where('status_id',$hold_status)->get();
-            $mailData['order_with_issues'] = Orders::with(['status','station','station.worker'])
-                ->whereIn('status_id',$issues)->get();
+            $data = [
+                'rush_orders' => Orders::with(['status', 'station', 'station.worker'])
+                    ->where('is_rush', '=', 1)
+                    ->where('status_id', '!=', $completed_status)->get(),
+                'production_orders' => Orders::with(['status', 'station', 'station.worker'])
+                    ->where('status_id', '!=', $completed_status)->get(),
+                'orders_on_hold' => Orders::with(['status', 'station', 'station.worker'])
+                    ->where('status_id', $hold_status)->get(),
+                'orders_with_issues' => Orders::with(['status', 'station', 'station.worker'])
+                    ->whereIn('status_id', $issues)->get(),
+            ];
 
-            $mailData['title']='Daily Summary Report';
-            Mail::to(env('ADMIN_EMAIL'))->cc([env('SUPPORT_EMAIL')])->send(new \App\Mail\OrderSummaryEmail($mailData));
-            Log::info('Daily Summary Sent for ' . Carbon::now()->format('Y-m-d'));
-        }catch (\Exception $e){
-            Log::error('Error while sending daily summary' . $e->getMessage());
+            $fileName = 'daily_summary_' . Carbon::now()->format('Y_m_d') . '.xlsx';
+//            $filePath = storage_path('app/temp/' . $fileName);
+            if (!file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+            Excel::store(new DailySummaryExport($data), 'temp/' . $fileName);
+
+            // Send email with Excel attachment
+            $mailData = [
+                'title' => 'Daily Summary Report',
+                'date' => Carbon::now()->format('Y-m-d'),
+                'summary' => [
+                    'rush_orders_count' => $data['rush_orders']->count(),
+                    'production_orders_count' => $data['production_orders']->count(),
+                    'orders_on_hold_count' => $data['orders_on_hold']->count(),
+                    'orders_with_issues_count' => $data['orders_with_issues']->count(),
+                ]
+            ];
+
+            Mail::to(env('ADMIN_EMAIL'))
+                ->cc([env('SUPPORT_EMAIL')])
+                ->send(new \App\Mail\OrderSummaryEmail($mailData, storage_path('app/temp/' . $fileName)));
+
+            // Clean up the file after sending
+            Storage::delete('app/temp/' . $fileName);
+
+            Log::info('Daily Summary Excel report sent for ' . Carbon::now()->format('Y-m-d'));
+
+        } catch (\Exception $e) {
+            Log::error('Error while sending daily summary: ' . $e->getMessage());
         }
     }
 }

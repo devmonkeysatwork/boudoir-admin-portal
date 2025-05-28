@@ -11,7 +11,12 @@ class CustomAuthController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login');
+        if(Auth::user()){
+            return redirect()->route('dashboard');
+        }else{
+            return view('auth.login');
+        }
+
     }
 
     public function login(Request $request)
