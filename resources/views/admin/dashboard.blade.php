@@ -220,13 +220,15 @@
                             <option {{$filter_date && $filter_date =='oldest'?'selected':''}} value="oldest">Oldest</option>
                             <option {{$filter_date && $filter_date =='newest'?'selected':''}} value="newest">Newest</option>
                         </select>
-                        <select class="sort-select form-select pe-5" id="order_filter">
-                            <option value="" disabled selected>Filter By</option>
-                            <option {{$filter_by_time && $filter_by_time =='day'?'selected':''}} value="day">This Day</option>
-                            <option {{$filter_by_time && $filter_by_time =='week'?'selected':''}} value="week">This Week</option>
-                            <option {{$filter_by_time && $filter_by_time =='month'?'selected':''}} value="week">This Month</option>
-                            <option {{$filter_by_time && $filter_by_time =='year'?'selected':''}} value="year">This Year</option>
-                        </select>
+                        @if(Auth::user()->role_id == 1)
+                            <select class="sort-select form-select pe-5" id="order_filter">
+                                <option value="" disabled selected>Filter By</option>
+                                <option {{$filter_by_time && $filter_by_time =='day'?'selected':''}} value="day">This Day</option>
+                                <option {{$filter_by_time && $filter_by_time =='week'?'selected':''}} value="week">This Week</option>
+                                <option {{$filter_by_time && $filter_by_time =='month'?'selected':''}} value="week">This Month</option>
+                                <option {{$filter_by_time && $filter_by_time =='year'?'selected':''}} value="year">This Year</option>
+                            </select>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -975,7 +975,7 @@ class DashboardController extends Controller
 
         // Fetch orders with pagination
         $filter_date = $request->input('filter_date');
-        $filter_by_time = $request->input('filter_by_time');
+        $filter_by_time = null;
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
