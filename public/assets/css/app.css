@@ -382,6 +382,9 @@ button {
     margin-top: 30px;
 }
 
+#dashboardOrdersTable_wrapper{
+    min-width: 1000px;
+}
 .orders-top, .team-top, .workstations-top{
     display: flex;
     justify-content: space-between;
@@ -1832,10 +1835,10 @@ input:checked+.slider:before {
 
 }
 
-/*#orders_table_db #orders_table_container{*/
-/*    max-height: 500px;*/
-/*    overflow-y: auto;*/
-/*}*/
+#orders_table_db #orders_table_container{
+    /*max-height: 500px;*/
+    overflow-y: auto;
+}
 
 #comments_container{
     max-height: 500px;
@@ -2064,6 +2067,14 @@ thead {
     }
     .filter-item{
         flex: 0 0 15%;
+    }
+}
+@media (max-width: 992px) {
+    .team-workstations{
+        flex-direction: column;
+    }
+    .team-workstations .team, .team-workstations .workstations{
+        width: 100%;
     }
 }
 .remove_status_btn{
