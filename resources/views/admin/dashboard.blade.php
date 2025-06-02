@@ -220,6 +220,13 @@
                             <option {{$filter_date && $filter_date =='oldest'?'selected':''}} value="oldest">Oldest</option>
                             <option {{$filter_date && $filter_date =='newest'?'selected':''}} value="newest">Newest</option>
                         </select>
+                        <select class="sort-select form-select pe-5" id="order_filter">
+                            <option value="" disabled selected>Filter By</option>
+                            <option {{$filter_by_time && $filter_by_time =='day'?'selected':''}} value="day">This Day</option>
+                            <option {{$filter_by_time && $filter_by_time =='week'?'selected':''}} value="week">This Week</option>
+                            <option {{$filter_by_time && $filter_by_time =='month'?'selected':''}} value="week">This Month</option>
+                            <option {{$filter_by_time && $filter_by_time =='year'?'selected':''}} value="year">This Year</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -272,7 +279,7 @@
                                     @php
                                         $dateStarted = \Carbon\Carbon::parse($order->created_at);
                                         $now = \Carbon\Carbon::now();
-                                        $workingTime = calculateWorkingTime($dateStarted, $now);
+                                        $workingTime = calculateWorkingTime($dateStarted, $now,$order->order_id);
                                     @endphp
 
                                     {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
@@ -569,6 +576,10 @@
         $('#order_sort').on('change', function() {
             var filterDate = $(this).val();
             updateUrlParameter('filter_date', filterDate);
+        });
+        $('#order_filter').on('change', function() {
+            var filterDate = $(this).val();
+            updateUrlParameter('filter_by_time', filterDate);
         });
 
         $('#team-sort').on('change', function() {

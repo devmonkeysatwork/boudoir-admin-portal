@@ -73,6 +73,7 @@ class AdminController extends Controller
 
         // Fetch orders with pagination
         $filter_date = $request->input('filter_date');
+        $filter_by_time = $request->input('filter_by_time');
         $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
@@ -84,6 +85,23 @@ class AdminController extends Controller
                 $q->orderBy('is_rush','DESC')
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+            })
+            ->when($filter_by_time, function ($q) use ($filter_by_time) {
+                if ($filter_by_time == 'day') {
+                    $q->whereDate('date_started', now()->toDateString());
+                } elseif ($filter_by_time == 'week') {
+                    $q->whereBetween('date_started', [
+                        now()->startOfWeek()->toDateString(),
+                        now()->endOfWeek()->toDateString()
+                    ]);
+                } elseif ($filter_by_time == 'month') {
+                    $q->whereBetween('date_started', [
+                        now()->startOfMonth()->toDateString(),
+                        now()->endOfMonth()->toDateString()
+                    ]);
+                } elseif ($filter_by_time == 'year') {
+                    $q->whereYear('date_started', now()->year);
+                }
             })
             ->where('orderType','=',Orders::parentType)
             ->where('status_id','!=',$completedStatusId[0]);
@@ -189,6 +207,7 @@ class AdminController extends Controller
             'edit_statuses',
             'sub_statuses',
             'filter_date',
+            'filter_by_time',
             'percentageChange',
             'statuses',
             'orderLog',
@@ -572,6 +591,7 @@ class AdminController extends Controller
         $status = new OrderStatus();
         $status->status_name = $request->input('status-name');
         $status->status_color = $request->input('status-color');
+        $status->title = str_replace(" ",'-',$request->input('status-name'));
         $status->save();
 
         $response = [

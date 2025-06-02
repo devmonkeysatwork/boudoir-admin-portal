@@ -408,7 +408,8 @@ button {
 
 .sort-dropdown {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    gap: 5px;
 }
 
 .choices {

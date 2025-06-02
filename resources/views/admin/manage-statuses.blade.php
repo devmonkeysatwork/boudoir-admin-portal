@@ -66,7 +66,7 @@
                         <input type="text" id="status-name" name="status-name">
                         <div class="form-group preview">
                             <label for="preview">Preview</label>
-                            <span class="status processing" id="create-preview">Processing</span>
+                            <span class="status" id="create-preview">Processing</span>
                         </div>
                     </div>
                     <div class="form-group color">
@@ -116,6 +116,42 @@
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <script>
         // Initialize Pickr for edit status modal
+        const pickr = Pickr.create({
+            el: '#create-status-color-picker',
+            theme: 'classic', // or 'monolith', or 'nano'
+            default: '#007BFF',
+            components: {
+                // Main components
+                preview: true,
+                opacity: true,
+                hue: true,
+
+                // Input / output Options
+                interaction: {
+                    hex: true,
+                    rgba: true,
+                    hsla: true,
+                    hsva: true,
+                    cmyk: true,
+                    input: true,
+                    clear: true,
+                    save: true
+                }
+            }
+        });
+
+        pickr.on('change', (color, instance) => {
+            const colorValue = color.toHEXA().toString();
+            document.querySelector('#status-color').value = colorValue;
+            document.querySelector('#create-preview').style.backgroundColor = colorValue;
+        });
+
+        pickr.on('save', (color, instance) => {
+            const colorValue = color.toHEXA().toString();
+            document.querySelector('#status-color').value = colorValue;
+            editPickr.hide();
+        });
+        // Initialize Pickr for edit status modal
         const editPickr = Pickr.create({
             el: '#edit-status-color-picker',
             theme: 'classic', // or 'monolith', or 'nano'
@@ -151,6 +187,7 @@
             document.querySelector('#edit-status-color').value = colorValue;
             editPickr.hide();
         });
+
         function addStatus(){
             let data  = new FormData($('#addStatusForm')[0]);
             data.append('_token','{{@csrf_token()}}');
