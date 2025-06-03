@@ -281,7 +281,7 @@
                                     @php
                                         $dateStarted = \Carbon\Carbon::parse($order->created_at);
                                         $now = \Carbon\Carbon::now();
-                                        $workingTime = calculateWorkingTime($dateStarted, $now,$order->order_id);
+                                        $workingTime = calculateWorkingTime($dateStarted, $now,$order->order_id, $waitingId ?? null);
                                     @endphp
 
                                     {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}

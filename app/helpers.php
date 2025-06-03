@@ -104,7 +104,8 @@ if (! function_exists('formatDuration')) {
 //        'minutes' => $minutes,
 //    ];
 //}
-function calculateWorkingTime($startDate, $endDate, $orderId = null)
+
+function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId = null)
 {
 //    \Illuminate\Support\Facades\Log::info($startDate .' : '. $endDate);
     $start = Carbon::parse($startDate);
@@ -121,71 +122,95 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null)
     }
 
     $totalMinutes = 0;
+    $fullDays = 0;
 
-    // Normalize the start time to the start of working hours
-    if ($start->hour < 9) {
-        $start->setTime(9, 0);
-    } elseif ($start->hour >= 17) {
-        $start->addDay()->setTime(9, 0);
-    }
+    $currentDate = $start->copy()->startOfDay();
+    $endDate = $end->copy()->startOfDay();
 
-    // Normalize the end time to the end of working hours
-    if ($end->hour >= 17) {
-        $end->setTime(17, 0);
-    } elseif ($end->hour < 9) {
-        $end->subDay()->setTime(17, 0);
-    }
+    // Process each day
+    while ($currentDate->lessThanOrEqualTo($endDate)) {
+        // Only process weekdays
+        if ($currentDate->isWeekday()) {
+            $workStart = $currentDate->copy()->setTime(9, 0);
+            $workEnd = $currentDate->copy()->setTime(17, 0);
 
-    // Iterate through each day between the start and end dates
-    while ($start->lessThanOrEqualTo($end)) {
-        // If the current day is a weekday (Monday to Friday)
-        if ($start->isWeekday()) {
-            // Calculate the start and end of the working day
-            $workStart = $start->copy()->setTime(9, 0);
-            $workEnd = $start->copy()->setTime(17, 0);
-
-            // If the current start time is before the work start
-            if ($start->greaterThan($workStart)) {
-                $actualStart = $start;
+            // Determine actual start time for this day
+            if ($currentDate->isSameDay($start)) {
+                $actualStart = $start->greaterThan($workStart) ? $start : $workStart;
             } else {
                 $actualStart = $workStart;
             }
 
-            // If the current end time is after the work end
-            if ($end->lessThan($workEnd)) {
-                $actualEnd = $end;
+            // Determine actual end time for this day
+            if ($currentDate->isSameDay($end)) {
+                $actualEnd = $end->lessThan($workEnd) ? $end : $workEnd;
             } else {
                 $actualEnd = $workEnd;
             }
 
-            // Add the difference in minutes
-            if ($actualStart->lessThanOrEqualTo($actualEnd)) {
-                $totalMinutes += $actualStart->diffInMinutes($actualEnd);
+            // Calculate minutes for this day if there's actual working time
+            if ($actualStart->lessThan($actualEnd)) {
+                $dailyMinutes = $actualStart->diffInMinutes($actualEnd);
+
+                // Check if this constitutes a full working day (8 hours = 480 minutes)
+                if ($dailyMinutes >= 480) {
+                    $fullDays++;
+                } else {
+                    $totalMinutes += $dailyMinutes;
+                }
             }
         }
 
-        // Move to the next day
-        $start->addDay()->setTime(9, 0);
+        $currentDate->addDay();
     }
-
-    // Convert total time into months, days, hours, and minutes
-    $totalHours = floor($totalMinutes / 60);
-    $totalDays = floor($totalHours / 8); // Working hours in a day
-    $hours = $totalHours % 8;
-    $minutes = $totalMinutes % 60;
-
-    // Convert total days into months and remaining days
-    $months = floor($totalDays / 30);
-    $days = $totalDays % 30;
 
 
     // If an order was in waiting
-//    if($orderId){
-//        $waitingTime = \App\Models\OrderLogs::select('time_started','time_end')->whereOrderId($orderId)
-//            ->whereStatusId(22)->get()->toArray();
-//        $time_to_subtract = calculateWorkingTime($waitingTime[0]['time_started'],$waitingTime[0]['time_end']);
-//        dd($waitingTime,$time_to_subtract);
-//    }
+    // Calculate waiting time to subtract if orderId is provided
+    if ($orderId) {
+        $waitingLogs = \App\Models\OrderLogs::select('time_started', 'time_end')
+            ->where('order_id', $orderId)
+            ->where('status_id', $waitingId)
+            ->whereNotNull('time_started')
+            ->whereNotNull('time_end')
+            ->get();
+
+        if(count($waitingLogs)){
+            $totalWaitingMinutes = 0;
+            $waitingFullDays = 0;
+
+            foreach ($waitingLogs as $log) {
+                $waitingTime = calculateWorkingTimeInternal($log->time_started, $log->time_end);
+//                \Illuminate\Support\Facades\Log::info($waitingTime);
+                $waitingFullDays += $waitingTime['full_days'];
+                $totalWaitingMinutes += $waitingTime['total_minutes'];
+            }
+
+            // Subtract waiting time from total time
+            $fullDays = max(0, $fullDays - $waitingFullDays);
+            $totalMinutes = max(0, $totalMinutes - $totalWaitingMinutes);
+
+            // Handle negative minutes by borrowing from full days
+            while ($totalMinutes < 0 && $fullDays > 0) {
+                $fullDays--;
+                $totalMinutes += 480; // Add 8 hours worth of minutes
+            }
+
+            // Ensure we don't go negative
+            $totalMinutes = max(0, $totalMinutes);
+            $fullDays = max(0, $fullDays);
+        }
+    }
+
+
+
+    // Convert remaining minutes to hours and minutes
+    $hours = floor($totalMinutes / 60);
+    $minutes = $totalMinutes % 60;
+
+    // Convert full days to months and remaining days
+    $months = floor($fullDays / 30); // Assuming 30 working days per month
+    $days = $fullDays % 30;
 
     return [
         'months' => $months,
@@ -193,5 +218,57 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null)
         'hours' => $hours,
         'minutes' => $minutes,
     ];
+}
+
+
+
+// Helper function to calculate working time without subtraction
+function calculateWorkingTimeInternal($startDate, $endDate)
+{
+    $start = Carbon::parse($startDate);
+    $end = Carbon::parse($endDate);
+
+    if ($start->greaterThan($end)) {
+        return ['full_days' => 0, 'total_minutes' => 0];
+    }
+
+    $totalMinutes = 0;
+    $fullDays = 0;
+
+    $currentDate = $start->copy()->startOfDay();
+    $endDate = $end->copy()->startOfDay();
+
+    while ($currentDate->lessThanOrEqualTo($endDate)) {
+        if ($currentDate->isWeekday()) {
+            $workStart = $currentDate->copy()->setTime(9, 0);
+            $workEnd = $currentDate->copy()->setTime(17, 0);
+
+            if ($currentDate->isSameDay($start)) {
+                $actualStart = $start->greaterThan($workStart) ? $start : $workStart;
+            } else {
+                $actualStart = $workStart;
+            }
+
+            if ($currentDate->isSameDay($end)) {
+                $actualEnd = $end->lessThan($workEnd) ? $end : $workEnd;
+            } else {
+                $actualEnd = $workEnd;
+            }
+
+            if ($actualStart->lessThan($actualEnd)) {
+                $dailyMinutes = $actualStart->diffInMinutes($actualEnd);
+
+                if ($dailyMinutes >= 480) {
+                    $fullDays++;
+                } else {
+                    $totalMinutes += $dailyMinutes;
+                }
+            }
+        }
+
+        $currentDate->addDay();
+    }
+
+    return ['full_days' => $fullDays, 'total_minutes' => $totalMinutes];
 }
 

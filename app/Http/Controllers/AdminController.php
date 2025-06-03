@@ -193,6 +193,7 @@ class AdminController extends Controller
         $workstation_sort = $request->input('workstation_sort');
         $teamMembers = $this->getTeamCounts($team_sort,$now);
         $workstations = $this->getWorkstationCounts($workstation_sort, $now, $excludedStatusIds);
+        $waitingId = OrderStatus::where('status_name','Waiting')->pluck('id')->first();
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',
             'inProductionOrdersCount',
@@ -211,6 +212,7 @@ class AdminController extends Controller
             'percentageChange',
             'statuses',
             'orderLog',
+            'waitingId',
         ));
     }
 
