@@ -349,6 +349,7 @@ class AdminController extends Controller
             $order->save();
 
             $engravingId = OrderStatus::where('status_name',OrderStatus::ENGRAVING)->pluck('id')->first();
+            $waitingId = OrderStatus::where('status_name',OrderStatus::Waiting)->pluck('id')->first();
             //If there is sub status for on-hold or any other then it should mark the previous step as an error occurred
             if($request->edit_sub_status){
                 //            $lastLog = Orders::whereId($order->id)->with(['last_log'])->first();
@@ -359,7 +360,7 @@ class AdminController extends Controller
                         'message' => 'No activity so far on this order'
                     ]);
                 }
-                if($engravingId != $request->edit_status){
+                if($engravingId != $request->edit_status && $waitingId != $request->edit_status){
                     $lastLog->error = 1;
                 }
                 $lastLog->save();
@@ -371,7 +372,7 @@ class AdminController extends Controller
             $orderStatus->sub_status_id = $request->edit_sub_status??null;
             $orderStatus->user_id = Auth::user()->id;
             $orderStatus->notes = $request->notes??null;
-            if($engravingId != $request->edit_status){
+            if($engravingId != $request->edit_status && $waitingId != $request->edit_status){
                 $orderStatus->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
             }
             $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');

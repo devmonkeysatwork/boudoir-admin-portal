@@ -9,11 +9,12 @@ class OrderStatus extends Model
 {
     use HasFactory;
     protected $table = 'order_status';
-    const adminStatuses = ['On hold','Issue with print','Remake + Reasons','Engraving'];
+    const adminStatuses = ['On hold','Issue with print','Remake + Reasons','Engraving','Waiting'];
     const exceptionStatuses = [13,14,15,16,21];
     const possibleNoneValueStatus = ['Gilding','Imprinting'];
     const COMPLETED = 'Completed';
     const ENGRAVING = 'Engraving';
+    const Waiting = 'Waiting';
 
 
     function sub_status(){

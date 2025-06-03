@@ -180,13 +180,19 @@
                                         </div>
                                         <div class="col-6 text-end">
                                             @if(Auth::user()->role_id == 1)
-                                                <button class="edit-btn" onclick="editStatus(this)" data-id="{{$activeOrder->order->id}}" data-status="{{$activeOrder->order->status_id}}" data-workstation="{{$activeOrder->order->workstation_id}}">
+                                                <button class="edit-btn" {{$activeOrder->status_id == $waitingId ? 'disabled':''}} onclick="editStatus(this)" data-id="{{$activeOrder->order->id}}" data-status="{{$activeOrder->order->status_id}}" data-workstation="{{$activeOrder->order->workstation_id}}">
                                                     <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
                                                 </button>
                                             @endif
-                                            <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},'{{ $activeOrder->order_id }}')">
-                                                Current Station Complete
-                                            </button>
+                                            @if($activeOrder->status_id == $waitingId)
+                                                <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},'{{ $activeOrder->order_id }}')">
+                                                    End Waiting
+                                                </button>
+                                            @else
+                                                <button class="btn btn-primary create-btn ms-2 btn-complete-phase" onclick="endOrderPhase({{ $activeOrder->id }},'{{ $activeOrder->order_id }}')">
+                                                    Current Station Complete
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -247,6 +253,13 @@
                     </thead>
 
                     <tbody id="ordersBody">
+                    @php
+                        $all_active_ids = $orderLog->pluck('order_id')->toArray();
+                        $all_active_status_ids = $orderLog->pluck('status_id','order_id');
+                        //dd($all_active_status_ids,$waitingId);
+                    @endphp
+
+
                     @if(isset($orders) && count($orders))
                         @foreach($orders as $order)
                             <tr>
@@ -289,9 +302,9 @@
                                     {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
                                     {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
                                 </td>
-                                <td>
+                                <td data-order="@if(isset($order->deadline)) {{\Carbon\Carbon::parse($order->deadline)->timestamp}} @else 0 @endif">
                                     @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
-                                        <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
+                                        <img src="{{asset('icons/exclaimatio.svg')}}" alt="Overdue" title="Deadline passed">
                                     @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
                                         <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
                                     @else
@@ -300,20 +313,20 @@
                                 </td>
                                 <td>
                                     @if(Auth::user()->role_id == 1)
-                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                        <button class="edit-btn" {{isset($all_active_status_ids) && isset($all_active_status_ids[$order->order_id]) && $all_active_status_ids[$order->order_id] == $waitingId ? 'disabled':''}} onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
                                             <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
                                         </button>
                                     @endif
 
-                                    @if(isset($orderLog) && isset($orderLog->order_id) && $orderLog->order_id == $order->order_id)
-                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
-                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
-                                        </button>
-                                    @else
-                                        <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+{{--                                    @if(isset($all_active_ids) && is_array($all_active_ids) && in_array($order->order_id,$all_active_ids))--}}
+{{--                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">--}}
+{{--                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">--}}
+{{--                                        </button>--}}
+{{--                                    @else--}}
+                                        <button data-id="{{$order->order_id}}" {{isset($all_active_status_ids) && isset($all_active_status_ids[$order->order_id]) && $all_active_status_ids[$order->order_id] == $waitingId ? 'disabled':''}} type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
                                             Start order
                                         </button>
-                                    @endif
+{{--                                    @endif--}}
                                 </td>
                             </tr>
                         @endforeach
