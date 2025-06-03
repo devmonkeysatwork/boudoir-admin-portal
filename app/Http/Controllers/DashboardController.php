@@ -1018,7 +1018,7 @@ class DashboardController extends Controller
             ->whereNotNull('time_started')
             ->whereNull('time_end')
             ->get();
-
+        $waitingId = OrderStatus::where('status_name','Waiting')->pluck('id')->first();
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',
             'inProductionOrdersCount',
@@ -1031,6 +1031,7 @@ class DashboardController extends Controller
             'statuses',
             'orderLog',
             'ordersInQueue'
+            'waitingId'
         ));
     }
 
