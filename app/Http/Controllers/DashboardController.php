@@ -949,7 +949,7 @@ class DashboardController extends Controller
                 $my_product_ids[]=$p_id->product_id;
             }
 
-            $ordersInQueue = Orders::with('items') // Eager load items relation
+            $ordersInQueue = Orders::with('items')
                 ->whereHas('items', function ($query) use ($my_product_ids) {
                     $query->whereIn('product_id', $my_product_ids); // Filter items by product_id
                 })

@@ -68,42 +68,42 @@ if (! function_exists('formatDuration')) {
 
 
 
-//function calculateWorkingTime($startDate, $endDate)
-//{
-//    $start = Carbon::parse($startDate);
-//    $end = Carbon::parse($endDate);
-//
-//    // If the start date is after the end date, return zero difference
-//    if ($start->greaterThan($end)) {
-//        return [
-//            'months' => 0,
-//            'days' => 0,
-//            'hours' => 0,
-//            'minutes' => 0,
-//        ];
-//    }
-//
-//    // Calculate the difference
-//    $diffInMinutes = $start->diffInMinutes($end);
-//    $totalHours = floor($diffInMinutes / 60);
-//    $totalDays = floor($totalHours / 24);
-//
-//    // Convert total time into months, days, hours, and minutes
-//    $months = floor($totalDays / 30);
-//    $days = $totalDays % 30;
-//    $hours = $totalHours % 24;
-//    $minutes = $diffInMinutes % 60;
-//    if($hours>17 && $days > 0){
-//        $days++;
-//        $hours=0;
-//    }
-//    return [
-//        'months' => $months,
-//        'days' => $days,
-//        'hours' => $hours,
-//        'minutes' => $minutes,
-//    ];
-//}
+function calculateTime($startDate, $endDate)
+{
+    $start = Carbon::parse($startDate);
+    $end = Carbon::parse($endDate);
+
+    // If the start date is after the end date, return zero difference
+    if ($start->greaterThan($end)) {
+        return [
+            'months' => 0,
+            'days' => 0,
+            'hours' => 0,
+            'minutes' => 0,
+        ];
+    }
+
+    // Calculate the difference
+    $diffInMinutes = $start->diffInMinutes($end);
+    $totalHours = floor($diffInMinutes / 60);
+    $totalDays = floor($totalHours / 24);
+
+    // Convert total time into months, days, hours, and minutes
+    $months = floor($totalDays / 30);
+    $days = $totalDays % 30;
+    $hours = $totalHours % 24;
+    $minutes = $diffInMinutes % 60;
+    if($hours>17 && $days > 0){
+        $days++;
+        $hours=0;
+    }
+    return [
+        'months' => $months,
+        'days' => $days,
+        'hours' => $hours,
+        'minutes' => $minutes,
+    ];
+}
 
 function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId = null)
 {

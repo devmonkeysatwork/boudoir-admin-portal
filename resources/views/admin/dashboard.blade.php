@@ -255,8 +255,6 @@
                     <tbody id="ordersBody">
                     @php
                         $all_active_ids = $orderLog->pluck('order_id')->toArray();
-                        $all_active_status_ids = $orderLog->pluck('status_id','order_id');
-                        //dd($all_active_status_ids,$waitingId);
                     @endphp
 
 
@@ -313,7 +311,7 @@
                                 </td>
                                 <td>
                                     @if(Auth::user()->role_id == 1)
-                                        <button class="edit-btn" {{isset($all_active_status_ids) && isset($all_active_status_ids[$order->order_id]) && $all_active_status_ids[$order->order_id] == $waitingId ? 'disabled':''}} onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                        <button class="edit-btn" {{isset($order->last_log) && !isset($order->last_log->time_end) && $order->last_log->status_id == $waitingId ? 'disabled':''}} onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
                                             <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
                                         </button>
                                     @endif
@@ -323,7 +321,7 @@
 {{--                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">--}}
 {{--                                        </button>--}}
 {{--                                    @else--}}
-                                        <button data-id="{{$order->order_id}}" {{isset($all_active_status_ids) && isset($all_active_status_ids[$order->order_id]) && $all_active_status_ids[$order->order_id] == $waitingId ? 'disabled':''}} type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                        <button data-id="{{$order->order_id}}" {{isset($order->last_log) && !isset($order->last_log->time_end) && $order->last_log->status_id == $waitingId ? 'disabled':''}} type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
                                             Start order
                                         </button>
 {{--                                    @endif--}}
