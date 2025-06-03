@@ -1030,7 +1030,7 @@ class DashboardController extends Controller
             'filter_by_time',
             'statuses',
             'orderLog',
-            'ordersInQueue'
+            'ordersInQueue',
             'waitingId'
         ));
     }
