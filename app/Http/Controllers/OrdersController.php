@@ -95,6 +95,7 @@ class OrdersController extends Controller
             $order_id = Orders::where('order_id',$request->order_id)->pluck('id')->first();
         }
 
+        $waitingId = OrderStatus::where('status_name','Waiting')->pluck('id')->first();
         $userId = auth()->id();
         // Fetch the associated OrderLogs to get the time_started
         $orderLog = OrderLogs::with(['user','status'])
@@ -104,7 +105,7 @@ class OrdersController extends Controller
             ->first();
 //        dd($data);
         return view('admin.orders',compact('orders',  'statuses', 'edit_statuses','users','order_id',
-            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog','completedStatusId'));
+            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog','completedStatusId','waitingId'));
     }
 
     /**

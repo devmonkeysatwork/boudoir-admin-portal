@@ -116,20 +116,9 @@
                             {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
                             {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
                         </td>
-                        <td>
-                            {{--                  {{\Carbon\Carbon::parse($order->deadline)->format('Y-m-d')}}<br>--}}
-
+                        <td data-order="@if(isset($order->deadline)) {{\Carbon\Carbon::parse($order->deadline)->timestamp}} @else 0 @endif">
                             @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
-                                <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
-
-                                {{--                      @php--}}
-                                {{--                          $now = \Carbon\Carbon::now();--}}
-                                {{--                          $deadline = \Carbon\Carbon::parse($order->deadline);--}}
-                                {{--                          $microseconds = $now->diffInUTCMicroseconds($deadline);--}}
-                                {{--                          $signedMicroseconds = $now->lessThan($deadline) ? -$microseconds : $microseconds;--}}
-                                {{--                          echo $signedMicroseconds;--}}
-                                {{--                      @endphp--}}
-
+                                <img src="{{asset('icons/exclaimatio.svg')}}" alt="Overdue" title="Deadline passed">
                             @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
                                 <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
                             @else
@@ -137,8 +126,9 @@
                             @endif
                         </td>
                         <td>
+
                             @if(Auth::user()->role_id == 1)
-                                <button class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
+                                <button {{isset($order->last_log) && !isset($order->last_log->time_end) && $order->last_log->status_id == $waitingId ? 'disabled':''}} class="edit-btn" onclick="editStatus(this)" data-id="{{$order->id}}" data-status="{{$order->status_id}}" data-workstation="{{$order->workstation_id}}">
                                     <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
                                 </button>
                             @endif
@@ -148,7 +138,7 @@
                                     <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
                                 </button>
                             @else
-                                <button data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
+                                <button {{isset($order->last_log) && !isset($order->last_log->time_end) && $order->last_log->status_id == $waitingId ? 'disabled':''}} data-id="{{$order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
                                     Start order
                                 </button>
                             @endif
