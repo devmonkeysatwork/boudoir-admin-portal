@@ -118,7 +118,7 @@
                         </td>
                         <td data-order="@if(isset($order->deadline)) {{\Carbon\Carbon::parse($order->deadline)->timestamp}} @else 0 @endif">
                             @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
-                                <img src="{{asset('icons/exclaimatio.svg')}}" alt="Overdue" title="Deadline passed">
+                                <span class="fw-bold text-danger">{{round(\Carbon\Carbon::parse($order->deadline)->diffInHours(\Carbon\Carbon::now()),0)}} hours late</span>
                             @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
                                 <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
                             @else
