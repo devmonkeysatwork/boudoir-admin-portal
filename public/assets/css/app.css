@@ -2039,7 +2039,7 @@ thead {
 /*#dashboardOrdersTable td:nth-child(2),*/
 #dashboardOrdersTable th:nth-child(6),
 #dashboardOrdersTable td:nth-child(6) {
-    width: 100px;
+    width: 135px;
 }
 @media (min-width: 1440px) {
     .filter-item{
