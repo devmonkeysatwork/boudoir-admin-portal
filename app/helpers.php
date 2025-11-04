@@ -272,3 +272,31 @@ function calculateWorkingTimeInternal($startDate, $endDate)
     return ['full_days' => $fullDays, 'total_minutes' => $totalMinutes];
 }
 
+
+
+
+function calculateWorkingHoursLate($deadlineDate, $currentDate = null)
+{
+    if (!$currentDate) {
+        $currentDate = Carbon::now();
+    }
+
+    $deadline = Carbon::parse($deadlineDate)->endOfDay();
+    $current = Carbon::parse($currentDate);
+
+    // If not actually late, return 0
+    if ($current->lessThan($deadline)) {
+        return 0;
+    }
+
+    // Use existing calculateWorkingTime function
+    $workingTime = calculateWorkingTime($deadline, $current, null, null);
+
+    // Convert to total hours
+    $totalHours = ($workingTime['months'] * 30 * 8) +
+        ($workingTime['days'] * 8) +
+        $workingTime['hours'] +
+        round($workingTime['minutes'] / 60, 1);
+
+    return $totalHours;
+}

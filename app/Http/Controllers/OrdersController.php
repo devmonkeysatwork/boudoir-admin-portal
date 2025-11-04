@@ -168,7 +168,7 @@ class OrdersController extends Controller
                 $order->transaction_id = $order_data['transaction_id']??null;
                 $order->currency = $order_data['currency']??null;
                 $order->total_amount = $order_data['total_amount']??null;
-                $order->subtotal = $order_data['order_id']??null;
+                $order->subtotal = $order_data['subtotal']??null;
                 $order->total_discount = $order_data['total_discount']??null;
                 $order->total_tax = $order_data['total_tax']??null;
                 $order->shipping_total = $order_data['shipping_total']??null;

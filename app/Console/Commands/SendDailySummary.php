@@ -69,9 +69,13 @@ class SendDailySummary extends Command
                 ]
             ];
 
-            Mail::to(env('ADMIN_EMAIL'))
-                ->cc([env('SUPPORT_EMAIL')])
-                ->send(new \App\Mail\OrderSummaryEmail($mailData, storage_path('app/temp/' . $fileName)));
+            $adminEmails = \App\Models\User::where('role_id', 1)->pluck('email')->toArray();
+
+            if (!empty($adminEmails)) {
+                Mail::to($adminEmails)
+                    ->cc([env('SUPPORT_EMAIL')])
+                    ->send(new \App\Mail\OrderSummaryEmail($mailData, storage_path('app/temp/' . $fileName)));
+            }
 
             // Clean up the file after sending
             Storage::delete('app/temp/' . $fileName);
