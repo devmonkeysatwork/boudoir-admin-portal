@@ -30,7 +30,6 @@ class Orders extends Model
         }
 
         return $this->hasMany(Orders::class, 'parentOrder', 'id')
-            ->with('last_log')
             ->where('status_id', '!=', $completedStatusId);
     }
 
