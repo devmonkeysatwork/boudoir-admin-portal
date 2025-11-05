@@ -176,7 +176,13 @@
                                         @endif
                                             </span>
                                 </td>
-                                <td>{{$child_order->station?->worker?->name ?? null}}</td>
+                                <td>
+                                    @if(isset($child_order->last_log->user))
+                                        {{$child_order->last_log?->user?->name ?? null}}
+                                    @else
+                                        {{$child_order->station?->worker?->name ?? null}}
+                                    @endif
+                                </td>
                                 <td>{{$child_order->date_started}}</td>
                                 <td>
                                     @php
