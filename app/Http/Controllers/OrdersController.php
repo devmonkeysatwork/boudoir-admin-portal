@@ -53,7 +53,7 @@ class OrdersController extends Controller
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->first();
 
 
-        $query = Orders::with(['children','items','status','last_log','last_log.status','last_log.sub_status'])
+        $query = Orders::with(['activeChildren','items','status','last_log','last_log.status','last_log.sub_status'])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');

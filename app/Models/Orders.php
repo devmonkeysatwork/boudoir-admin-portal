@@ -20,6 +20,19 @@ class Orders extends Model
     function children(){
         return $this->hasMany(Orders::class,'parentOrder','id');
     }
+
+    function activeChildren(){
+        static $completedStatusId;
+
+        if ($completedStatusId === null) {
+            $completedStatusId = OrderStatus::where('status_name', 'Completed')
+                ->value('id');
+        }
+
+        return $this->hasMany(Orders::class, 'parentOrder', 'id')
+            ->where('status_id', '!=', $completedStatusId);
+    }
+
     function parent(){
         return $this->hasOne(Orders::class,'id','parentOrder');
     }
