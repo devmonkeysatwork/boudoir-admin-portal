@@ -10,7 +10,7 @@
         </table>
 
         @if($notifications->hasMorePages())
-            <button id="load_more" class="btn create-btn mt-3 mx-auto d-inline-block" data-page="2">Load More</button>
+            <button id="load_more" class="create-btn mt-3 mx-auto d-inline-block" data-page="2">Load More</button>
         @endif
     </div>
 @endsection
