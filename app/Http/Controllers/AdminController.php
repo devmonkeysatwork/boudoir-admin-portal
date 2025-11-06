@@ -545,7 +545,12 @@ class AdminController extends Controller
     public function notification()
     {
         $data['notifications'] = Notifications::with(['log','log.user','log.status','log.sub_status','comment','comment.user','comment.order'])
-            ->orderBy('created_at','DESC')->get();
+            ->orderBy('created_at','DESC')
+            ->paginate(10);
+
+        if(request()->ajax()) {
+            return view('admin.partials.notification_rows', $data)->render();
+        }
 
         return view('admin.notifications',$data);
     }

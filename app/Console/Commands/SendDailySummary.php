@@ -42,7 +42,8 @@ class SendDailySummary extends Command
                 'rush_orders' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('is_rush', '=', 1)
                     ->where('status_id', '!=', $completed_status)->get(),
-                'production_orders' => Orders::with(['status', 'station', 'station.worker'])
+                'production_orders' => Orders::with(['activeChildren','status', 'station', 'station.worker'])
+                    ->where('orderType','=',Orders::parentType)
                     ->where('status_id', '!=', $completed_status)->get(),
                 'orders_on_hold' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('status_id', $hold_status)->get(),
