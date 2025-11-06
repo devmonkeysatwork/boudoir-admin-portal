@@ -55,6 +55,7 @@ class AdminController extends Controller
         $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
         $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->toArray();
+        $remakeStatusId = OrderStatus::where('status_name','Remake + Reasons')->pluck('id')->first();
         $excludedStatusIds = array_merge(
             $readyForPrintStatusId,
 //            $onHoldStatusIds,
@@ -74,7 +75,14 @@ class AdminController extends Controller
         // Fetch orders with pagination
         $filter_date = $request->input('filter_date');
         $filter_by_time = $request->input('filter_by_time');
-        $query = Orders::with(['activeChildren','items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
+        $query = Orders::with(['activeChildren' => function($query) use ($remakeStatusId) {
+                $query->withExists(['logs as has_remake' => function ($q) use ($remakeStatusId) {
+                    $q->where('status_id', $remakeStatusId);
+                }]);
+            },'items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
+            ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
+                $query->where('status_id', $remakeStatusId);
+            }])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');

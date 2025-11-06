@@ -15,7 +15,7 @@ class Orders extends Model
     const statusCompleted = 'Completed';
     const statusHold = 'On hold';
 
-
+    protected $appends = ['has_remake'];
 
     function children(){
         return $this->hasMany(Orders::class,'parentOrder','id');
@@ -55,6 +55,11 @@ class Orders extends Model
     function last_log(){
         return $this->hasOne(OrderLogs::class, 'order_id', 'order_id')
             ->latest('time_started');
+    }
+
+    public function getHasRemakeAttribute()
+    {
+        return $this->logs()->where('status_id', 11)->exists();
     }
 
     public function comments()

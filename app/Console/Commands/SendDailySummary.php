@@ -49,6 +49,11 @@ class SendDailySummary extends Command
                     ->where('status_id', $hold_status)->get(),
                 'orders_with_issues' => Orders::with(['status', 'station', 'station.worker'])
                     ->whereIn('status_id', $issues)->get(),
+                'late_orders' => Orders::with(['status', 'station', 'station.worker'])
+                    ->where('status_id', '!=', $completed_status)
+                    ->where('orderType','=',Orders::parentType)
+                    ->whereDate('deadline', '<', now()->toDateString())
+                    ->get(),
             ];
 
             $fileName = 'daily_summary_' . Carbon::now()->format('Y_m_d') . '.xlsx';
@@ -70,6 +75,7 @@ class SendDailySummary extends Command
                     'production_orders_count' => $productionOrdersCount,
                     'orders_on_hold_count' => $data['orders_on_hold']->count(),
                     'orders_with_issues_count' => $data['orders_with_issues']->count(),
+                    'late_orders_count' => $data['late_orders']->count(),
                 ]
             ];
 

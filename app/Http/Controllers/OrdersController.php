@@ -51,9 +51,17 @@ class OrdersController extends Controller
         $filter_status = $request->input('filter_status');
         $filter_priority = $request->input('filter_priority');
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->first();
+        $remakeStatusId = OrderStatus::where('status_name','Remake + Reasons')->pluck('id')->first();
 
 
-        $query = Orders::with(['activeChildren','items','status','last_log','last_log.status','last_log.sub_status'])
+        $query = Orders::with(['activeChildren' => function($query) use ($remakeStatusId) {
+                $query->withExists(['logs as has_remake' => function ($q) use ($remakeStatusId) {
+                    $q->where('status_id', $remakeStatusId);
+                }]);
+            },'items','status','last_log','last_log.status','last_log.sub_status'])
+            ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
+                $query->where('status_id', $remakeStatusId);
+            }])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');

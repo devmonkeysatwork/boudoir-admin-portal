@@ -26,6 +26,10 @@
             <span class="label">Orders on Hold:</span>
             <span class="value">{{ $data['orders_on_hold_count']??0 }}</span>
         </div>
+        <div class="summary-item">
+            <span class="label">Late Orders:</span>
+            <span class="value">{{ $data['late_orders_count']??0 }}</span>
+        </div>
         <h3>📎 Excel Report Attached</h3>
         <p>Please find the detailed daily summary report attached as an Excel file. The report contains multiple sheets.</p>
     </div>

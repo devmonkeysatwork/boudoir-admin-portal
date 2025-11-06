@@ -142,6 +142,9 @@
                                     Start order
                                 </button>
                             @endif
+                                @if($order->has_remake)
+                                    <img src="{{ asset('icons/redo.svg') }}" alt="Remake Icon" width="20px">
+                                @endif
 {{--                            @if(isset($order->children) && count($order->children))--}}
 {{--                                <button class="edit-btn" onclick="viewChildren('children_{{$order->id}}')">--}}
 {{--                                    <img src="{{ asset('icons/chevron-down.svg') }}" alt="Expand Icon">--}}
@@ -220,7 +223,9 @@
                                             Start order
                                         </button>
                                     @endif
-
+                                        @if($child_order->has_remake)
+                                            <img src="{{ asset('icons/redo.svg') }}" alt="Remake Icon" width="20px">
+                                        @endif
                                 </td>
                             </tr>
                         @endforeach

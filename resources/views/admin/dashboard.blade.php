@@ -331,6 +331,9 @@
                                             Start order
                                         </button>
 {{--                                    @endif--}}
+                                        @if($order->has_remake)
+                                            <img src="{{ asset('icons/redo.svg') }}" alt="Remake Icon" width="20px">
+                                        @endif
                                 </td>
                             </tr>
                             @if(isset($order) && isset($order->activeChildren) && count($order->activeChildren))
@@ -392,7 +395,9 @@
                                             <button data-id="{{$child_order->order_id}}" {{isset($child_order->last_log) && !isset($child_order->last_log->time_end) && $child_order->last_log->status_id == $waitingId ? 'disabled':''}} type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
                                                 Start order
                                             </button>
-
+                                            @if($child_order->has_remake)
+                                                <img src="{{ asset('icons/redo.svg') }}" alt="Remake Icon" width="20px">
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
