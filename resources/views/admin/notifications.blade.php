@@ -10,36 +10,53 @@
         </table>
 
         @if($notifications->hasMorePages())
-            <button id="load_more" class="create-btn mt-3 mx-auto d-inline-block" data-page="2">Load More</button>
+            <div id="load_more" class="text-center mt-3" data-page="2">
+                <span class="loading-text">Loading...</span>
+            </div>
         @endif
     </div>
 @endsection
+
 @section('footer_scripts')
     <script>
         $(document).ready(function() {
-            $('#load_more').on('click', function() {
-                let btn = $(this);
-                let page = btn.data('page');
+            let isLoading = false;
+            let hasMorePages = {{ $notifications->hasMorePages() ? 'true' : 'false' }};
+            let currentPage = 2;
 
-                btn.prop('disabled', true).text('Loading...');
+            $(window).on('scroll', function() {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+                    if (!isLoading && hasMorePages) {
+                        loadMoreNotifications();
+                    }
+                }
+            });
+
+            function loadMoreNotifications() {
+                isLoading = true;
+                $('#load_more .loading-text').show();
 
                 $.ajax({
-                    url: "{{route('admin.notification')}}?page=" + page,
+                    url: "{{route('admin.notification')}}?page=" + currentPage,
                     type: 'GET',
                     success: function(response) {
                         $('#notification_tbody').append(response);
-                        btn.data('page', page + 1);
-                        btn.prop('disabled', false).text('Load More');
+                        currentPage++;
+                        isLoading = false;
                         if($(response).filter('tr').length < 10) {
-                            btn.hide();
+                            hasMorePages = false;
+                            $('#load_more').hide();
                         }
                     },
                     error: function() {
-                        btn.prop('disabled', false).text('Load More');
-                        alert('Error loading notifications');
+                        isLoading = false;
+                        $('#load_more .loading-text').text('Error loading. Scroll to retry.');
+                        setTimeout(function() {
+                            $('#load_more .loading-text').text('Loading...');
+                        }, 2000);
                     }
                 });
-            });
+            }
         });
     </script>
 @endsection
