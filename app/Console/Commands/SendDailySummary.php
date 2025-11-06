@@ -42,7 +42,8 @@ class SendDailySummary extends Command
                 'rush_orders' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('is_rush', '=', 1)
                     ->where('status_id', '!=', $completed_status)->get(),
-                'production_orders' => Orders::with(['status', 'station', 'station.worker'])
+                'production_orders' => Orders::with(['activeChildren','status', 'station', 'station.worker'])
+                    ->where('orderType','=',Orders::parentType)
                     ->where('status_id', '!=', $completed_status)->get(),
                 'orders_on_hold' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('status_id', $hold_status)->get(),
@@ -57,13 +58,16 @@ class SendDailySummary extends Command
             }
             Excel::store(new DailySummaryExport($data), 'temp/' . $fileName);
 
+            $productionOrdersCount = $data['production_orders']->sum(function($order) {
+                return 1 + ($order->activeChildren ? $order->activeChildren->count() : 0);
+            });
             // Send email with Excel attachment
             $mailData = [
                 'title' => 'Daily Summary Report',
                 'date' => Carbon::now()->format('Y-m-d'),
                 'summary' => [
                     'rush_orders_count' => $data['rush_orders']->count(),
-                    'production_orders_count' => $data['production_orders']->count(),
+                    'production_orders_count' => $productionOrdersCount,
                     'orders_on_hold_count' => $data['orders_on_hold']->count(),
                     'orders_with_issues_count' => $data['orders_with_issues']->count(),
                 ]
