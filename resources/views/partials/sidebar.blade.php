@@ -55,7 +55,7 @@
         @if(Auth::user()->role_id == 1)
 {{--            <li>--}}
 {{--                <a href="{{ route('admin.download_todays_report') }}">--}}
-{{--                    <img src="{{ asset('icons/notification.png') }}" alt="Settings">Download Daily Report--}}
+{{--                    <img src="{{ asset('icons/reports.png') }}" alt="Settings">Download Daily Report--}}
 {{--                </a>--}}
 {{--            </li>--}}
 {{--            <li class="item-with-dropdown">--}}

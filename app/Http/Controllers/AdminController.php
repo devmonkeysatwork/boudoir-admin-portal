@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
+use App\Exports\ProductionReportExport;
 use App\Mail\TemplateEmail;
 use App\Models\EmailTemplates;
 use App\Models\Notifications;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 //use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Facades\Excel;
 use Picqer\Barcode\BarcodeGeneratorJPG;
 
 class AdminController extends Controller
@@ -820,100 +822,72 @@ class AdminController extends Controller
 //        return redirect()->back()->with('success', 'Product attributes imported successfully.');
 //    }
 
-    public function downloadProductionReport(Request $request)
+    public function downloadTodaysReport(Request $request)
     {
-//        $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
-//        $remakeStatusId = OrderStatus::where('status_name','Remake + Reasons')->pluck('id')->first();
-//        try {
-//            $orders = Orders::with(['status', 'items.attributes', 'children'])
-//                ->whereIn('orderType', \App\Models\Orders::parentType)
-//                ->where('status_id', '!=', $completed_status)
-//                ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
-//                    $query->where('status_id', $remakeStatusId);
-//                }])
-////                ->orderBy('created_at', 'desc')
-//                ->get();
-//
-//            $reportData = [];
-//            $now = \Carbon\Carbon::now();
-//            foreach ($orders as $order) {
-//                // Calculate days in production
-//                $daysInProduction = 0;
-//                if ($order->date_started) {
-//                    $startDate = Carbon::parse($order->date_started);
-//                    $daysInProduction = calculateWorkingTime($startDate,$now,$order->order_id,null,$order->has_remake);
-//                }
-//
-//                // Calculate total production days for items
-//                $totalProductionDays = 0;
-//                foreach ($order->items as $item) {
-//                    $itemDays = TimelinePool::where('item', $item->product_name)
-//                            ->whereNull('attribute')
-//                            ->whereNull('attribute_value')
-//                            ->pluck('days')
-//                            ->first() ?? 0;
-//
-//                    foreach ($item->attributes as $attribute) {
-//                        $attrDays = TimelinePool::where('item', $item->product_name)
-//                                ->where('attribute', $attribute->type)
-//                                ->where('attribute_value', $attribute->title)
-//                                ->pluck('days')
-//                                ->first() ?? 0;
-//                        $itemDays += $attrDays;
-//                    }
-//
-//                    $totalProductionDays = max($totalProductionDays, $itemDays);
-//                }
-//
-//                // Highlight if production time exceeds expected
-//                $highlight = $totalProductionDays > 0 && $daysInProduction > ($totalProductionDays * 1.2);
-//
-//                $reportData[] = [
-//                    'order_number' => $order->order_id,
-//                    'status' => $order->status->name ?? 'N/A',
-//                    'days_in_production' => $daysInProduction,
-//                    'expected_production_days' => $totalProductionDays,
-//                    'highlight' => $highlight ? 'YES' : 'NO',
-//                    'deadline' => $order->deadline,
-//                    'is_rush' => $order->is_rush ? 'YES' : 'NO',
-//                ];
-//            }
-//
-//            // Generate CSV
-//            $filename = 'production_report_' . date('Y-m-d_His') . '.csv';
-//            $headers = [
-//                'Content-Type' => 'text/csv',
-//                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-//            ];
-//
-//            $callback = function() use ($reportData) {
-//                $file = fopen('php://output', 'w');
-//
-//                // Headers
-//                fputcsv($file, [
-//                    'Order Number',
-//                    'Status',
-//                    'Days in Production',
-//                    'Expected Production Days',
-//                    'Active Children Orders',
-//                    'Highlight (Long Production)',
-//                    'Deadline',
-//                    'Rush Order'
-//                ]);
-//
-//                // Data
-//                foreach ($reportData as $row) {
-//                    fputcsv($file, $row);
-//                }
-//
-//                fclose($file);
-//            };
-//
-//            return response()->stream($callback, 200, $headers);
-//
-//        } catch (\Exception $e) {
-//            Log::error('Failed to generate production report: ' . $e->getMessage());
-//            return response()->json(['Error' => $e->getMessage()], 500);
-//        }
+        $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
+        $remakeStatusId = OrderStatus::where('status_name','Remake + Reasons')->pluck('id')->first();
+
+        try {
+            $orders = Orders::with(['status', 'items.attributes', 'activeChildren'])
+                ->where('orderType', \App\Models\Orders::parentType)
+                ->where('status_id', '!=', $completed_status)
+                ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
+                    $query->where('status_id', $remakeStatusId);
+                }])
+                ->get();
+
+            $reportData = [];
+            $now = \Carbon\Carbon::now();
+
+            foreach ($orders as $order) {
+                $daysInProduction = 0;
+                if ($order->date_started) {
+                    $startDate = Carbon::parse($order->date_started);
+                    $daysInProduction = Carbon::parse($startDate)->diffInWeekdays($now);
+                }
+
+                $totalProductionDays = Carbon::parse($order->date_started)->diffInWeekdays($order->deadline);
+                $highlight = $totalProductionDays > 0 && $daysInProduction > $totalProductionDays;
+
+                $reportData[] = [
+                    'order_number' => $order->order_id,
+                    'status' => $order->status->name ?? 'N/A',
+                    'days_in_production' => $daysInProduction,
+                    'expected_production_days' => $totalProductionDays,
+                    'highlight' => $highlight ? 'YES' : 'NO',
+                    'deadline' => $order->deadline,
+                    'is_rush' => $order->is_rush ? 'YES' : 'NO',
+                ];
+
+                if(isset($order->activeChildren) && count($order->activeChildren)){
+                    foreach($order->activeChildren as $child_order){
+                        $daysInProduction = 0;
+                        if ($child_order->date_started) {
+                            $startDate = Carbon::parse($child_order->date_started);
+                            $daysInProduction = Carbon::parse($startDate)->diffInWeekdays($now);
+                        }
+
+                        $totalProductionDays = Carbon::parse($child_order->date_started)->diffInWeekdays($child_order->deadline);
+                        $highlight = $totalProductionDays > 0 && $daysInProduction > ($totalProductionDays * 1.2);
+
+                        $reportData[] = [
+                            'order_number' => $child_order->order_id,
+                            'status' => $child_order->status->name ?? 'N/A',
+                            'days_in_production' => $daysInProduction,
+                            'expected_production_days' => $totalProductionDays,
+                            'highlight' => $highlight ? 'YES' : 'NO',
+                            'deadline' => $child_order->deadline,
+                            'is_rush' => $child_order->is_rush ? 'YES' : 'NO',
+                        ];
+                    }
+                }
+            }
+
+            return Excel::download(new ProductionReportExport($reportData), 'production_report_' . date('Y-m-d_His') . '.xlsx');
+
+        } catch (\Exception $e) {
+            Log::error('Failed to generate production report: ' . $e->getMessage());
+            return response()->json(['Error' => $e->getMessage()], 500);
+        }
     }
 }
