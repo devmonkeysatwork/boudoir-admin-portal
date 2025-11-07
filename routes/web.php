@@ -78,6 +78,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/barcode/{status_name}', [AdminController::class, 'generateBarcode'])->name('barcode.generate');
 
 
+    Route::get('/download_todays_report', [AdminController::class, 'downloadTodaysReport'])->name('admin.download_todays_report');
+
     Route::get('/settings/manage-emails', [EmailTemplatesController::class, 'manageEmails'])->name('admin.manage-emails');
     Route::post('/email/add', [EmailTemplatesController::class, 'addEmailTemplate'])->name('email.add');
     Route::post('/email/update_status', [EmailTemplatesController::class, 'updateStatus'])->name('email.update_status');

@@ -731,11 +731,18 @@ class OrdersController extends Controller
                     $query->whereIn('product_id', $p_ids); // Filter items by product_id
                 })->whereOrderId($orderNumber)->count();
                 if(!$prod_ids){
-                    $status_name = OrderStatus::whereId($statusId)->pluck('status_name')->first();
-                    return response()->json([
-                        'status' => 400,
-                        'message' => 'Order ID '.$orderNumber.' does not have '.$status_name.' required.',
-                    ]);
+                    $excludedProducts = Product::whereIn('name',['Metal Prints','Canvas'])->pluck('id');
+                    $orderProducts = Orders::with('items') // Eager load items relation
+                    ->whereHas('items', function ($query) use ($excludedProducts) {
+                        $query->whereIn('product_id', $excludedProducts);
+                    })->whereOrderId($orderNumber)->count();
+                    if(!$orderProducts){
+                        $status_name = OrderStatus::whereId($statusId)->pluck('status_name')->first();
+                        return response()->json([
+                            'status' => 400,
+                            'message' => 'Order ID '.$orderNumber.' does not have '.$status_name.' required.',
+                        ]);
+                    }
                 }
             }
 

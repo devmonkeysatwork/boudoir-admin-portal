@@ -15,6 +15,7 @@ class OrderStatus extends Model
     const COMPLETED = 'Completed';
     const ENGRAVING = 'Engraving';
     const Waiting = 'Waiting';
+    const RemakeStatusId = 11;
 
 
     function sub_status(){

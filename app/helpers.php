@@ -105,10 +105,27 @@ function calculateTime($startDate, $endDate)
     ];
 }
 
-function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId = null)
+function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId = null, $has_remake = false)
 {
 //    \Illuminate\Support\Facades\Log::info($startDate .' : '. $endDate);
     $start = Carbon::parse($startDate);
+    if($has_remake && $orderId){
+        $remakeLog = \App\Models\OrderLogs::where('status_id',\App\Models\OrderStatus::RemakeStatusId)
+            ->where('order_id', $orderId)
+            ->orderBy('time_started', 'DESC')
+            ->first();
+
+        if($remakeLog){
+            $nextLog = \App\Models\OrderLogs::where('order_id', $orderId)
+                ->where('time_started', '>', $remakeLog->time_started)
+                ->orderBy('time_started', 'ASC')
+                ->first();
+
+            if($nextLog && $nextLog->time_started){
+                $start = Carbon::parse($nextLog->time_started);
+            }
+        }
+    }
     $end = Carbon::parse($endDate);
 
     // If the start date is after the end date, return zero difference
