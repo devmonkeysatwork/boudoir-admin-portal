@@ -331,9 +331,11 @@
                     <button class="btn pdf-btn" id="download-pdf">
                         <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
                     </button>
-                    <button class="btn pdf-btn override-btn bg-warning fw-bolder text-white" onclick="document.getElementById('adminOverrideFormModal').style.display='block'">
-                        Override
-                    </button>
+                    @if(Auth::user()->role_id == 1)
+                        <button class="btn pdf-btn override-btn bg-warning fw-bolder text-white" onclick="document.getElementById('adminOverrideFormModal').style.display='block'">
+                            Override
+                        </button>
+                    @endif
                     <div class="new-comment">
                         <textarea placeholder="Write a message..." id="comment_input"></textarea>
                         {{-- <button class="msg-btn">
