@@ -2368,3 +2368,6 @@ button.btn_loader.clicked:after{
 #adminOverrideFormModal{
     z-index: 1100;
 }
+.override-btn{
+    height: 73px;
+}

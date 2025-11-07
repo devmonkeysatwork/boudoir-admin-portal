@@ -645,7 +645,7 @@
                     <button class="btn pdf-btn" id="download-pdf">
                         <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
                     </button>
-                    <button class="btn pdf-btn" onclick="document.getElementById('adminOverrideFormModal').style.display='block'">
+                    <button class="btn pdf-btn override-btn bg-warning fw-bolder text-white" onclick="document.getElementById('adminOverrideFormModal').style.display='block'">
                         Override
                     </button>
                     <div class="new-comment">
