@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/search_orders', [OrdersController::class, 'search'])->name('search.orders');
     Route::post('/update_order_status', [AdminController::class, 'updateOrderStatus'])->name('admin.update_order_status');
+    Route::post('/admin_override_status', [AdminController::class, 'adminOverride'])->name('admin.admin_override_status');
     Route::post('/get_order_details', [OrdersController::class, 'getOrderDetails'])->name('admin.get_order_details');
     Route::post('/order_add_comment', [OrdersController::class, 'addComment'])->name('order.add_comment');
     Route::post('/comment_add_reply', [OrdersController::class, 'addComment'])->name('order.add_reply');

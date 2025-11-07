@@ -267,6 +267,30 @@
             </div>
         </div>
 
+        <x-modal id="adminOverrideFormModal" title="Edit Status">
+            <form id="adminOverrideForm" action="javascript:void(0);" method="post" class="d-block">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="override_status">Status</label>
+                            <select name="override_status" class="form-select" id="override_status">
+                                <option value="0">Select One</option>
+                                @foreach($statuses as $status)
+                                    <option value="{{$status->id}}">{{$status->status_name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <x-slot name="footer">
+                <div class="form-group buttons">
+                    <button type="submit" class="btn save-btn" onclick="adminOverrideStatus()">Override</button>
+                    <button type="button" class="btn cancel-btn" onclick="document.getElementById('adminOverrideFormModal').style.display='none'">Cancel</button>
+                </div>
+            </x-slot>
+        </x-modal>
+
 
         <x-modal id="orderModal" title="Order #00001">
             <span class="status" id="modal_status_text">Completed</span>
@@ -306,6 +330,9 @@
                 <x-slot name="footer">
                     <button class="btn pdf-btn" id="download-pdf">
                         <img src="{{ asset('icons/pdf.png') }}" alt="PDF">View Order
+                    </button>
+                    <button class="btn pdf-btn" onclick="document.getElementById('adminOverrideFormModal').style.display='block'">
+                        Override
                     </button>
                     <div class="new-comment">
                         <textarea placeholder="Write a message..." id="comment_input"></textarea>
@@ -721,6 +748,39 @@
         $('#download-pdf').on('click', function() {
             window.location.href = '/orders/' + activeOrder + '/download-pdf';
         });
+
+        function adminOverrideStatus(){
+            let data  = new FormData($('#adminOverrideForm')[0]);
+            data.append('order_id',activeOrder);
+            data.append('_token','{{@csrf_token()}}');
+            $.ajax({
+                type: 'post',
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: '{{route('admin.admin_override_status')}}',
+                data: data,
+                beforeSend() {
+                    show_loader();
+                },
+                complete: function (response) {
+                    hide_loader();
+
+                },
+                success: function (response) {
+                    if(response.status == 200){
+                        show_toast(response.message,'success');
+                        window.location.reload();
+
+                    }else{
+                        show_toast(response.message,'error');
+                    }
+
+                },
+                error: function (response) {
+                }
+            })
+        }
 
         document.addEventListener('DOMContentLoaded', function () {
             var link = document.getElementById('pdf-export');

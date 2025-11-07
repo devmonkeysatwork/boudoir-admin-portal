@@ -438,6 +438,56 @@ class AdminController extends Controller
         }
     }
 
+    public function adminOverride(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $order = Orders::find($request->order_id);
+            $order->status_id = $request->override_status;
+            $order->save();
+
+            $lastLog = OrderLogs::whereOrderId($order->order_id)->whereNull('time_end')->orderBy('id','DESC')->first();
+            if($lastLog){
+                $lastLog->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+                $lastLog->save();
+            }
+
+            $orderStatus = new OrderLogs();
+            $orderStatus->order_id = $order->order_id;
+            $orderStatus->status_id = $request->override_status;
+            $orderStatus->user_id = Auth::user()->id;
+            $orderStatus->notes = $request->notes??null;
+            $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+            $orderStatus->save();
+
+            $log = OrderLogs::whereId($orderStatus->id)->with(['user','status','updated_by'])->first();
+
+            $notification = new Notifications();
+            $notification->type = Notifications::typestatus;
+            $notification->log_id = $log->id;
+            $notification->save();
+
+            $message = ['message'=>'A status was updated for order id '.$request->order_id,'log'=>$log];
+            event(new NewMessage($message));
+
+
+            DB::commit();
+
+            $response = [
+                'status' => 200,
+                'message' => 'Status updated successfully.',
+            ];
+        }catch (\Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 400,
+                'message' => 'Something went wrong'.$e->getMessage()
+            ]);
+        }
+
+        return response()->json($response);
+    }
+
 
 
     public function areas()
@@ -828,7 +878,7 @@ class AdminController extends Controller
         $remakeStatusId = OrderStatus::where('status_name','Remake + Reasons')->pluck('id')->first();
 
         try {
-            $orders = Orders::with(['status', 'items.attributes', 'activeChildren'])
+            $orders = Orders::with(['status','last_log', 'items.attributes', 'activeChildren'])
                 ->where('orderType', \App\Models\Orders::parentType)
                 ->where('status_id', '!=', $completed_status)
                 ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
@@ -851,7 +901,7 @@ class AdminController extends Controller
 
                 $reportData[] = [
                     'order_number' => $order->order_id,
-                    'status' => $order->status->name ?? 'N/A',
+                    'status' => $order->last_log?->status?->status_name ?? $order->status?->status_name ?? 'N/A',
                     'days_in_production' => $daysInProduction,
                     'expected_production_days' => $totalProductionDays,
                     'highlight' => $highlight ? 'YES' : 'NO',
@@ -872,7 +922,7 @@ class AdminController extends Controller
 
                         $reportData[] = [
                             'order_number' => $child_order->order_id,
-                            'status' => $child_order->status->name ?? 'N/A',
+                            'status' => $child_order->last_log?->status?->status_name ?? $child_order->status?->status_name ?? 'N/A',
                             'days_in_production' => $daysInProduction,
                             'expected_production_days' => $totalProductionDays,
                             'highlight' => $highlight ? 'YES' : 'NO',

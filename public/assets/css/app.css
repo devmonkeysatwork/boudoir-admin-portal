@@ -2365,3 +2365,6 @@ button.btn_loader.clicked:after{
 #workers_area_modal.areas_modal_table tbody tr td:first-child {
     display: none !important;
 }
+#adminOverrideFormModal{
+    z-index: 1100;
+}
