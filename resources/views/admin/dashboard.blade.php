@@ -575,7 +575,7 @@
                 </form>
                 <x-slot name="footer">
                     <div class="form-group buttons">
-                        <button type="submit" class="btn save-btn" onclick="adminOverrideStatus()">Override</button>
+                        <button type="submit" class="btn btn-dark" onclick="adminOverrideStatus()">Override</button>
                         <button type="button" class="btn cancel-btn" onclick="document.getElementById('adminOverrideFormModal').style.display='none'">Cancel</button>
                     </div>
                 </x-slot>
