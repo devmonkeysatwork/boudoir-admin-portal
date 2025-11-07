@@ -26,7 +26,7 @@ class ProductionReportExport implements FromArray, WithHeadings
             'Status',
             'Days in Production',
             'Expected Production Days',
-            'Highlight (Long Production)',
+            'Long Production',
             'Deadline',
             'Rush Order'
         ];
