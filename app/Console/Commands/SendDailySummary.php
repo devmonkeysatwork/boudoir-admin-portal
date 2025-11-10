@@ -51,7 +51,6 @@ class SendDailySummary extends Command
                     ->whereIn('status_id', $issues)->get(),
                 'late_orders' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('status_id', '!=', $completed_status)
-                    ->where('orderType','=',Orders::parentType)
                     ->whereDate('deadline', '<', now()->toDateString())
                     ->get(),
             ];
@@ -82,7 +81,7 @@ class SendDailySummary extends Command
             $adminEmails = \App\Models\User::where('role_id', 1)->pluck('email')->toArray();
 
             if (!empty($adminEmails)) {
-                Mail::to($adminEmails)
+                Mail::to('touseefktk22@gmail.com')
                     ->cc([env('SUPPORT_EMAIL')])
                     ->send(new \App\Mail\OrderSummaryEmail($mailData, storage_path('app/temp/' . $fileName)));
             }
