@@ -732,7 +732,7 @@ class OrdersController extends Controller
                 })->whereOrderId($orderNumber)->count();
                 if(!$prod_ids){
                     $excludedProducts = Product::whereIn('name',['Metal Prints','Canvas'])->pluck('id');
-                    $orderProducts = Orders::with('items') // Eager load items relation
+                    $orderProducts = Orders::with('items')
                     ->whereHas('items', function ($query) use ($excludedProducts) {
                         $query->whereIn('product_id', $excludedProducts);
                     })->whereOrderId($orderNumber)->count();
