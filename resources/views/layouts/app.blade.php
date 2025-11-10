@@ -291,16 +291,16 @@
     }
 
     function endOrderPhase(id,orderNumber) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Are you sure?',
-            text: 'Do you really want to end this order phase?',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, End it!',
-            cancelButtonText: 'Cancel',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
+        // Swal.fire({
+        //     icon: 'warning',
+        //     title: 'Are you sure?',
+        //     text: 'Do you really want to end this order phase?',
+        //     showCancelButton: true,
+        //     confirmButtonText: 'Yes, End it!',
+        //     cancelButtonText: 'Cancel',
+        //     reverseButtons: true
+        // }).then((result) => {
+        //     if (result.isConfirmed) {
                 let data  = new FormData();
                 data.append('_token','{{@csrf_token()}}');
                 data.append('id',id);
@@ -330,8 +330,8 @@
                         hide_loader();
                     }
                 });
-            }
-        });
+        //     }
+        // });
 
     }
 
