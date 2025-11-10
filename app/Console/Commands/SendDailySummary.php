@@ -86,7 +86,7 @@ class SendDailySummary extends Command
             $adminEmails = \App\Models\User::where('role_id', 1)->pluck('email')->toArray();
 
             if (!empty($adminEmails)) {
-                Mail::to('touseefktk22@gmail.com')
+                Mail::to($adminEmails)
                     ->cc([env('SUPPORT_EMAIL')])
                     ->send(new \App\Mail\OrderSummaryEmail($mailData, storage_path('app/temp/' . $fileName)));
             }
