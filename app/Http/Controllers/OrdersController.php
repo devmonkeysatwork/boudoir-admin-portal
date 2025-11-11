@@ -724,7 +724,18 @@ class OrdersController extends Controller
                     'message' => 'Invalid input format. Please provide order number and status ID.',
                 ]);
             }
-            if(!in_array($statusId,OrderStatus::exceptionStatuses)){
+            $order = Orders::with('items')->whereOrderId($orderNumber)->first();
+            $exceptionStatuses = OrderStatus::exceptionStatuses;
+            $nextExpectedStatusId = $this->getNextExpectedStatusForOrder($order);
+
+            $skipValidation = false;
+            if ($nextExpectedStatusId &&
+                in_array($nextExpectedStatusId, $exceptionStatuses) &&
+                in_array($statusId, $exceptionStatuses)) {
+                $skipValidation = true;
+            }
+
+            if(!$skipValidation){
                 $p_ids = ProductFlows::where('step_id',$statusId)->pluck('product_id');
                 $prod_ids = Orders::with('items') // Eager load items relation
                 ->whereHas('items', function ($query) use ($p_ids) {
@@ -748,7 +759,7 @@ class OrdersController extends Controller
 
 
 
-
+//            dd($nextExpectedStatusId,in_array($nextExpectedStatusId, $exceptionStatuses),in_array($statusId, $exceptionStatuses));
 
             //Gilding
             if($statusId == 3){
@@ -819,7 +830,7 @@ class OrdersController extends Controller
 
             $orderStatus->save();
 
-            $order = Orders::where('order_id', $orderNumber)->first();
+//            $order = Orders::where('order_id', $orderNumber)->first();
             if ($order) {
                 $order->status_id = $statusId;
                 if($completed_status == $statusId){
@@ -849,6 +860,34 @@ class OrdersController extends Controller
             ]);
         }
         return response()->json($response);
+    }
+
+    private function getNextExpectedStatusForOrder($order)
+    {
+        $productIds = $order->items->pluck('product_id')->unique();
+        $currentStatusId = $order->status_id;
+
+        $currentStepNos = ProductFlows::whereIn('product_id', $productIds)
+            ->where('step_id', $currentStatusId)
+            ->pluck('step_no');
+
+        if ($currentStepNos->isEmpty()) {
+            $nextFlow = ProductFlows::whereIn('product_id', $productIds)
+                ->orderBy('step_no', 'asc')
+                ->first();
+
+            return $nextFlow ? $nextFlow->step_id : null;
+        }
+
+        $currentMaxStepNo = $currentStepNos->max();
+
+        // Find next step
+        $nextFlow = ProductFlows::whereIn('product_id', $productIds)
+            ->where('step_no', '>', $currentMaxStepNo)
+            ->orderBy('step_no', 'asc')
+            ->first();
+
+        return $nextFlow ? $nextFlow->step_id : null;
     }
 
     public function endOrderPhase(Request $request){
