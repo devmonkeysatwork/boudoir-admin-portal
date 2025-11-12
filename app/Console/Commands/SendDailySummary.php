@@ -52,9 +52,9 @@ class SendDailySummary extends Command
                 'late_orders' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('status_id', '!=', $completed_status)
                     ->where(function($query) {
-                        $query->whereDate('deadline', '<', now()->toDateString())
+                        $query->whereDate('deadline', '<=', now()->toDateString())
                             ->orWhereHas('activeChildren', function($q) {
-                                $q->whereDate('deadline', '<', now()->toDateString());
+                                $q->whereDate('deadline', '<=', now()->toDateString());
                             });
                     })
                     ->get(),
