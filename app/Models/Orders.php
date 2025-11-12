@@ -59,7 +59,7 @@ class Orders extends Model
 
     public function getHasRemakeAttribute()
     {
-        return $this->logs()->where('status_id', 11)->exists();
+        return $this->logs()->whereIn('status_id', OrderStatus::RemakeStatusIds)->exists();
     }
 
     public function comments()

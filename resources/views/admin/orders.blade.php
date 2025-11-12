@@ -108,7 +108,7 @@
                             @php
                                 $dateStarted = \Carbon\Carbon::parse($order->created_at);
                                 $now = \Carbon\Carbon::now();
-                                $workingTime = calculateWorkingTime($dateStarted, $now);
+                                $workingTime = calculateWorkingTime($dateStarted, $now,$order->order_id, $waitingId ?? null,$order->has_remake);
                             @endphp
 
                             {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
@@ -189,9 +189,9 @@
                                 <td>{{$child_order->date_started}}</td>
                                 <td>
                                     @php
-                                        $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                                        $dateStarted = \Carbon\Carbon::parse($child_order->created_at);
                                         $now = \Carbon\Carbon::now();
-                                        $workingTime = calculateWorkingTime($dateStarted, $now);
+                                        $workingTime = calculateWorkingTime($dateStarted, $now,$child_order->order_id, $waitingId ?? null,$child_order->has_remake);
                                     @endphp
 
                                     {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}

@@ -52,16 +52,16 @@ class OrdersController extends Controller
         $filter_status = $request->input('filter_status');
         $filter_priority = $request->input('filter_priority');
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->first();
-        $remakeStatusId = OrderStatus::where('status_name','Remake + Reasons')->pluck('id')->first();
+        $remakeStatusId = OrderStatus::RemakeStatusIds;
 
 
         $query = Orders::with(['activeChildren' => function($query) use ($remakeStatusId) {
                 $query->withExists(['logs as has_remake' => function ($q) use ($remakeStatusId) {
-                    $q->where('status_id', $remakeStatusId);
+                    $q->whereIn('status_id', $remakeStatusId);
                 }]);
             },'items','status','last_log','last_log.status','last_log.sub_status'])
             ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
-                $query->where('status_id', $remakeStatusId);
+                $query->whereIn('status_id', $remakeStatusId);
             }])
             ->when($filter_date, function ($q) use ($filter_date) {
                 if ($filter_date == 'oldest') {
@@ -344,6 +344,12 @@ class OrdersController extends Controller
                     }
 
                     DB::beginTransaction();
+
+                    $lastLog = OrderLogs::whereOrderId($order_number)->whereNull('time_end')->orderBy('id','DESC')->first();
+                    if($lastLog){
+                        $lastLog->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+                        $lastLog->save();
+                    }
 
                     // Create new order status log
                     $orderStatus = new OrderLogs();

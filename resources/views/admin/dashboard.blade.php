@@ -369,7 +369,7 @@
                                             @php
                                                 $dateStarted = \Carbon\Carbon::parse($order->created_at);
                                                 $now = \Carbon\Carbon::now();
-                                                $workingTime = calculateWorkingTime($dateStarted, $now);
+                                                $workingTime = calculateWorkingTime($dateStarted, $now,$child_order->order_id, $waitingId ?? null,$child_order->has_remake);;
                                             @endphp
 
                                             {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}

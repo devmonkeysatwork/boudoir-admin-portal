@@ -112,7 +112,7 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId 
 //    \Illuminate\Support\Facades\Log::info($startDate .' : '. $endDate);
     $start = Carbon::parse($startDate);
     if($has_remake && $orderId){
-        $remakeLog = \App\Models\OrderLogs::where('status_id',\App\Models\OrderStatus::RemakeStatusId)
+        $remakeLog = \App\Models\OrderLogs::whereIn('status_id',\App\Models\OrderStatus::RemakeStatusIds)
             ->where('order_id', $orderId)
             ->orderBy('time_started', 'DESC')
             ->first();
