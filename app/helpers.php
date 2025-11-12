@@ -1,6 +1,8 @@
 <?php
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 if (! function_exists('formatDuration')) {
     function formatDuration($startTime, $endTime)
@@ -316,4 +318,39 @@ function calculateWorkingHoursLate($deadlineDate, $currentDate = null)
         round($workingTime['minutes'] / 60, 1);
 
     return $totalHours;
+}
+
+
+function syncToWooCommerce($orderNumber, $status)
+{
+    try {
+        $woocommerce_url = env('WOOCOMMERCE_URL');
+        $payload = [
+            'order_number' => $orderNumber,
+            'status' => $status,
+        ];
+
+        $payloadJson = json_encode($payload);
+        $secret = env('WOOCOMMERCE_SIGNATURE_KEY');
+
+        $signature = 'sha256=' . hash_hmac('sha256', $payloadJson, $secret);
+
+        $response = Http::withHeaders([
+            'X-Webhook-Signature' => $signature,
+        ])->withOptions(['verify' => app()->environment('local') ? false : true,])
+            ->post($woocommerce_url, $payload);
+        if ($response->successful()) {
+            Log::info('Order synced to WooCommerce', ['order' => $orderNumber]);
+        } else {
+            Log::error('Failed to sync to WooCommerce', [
+                'order' => $orderNumber,
+                'response' => $response->body()
+            ]);
+        }
+    } catch (\Exception $e) {
+        Log::error('WooCommerce sync error', [
+            'order' => $orderNumber,
+            'error' => $e->getMessage()
+        ]);
+    }
 }

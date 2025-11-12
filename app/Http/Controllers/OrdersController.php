@@ -30,6 +30,7 @@ use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Response;
@@ -315,6 +316,60 @@ class OrdersController extends Controller
             }
         }
         return false;
+    }
+    /**
+     * Mark order completed if completed on wordpress.
+     */
+    public function markCompleted(Request $request)
+    {
+        if (!$this->authenticateToken($request)) {
+            return response()->json(['message' => 'You are not authorized.'], 401);
+        }
+        try{
+            $validated = $request->validate([
+                'order_id' => 'required|integer',
+                'order_number' => 'required|string|max:255',
+            ]);
+            if($validated) {
+                $order_number = $validated['order_number'];
+                $order = Orders::where('order_id', $order_number)->with('last_log')->first();
+                if ($order) {
+                    $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
+
+                    // Check if order is already completed and last log is also completed
+                    if ($order->status_id == $completed_status &&
+                        $order->last_log &&
+                        $order->last_log->status_id == $completed_status) {
+                        return response()->json(['message' => 'Order is already completed'], 200);
+                    }
+
+                    DB::beginTransaction();
+
+                    // Create new order status log
+                    $orderStatus = new OrderLogs();
+                    $orderStatus->order_id = $order_number;
+                    $orderStatus->status_id = $completed_status;
+                    $orderStatus->time_started = Carbon::now()->format('Y-m-d H:i:s');
+                    $orderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
+                    $orderStatus->save();
+
+                    $order->status_id = $completed_status;
+                    $order->date_completed = Carbon::now()->format('Y-m-d');
+                    $order->save();
+                    DB::commit();
+                    return response()->json(['message' => 'Order marked as completed']);
+                }else{
+                    return response()->json(['message' => 'Order not found'], 409);
+                }
+            }else{
+                DB::rollBack();
+                return response()->json(['message' => 'Validation failed'], 422);
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e){
+            DB::rollBack();
+            return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        }
     }
 
     /**
@@ -847,6 +902,10 @@ class OrdersController extends Controller
             $message = ['message' => 'A status was updated for order id ' . $orderStatus->order_id, 'log' => $log];
             event(new NewMessage($message));
             $this->sendIssueWithPrintEmail($order, $log->status->status_name);
+            // Sync to WooCommerce if order is completed
+            if($completed_status == $statusId){
+                syncToWooCommerce($order->order_id, 'completed');
+            }
             $response = [
                 'status' => 200,
                 'message' => 'Status log row created.',

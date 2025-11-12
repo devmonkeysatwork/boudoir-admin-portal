@@ -615,7 +615,7 @@
                         $.each(logs, function(index, value) {
                             if(value.status){
                                 let html = `<li class="log-entry">
-                                <span class="log-desc">${value.user.name} updated the status to <span class="fw-bold">${value.status.status_name}</span>`;
+                                <span class="log-desc">${value?.user?.name ?? 'Admin'} updated the status to <span class="fw-bold">${value.status.status_name}</span>`;
                                 if(value.sub_status){
                                     html += ` because of ${value.sub_status.name}`;
                                 }

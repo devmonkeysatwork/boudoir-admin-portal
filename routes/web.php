@@ -113,5 +113,6 @@ Route::middleware(['auth'])->group(function () {
 //Route::post('/product/attributes/import', [AdminController::class, 'import'])->name('product.attribute.import');
 
 Route::post('/api/save_order', [OrdersController::class, 'store']);
+Route::post('/api/order_completed', [OrdersController::class, 'markCompleted']);
 
 require __DIR__ . '/auth.php';

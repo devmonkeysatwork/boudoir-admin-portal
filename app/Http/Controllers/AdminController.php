@@ -470,6 +470,12 @@ class AdminController extends Controller
             $message = ['message'=>'A status was updated for order id '.$request->order_id,'log'=>$log];
             event(new NewMessage($message));
 
+            $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
+            if($completed_status == intval($request->override_status)){
+                syncToWooCommerce($order->order_id, 'completed');
+                $orderStatus->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+                $orderStatus->save();
+            }
 
             DB::commit();
 

@@ -54,7 +54,7 @@ class SendDailySummary extends Command
                     ->where(function($query) {
                         $query->whereDate('deadline', '<', now()->toDateString())
                             ->orWhereHas('activeChildren', function($q) {
-                                $q->whereDate('deadline', '<', now()->toDateString());
+                                $q->whereDate('deadline', '<=', now()->toDateString());
                             });
                     })
                     ->get(),
