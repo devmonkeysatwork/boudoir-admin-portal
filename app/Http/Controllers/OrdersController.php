@@ -727,11 +727,12 @@ class OrdersController extends Controller
             $order = Orders::with('items')->whereOrderId($orderNumber)->first();
             $exceptionStatuses = OrderStatus::exceptionStatuses;
             $nextExpectedStatusId = $this->getNextExpectedStatusForOrder($order);
+            $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
 
             $skipValidation = false;
             if ($nextExpectedStatusId &&
                 in_array($nextExpectedStatusId, $exceptionStatuses) &&
-                in_array($statusId, $exceptionStatuses)) {
+                in_array($statusId, $exceptionStatuses) || $completed_status == $statusId) {
                 $skipValidation = true;
             }
 
@@ -815,8 +816,6 @@ class OrdersController extends Controller
                     'message' => 'Order ID '.$orderNumber.' is not yet completed on '. $existingOrderStatus->status->status_name,
                 ]);
             }
-
-            $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
 
             // Create new order status log
             $orderStatus = new OrderLogs();
