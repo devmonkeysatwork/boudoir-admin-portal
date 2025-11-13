@@ -36,8 +36,7 @@ class SendDailySummary extends Command
         try {
             $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
             $hold_status = OrderStatus::where('status_name', Orders::statusHold)->pluck('id')->first();
-            $issues = OrderStatus::whereIn('status_name', OrderStatus::adminStatuses)->pluck('id');
-
+            $issues = OrderStatus::whereIn('status_name', OrderStatus::adminStatuses)->pluck('id')->toArray();
             $data = [
                 'rush_orders' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('is_rush', '=', 1)
@@ -45,12 +44,27 @@ class SendDailySummary extends Command
                 'production_orders' => Orders::with(['activeChildren','status', 'station', 'station.worker'])
                     ->where('orderType','=',Orders::parentType)
                     ->where('status_id', '!=', $completed_status)->get(),
-                'orders_on_hold' => Orders::with(['status', 'station', 'station.worker'])
-                    ->where('status_id', $hold_status)->get(),
-                'orders_with_issues' => Orders::with(['status', 'station', 'station.worker'])
-                    ->whereIn('status_id', $issues)->get(),
+                'orders_on_hold' => Orders::with(['status', 'station', 'station.worker', 'activeChildren'])
+                    ->where('orderType', '=', Orders::parentType)
+                    ->where(function($query) use ($hold_status) {
+                        $query->where('status_id', '=', $hold_status)
+                            ->orWhereHas('activeChildren', function($q) use ($hold_status) {
+                                $q->where('status_id', '=', $hold_status);
+                            });
+                    })
+                    ->get(),
+                'orders_with_issues' => Orders::with(['status', 'station', 'station.worker', 'activeChildren'])
+                    ->where('orderType', '=', Orders::parentType)
+                    ->where(function($query) use ($issues) {
+                        $query->whereIn('status_id', $issues)
+                            ->orWhereHas('activeChildren', function($q) use ($issues) {
+                                $q->whereIn('status_id', $issues);
+                            });
+                    })
+                    ->get(),
                 'late_orders' => Orders::with(['status', 'station', 'station.worker'])
                     ->where('status_id', '!=', $completed_status)
+                    ->where('orderType','=',Orders::parentType)
                     ->where(function($query) use ($completed_status) {
                         $query->whereDate('deadline', '<=', now()->toDateString())
                             ->orWhereHas('activeChildren', function($q) use ($completed_status) {
@@ -60,7 +74,6 @@ class SendDailySummary extends Command
                     })
                     ->get(),
             ];
-
             $fileName = 'daily_summary_' . Carbon::now()->format('Y_m_d') . '.xlsx';
 //            $filePath = storage_path('app/temp/' . $fileName);
             if (!file_exists(storage_path('app/temp'))) {
@@ -71,16 +84,21 @@ class SendDailySummary extends Command
             $productionOrdersCount = $data['production_orders']->sum(function($order) {
                 return 1 + ($order->activeChildren ? $order->activeChildren->count() : 0);
             });
-            // Send email with Excel attachment
+            $calculateTotal = function($orders) {
+                return $orders->sum(function($order) {
+                    return 1 + ($order->activeChildren ? $order->activeChildren->count() : 0);
+                });
+            };
+
             $mailData = [
                 'title' => 'Daily Summary Report',
                 'date' => Carbon::now()->format('Y-m-d'),
                 'summary' => [
-                    'rush_orders_count' => $data['rush_orders']->count(),
+                    'rush_orders_count' => $calculateTotal($data['rush_orders']),
                     'production_orders_count' => $productionOrdersCount,
-                    'orders_on_hold_count' => $data['orders_on_hold']->count(),
-                    'orders_with_issues_count' => $data['orders_with_issues']->count(),
-                    'late_orders_count' => $data['late_orders']->count(),
+                    'orders_on_hold_count' => $calculateTotal($data['orders_on_hold']),
+                    'orders_with_issues_count' => $calculateTotal($data['orders_with_issues']),
+                    'late_orders_count' => $calculateTotal($data['late_orders']),
                 ]
             ];
 
