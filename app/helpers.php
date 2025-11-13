@@ -117,15 +117,8 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId 
             ->orderBy('time_started', 'DESC')
             ->first();
 
-        if($remakeLog){
-            $nextLog = \App\Models\OrderLogs::where('order_id', $orderId)
-                ->where('time_started', '>', $remakeLog->time_started)
-                ->orderBy('time_started', 'ASC')
-                ->first();
-
-            if($nextLog && $nextLog->time_started){
-                $start = Carbon::parse($nextLog->time_started);
-            }
+        if($remakeLog && $remakeLog->time_started){
+            $start = Carbon::parse($remakeLog->time_started);
         }
     }
     $end = Carbon::parse($endDate);

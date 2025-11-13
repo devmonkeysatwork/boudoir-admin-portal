@@ -377,6 +377,18 @@ class AdminController extends Controller
                 $lastLog->save();
             }
 
+            if (in_array($request->edit_status, OrderStatus::RemakeStatusIds)) {
+                $workingDays = $this->countBusinessDays(
+                    Carbon::parse($order->date_started),
+                    Carbon::parse($order->deadline)
+                );
+
+                $newDeadline = $this->addBusinessDays(Carbon::now(), $workingDays);
+                $order->date_started = Carbon::now()->format('Y-m-d');
+                $order->deadline = $newDeadline->format('Y-m-d');
+                $order->save();
+            }
+
             $orderStatus = new OrderLogs();
             $orderStatus->order_id = $order->order_id;
             $orderStatus->status_id = $request->edit_status;
@@ -417,6 +429,34 @@ class AdminController extends Controller
         }
 
         return response()->json($response);
+    }
+    private function countBusinessDays(Carbon $startDate, Carbon $endDate)
+    {
+        $currentDate = $startDate->copy();
+        $days = 0;
+
+        while ($currentDate->lt($endDate)) {
+            $currentDate->addDay();
+            if ($currentDate->isWeekday()) {
+                $days++;
+            }
+        }
+
+        return $days;
+    }
+
+    private function addBusinessDays(Carbon $startDate, int $daysToAdd)
+    {
+        $currentDate = $startDate->copy();
+
+        while ($daysToAdd > 0) {
+            $currentDate->addDay();
+            if ($currentDate->isWeekday()) {
+                $daysToAdd--;
+            }
+        }
+
+        return $currentDate;
     }
 
     public function sendIssueWithPrintEmail($order,$status)
