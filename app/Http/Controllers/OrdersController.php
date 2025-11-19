@@ -787,13 +787,11 @@ class OrdersController extends Controller
             }
             $order = Orders::with('items')->whereOrderId($orderNumber)->first();
             $exceptionStatuses = OrderStatus::exceptionStatuses;
-            $nextExpectedStatusId = $this->getNextExpectedStatusForOrder($order);
+            // $nextExpectedStatusId = $this->getNextExpectedStatusForOrder($order);
             $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
 
             $skipValidation = false;
-            if ($nextExpectedStatusId &&
-                in_array($nextExpectedStatusId, $exceptionStatuses) &&
-                in_array($statusId, $exceptionStatuses) || $completed_status == $statusId) {
+            if (in_array($statusId, $exceptionStatuses) || $completed_status == $statusId) {
                 $skipValidation = true;
             }
 
