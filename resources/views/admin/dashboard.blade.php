@@ -12,7 +12,7 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-pending.png') }}" alt="Ready for Print">
                             <div class="stat-info">
-                                <h3>{{ $readyForPrintOrdersCount }}</h3>
+                                <h3>{{ $readyToShipOrdersCount ?? 0 }}</h3>
                                 <p>Ready for Production</p>
                             </div>
                         </div>
