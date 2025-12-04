@@ -78,7 +78,7 @@
                         <div class="stat-top">
                             <img src="{{ asset('icons/orders-ready.png') }}" alt="Ready">
                             <div class="stat-info">
-                                <h3>{{ $readyToShipOrdersCount }}</h3>
+                                <h3>{{ $readyToShipOrdersCount ?? 0}}</h3>
                                 <p>Ready to Ship</p>
                             </div>
                         </div>
