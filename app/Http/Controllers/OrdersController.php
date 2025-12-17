@@ -54,12 +54,19 @@ class OrdersController extends Controller
         $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->first();
         $remakeStatusId = OrderStatus::RemakeStatusIds;
 
+        $filter_on_hold = $request->input('filter_on_hold');
+        $onHoldStatusId = OrderStatus::where('status_name','On hold')->pluck('id')->first();
 
         $query = Orders::with(['activeChildren' => function($query) use ($remakeStatusId) {
-                $query->withExists(['logs as has_remake' => function ($q) use ($remakeStatusId) {
-                    $q->whereIn('status_id', $remakeStatusId);
-                }]);
-            },'items','status','last_log','last_log.status','last_log.sub_status'])
+            $query->withExists(['logs as has_remake' => function ($q) use ($remakeStatusId) {
+                $q->whereIn('status_id', $remakeStatusId);
+            }]);
+        },'items','status','last_log','last_log.status','last_log.sub_status',
+        'first_log' => function($query) {
+        $query->whereNotNull('time_started')
+            ->orderBy('time_started', 'ASC')
+            ->limit(1);
+            }])
             ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
                 $query->whereIn('status_id', $remakeStatusId);
             }])
@@ -68,11 +75,25 @@ class OrdersController extends Controller
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'ASC');
                 } elseif ($filter_date == 'newest') {
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+                } elseif ($filter_date == 'due_soon') {
+                    // Orders with deadline within next 24 hours
+                    $now = \Carbon\Carbon::now();
+                    $next24Hours = \Carbon\Carbon::now()->addHours(24);
+                    $q->whereNotNull('deadline')
+                        ->where('deadline', '>=', $now)
+                        ->where('deadline', '<=', $next24Hours)
+                        ->orderBy('deadline', 'ASC');
+                } elseif ($filter_date == 'late') {
+                    // Orders with deadline in the past
+                    $now = \Carbon\Carbon::now();
+                    $q->whereNotNull('deadline')
+                        ->where('deadline', '<', $now)
+                        ->orderBy('deadline', 'ASC'); // Show most overdue first
                 }
             }, function ($q) {
                 $q->orderBy('is_rush','DESC')
-                  ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
-                ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
+                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
+                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
             })
             ->when($filter_product,function ($q) use ($filter_product){
                 $q->whereHas('items', function ($query) use ($filter_product) {
@@ -80,15 +101,20 @@ class OrdersController extends Controller
                 });
             })
             ->when($filter_priority,function ($q) use ($filter_priority){
-                    $q->where('is_rush', $filter_priority==1?1:0);
+                $q->where('is_rush', $filter_priority==1?1:0);
             })
             ->when($filter_status,function ($q) use ($filter_status){
-                    $q->where('status_id', $filter_status);
+                $q->where('status_id', $filter_status);
             })
-            ->where('orderType','=',Orders::parentType)
+            ->when($filter_on_hold, function ($q) use ($filter_on_hold, $onHoldStatusId) {
+                if ($filter_on_hold == '1') {
+                    $q->where('status_id', $onHoldStatusId);
+                }
+            })
+//            ->where('orderType','=',Orders::parentType)
             ->where('status_id','!=',$completedStatusId);
         $orders = $query->get();
-//        dd($orders);
+
         if(Auth::user()->role_id == 1){
             $statuses = OrderStatus::whereNotIn('status_name',OrderStatus::adminStatuses)->get();
         }else{
@@ -106,15 +132,15 @@ class OrdersController extends Controller
 
         $waitingId = OrderStatus::where('status_name','Waiting')->pluck('id')->first();
         $userId = auth()->id();
-        // Fetch the associated OrderLogs to get the time_started
         $orderLog = OrderLogs::with(['user','status'])
             ->where('user_id',$userId)
             ->whereNotNull('time_started')
             ->whereNull('time_end')
             ->first();
-//        dd($data);
-        return view('admin.orders',compact('orders',  'statuses', 'edit_statuses','users','order_id',
-            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog','completedStatusId','waitingId'));
+
+        return view('admin.orders',compact('orders', 'statuses', 'edit_statuses','users','order_id',
+            'sub_statuses','products','filter_product','filter_date','filter_status','filter_priority','orderLog','completedStatusId','waitingId'))
+            ->with('filter_on_hold', $filter_on_hold ?? null);
     }
 
     /**

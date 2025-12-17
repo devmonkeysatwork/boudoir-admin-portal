@@ -23,14 +23,12 @@
                     <td>{{ $teamMember->order_count }}</td>
 {{--                    <td>{{ $teamMember->total_time }}</td>--}}
                     <td>
-                        <?php
-                        $time_spent = $teamMember->total_time; // Assuming this is in hours as a decimal
-                        $hours = floor($time_spent);
-                        $minutes = floor(($time_spent - $hours) * 60);
-                        $seconds = round((($time_spent - $hours) * 60 - $minutes) * 60);
-
-                        echo "{$hours}h {$minutes}m {$seconds}s";
-                        ?>
+                        @php
+                            $hours = floor($teamMember->total_minutes / 60);
+                            $mins = $teamMember->total_minutes % 60;
+                            echo $hours > 0 ? $hours . 'h ' : '';
+                            echo $mins > 0 ? $mins . 'm' : ($hours == 0 ? '0m' : '');
+                        @endphp
                     </td>
                     <td>
                         <button onclick="openUserWorkingStatusModal('{{$teamMember->id}}','{{$teamMember->name}}','{{$teamMember->product_status_id}}')">Edit</button>

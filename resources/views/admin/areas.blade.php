@@ -18,14 +18,12 @@
             <td>{{ $workstation->orders_count() }}</td>
 {{--            <td>{{ round($workstation->time_spent,2) }}</td>--}}
             <td>
-                <?php
-                $time_spent = $workstation->time_spent; // Assuming this is in hours as a decimal
-                $hours = floor($time_spent);
-                $minutes = floor(($time_spent - $hours) * 60);
-                $seconds = round((($time_spent - $hours) * 60 - $minutes) * 60);
-
-                echo "{$hours}h {$minutes}m {$seconds}s";
-                ?>
+                @php
+                    $hours = floor($workstation->time_spent_minutes / 60);
+                    $mins = $workstation->time_spent_minutes % 60;
+                    echo $hours > 0 ? $hours . 'h ' : '';
+                    echo $mins > 0 ? $mins . 'm' : ($hours == 0 ? '0m' : '');
+                @endphp
             </td>
         </tr>
       @endforeach

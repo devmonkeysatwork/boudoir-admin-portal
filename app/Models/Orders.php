@@ -52,6 +52,12 @@ class Orders extends Model
     function logs(){
         return $this->hasMany(OrderLogs::class,'order_id','order_id')->orderBy('time_started');
     }
+    public function first_log()
+    {
+        return $this->hasOne(OrderLogs::class, 'order_id', 'order_id')
+            ->whereNotNull('time_started')
+            ->orderBy('time_started', 'ASC');
+    }
     function last_log(){
         return $this->hasOne(OrderLogs::class, 'order_id', 'order_id')
             ->latest('time_started');

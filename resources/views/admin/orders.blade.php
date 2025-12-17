@@ -14,7 +14,9 @@
                 </div>
                 <div class="filter-item">
                     <select class="sort-select" id="filter-date" name="filter_date">
-                        <option value="" disabled selected>Date</option>
+                        <option value="" disabled selected>Timeline</option>
+                        <option value="due_soon" {{$filter_date && $filter_date == 'due_soon'?'Selected':''}}>Due Soon</option>
+                        <option value="late" {{$filter_date && $filter_date == 'late'?'Selected':''}}>Late</option>
                         <option value="oldest" {{$filter_date && $filter_date == 'oldest'?'Selected':''}}>Oldest</option>
                         <option value="newest" {{$filter_date && $filter_date == 'newest'?'Selected':''}}>Newest</option>
                     </select>
@@ -45,6 +47,13 @@
                     </select>
                 </div>
                 <div class="filter-item">
+                    <select class="sort-select" id="filter-on-hold" name="filter_on_hold">
+                        <option value="" disabled selected>On Hold</option>
+                        <option value="1" {{$filter_on_hold && $filter_on_hold == '1'?'Selected':''}}>Yes</option>
+                        <option value="0" {{$filter_on_hold && $filter_on_hold == '0'?'Selected':''}}>No</option>
+                    </select>
+                </div>
+                <div class="filter-item">
                     <button class="reset-btn" type="button">
                         <img src="{{ asset('icons/reset.png') }}" alt="Reset">Reset Filter
                     </button>
@@ -69,6 +78,7 @@
                     <th>Order #</th>
                     <th>Phase</th>
                     <th>Team Member</th>
+                    <th>Date Added</th>
                     <th>Date Started</th>
                     <th>Time in Production</th>
                     <th>Late</th>
@@ -78,7 +88,7 @@
                 <tbody id="ordersBody">
                 @foreach($orders as $order)
                     <tr>
-                        <td>
+                        <td data-order="{{ $order->order_id }}>
                             @if($order->is_rush)
                                 <img src="{{asset('icons/rush.svg')}}" alt="Rush">
                             @endif
@@ -103,7 +113,8 @@
                                 {{$order->station?->worker?->name ?? null}}
                             @endif
                         </td>
-                        <td>{{$order->date_started}}</td>
+                        <td>{{$order->date_started ? \Carbon\Carbon::parse($order->date_started)->format('M d, Y') : '-'}}</td>
+                        <td>{{ $order->first_log?->time_started ? \Carbon\Carbon::parse($order->first_log->time_started)->format('M d, Y') : '-' }}</td>
                         <td>
                             @php
                                 $dateStarted = \Carbon\Carbon::parse($order->created_at);
@@ -120,7 +131,7 @@
                             @if(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)))
                                 <span class="fw-bold text-danger">{{round(\Carbon\Carbon::parse($order->deadline)->diffInHours(\Carbon\Carbon::now()),0)}} hours late</span>
                             @elseif(isset($order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($order->deadline)->subDays(2)))
-                                <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours left</span>
+                                <span class="fw-bold text-warning">due in {{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($order->deadline)),0)}} hours</span>
                             @else
                                 -
                             @endif
@@ -158,78 +169,78 @@
 
                         </td>
                     </tr>
-                    @if(isset($order) && isset($order->activeChildren) && count($order->activeChildren))
-                        @foreach($order?->activeChildren as $child_order)
-                            <tr id="children_{{$order->id}}">
-                                <td>
-                                    @if($child_order->is_rush == 1)
-                                        <img src="{{asset('icons/rush.svg')}}" alt="Rush">
-                                    @endif
-                                    <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">
-                                        {{ $child_order->order_id }}
-                                    </button>
-                                </td>
-                                <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">
-                                        @if(isset($child_order->last_log->sub_status))
-                                            {{$child_order->last_log?->sub_status?->name ?? null}}
-                                        @elseif(isset($child_order->last_log->status))
-                                            {{$child_order->last_log?->status?->status_name ?? null}}
-                                        @else
-                                            {{$child_order->status?->status_name ?? null}}
-                                        @endif
-                                            </span>
-                                </td>
-                                <td>
-                                    @if(isset($child_order->last_log->user))
-                                        {{$child_order->last_log?->user?->name ?? null}}
-                                    @else
-                                        {{$child_order->station?->worker?->name ?? null}}
-                                    @endif
-                                </td>
-                                <td>{{$child_order->date_started}}</td>
-                                <td>
-                                    @php
-                                        $dateStarted = \Carbon\Carbon::parse($child_order->created_at);
-                                        $now = \Carbon\Carbon::now();
-                                        $workingTime = calculateWorkingTime($dateStarted, $now,$child_order->order_id, $waitingId ?? null,$child_order->has_remake);
-                                    @endphp
+{{--                    @if(isset($order) && isset($order->activeChildren) && count($order->activeChildren))--}}
+{{--                        @foreach($order?->activeChildren as $child_order)--}}
+{{--                            <tr id="children_{{$order->id}}">--}}
+{{--                                <td>--}}
+{{--                                    @if($child_order->is_rush == 1)--}}
+{{--                                        <img src="{{asset('icons/rush.svg')}}" alt="Rush">--}}
+{{--                                    @endif--}}
+{{--                                    <button class="edit-btn" onclick="viewDetails('{{$child_order->id}}','{{$child_order->order_id}}')">--}}
+{{--                                        {{ $child_order->order_id }}--}}
+{{--                                    </button>--}}
+{{--                                </td>--}}
+{{--                                <td><span class="status" style="background-color: {{$child_order->status?->status_color ?? 'transparent'}}">--}}
+{{--                                        @if(isset($child_order->last_log->sub_status))--}}
+{{--                                            {{$child_order->last_log?->sub_status?->name ?? null}}--}}
+{{--                                        @elseif(isset($child_order->last_log->status))--}}
+{{--                                            {{$child_order->last_log?->status?->status_name ?? null}}--}}
+{{--                                        @else--}}
+{{--                                            {{$child_order->status?->status_name ?? null}}--}}
+{{--                                        @endif--}}
+{{--                                            </span>--}}
+{{--                                </td>--}}
+{{--                                <td>--}}
+{{--                                    @if(isset($child_order->last_log->user))--}}
+{{--                                        {{$child_order->last_log?->user?->name ?? null}}--}}
+{{--                                    @else--}}
+{{--                                        {{$child_order->station?->worker?->name ?? null}}--}}
+{{--                                    @endif--}}
+{{--                                </td>--}}
+{{--                                <td>{{$child_order->date_started}}</td>--}}
+{{--                                <td>--}}
+{{--                                    @php--}}
+{{--                                        $dateStarted = \Carbon\Carbon::parse($child_order->created_at);--}}
+{{--                                        $now = \Carbon\Carbon::now();--}}
+{{--                                        $workingTime = calculateWorkingTime($dateStarted, $now,$child_order->order_id, $waitingId ?? null,$child_order->has_remake);--}}
+{{--                                    @endphp--}}
 
-                                    {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
-                                    {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}
-                                    {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}
-                                    {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}
-                                </td>
-                                <td>
-                                    @if(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)))
-                                        <img src="{{asset('icons/exclaimatio.svg')}}" alt="">
-                                    @elseif(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)->subDays(2)))
-                                        <span class="fw-bold text-danger">{{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($child_order->deadline)),0)}} hours left</span>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td>
-                                    @if(Auth::user()->role_id == 1)
-                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">
-                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">
-                                        </button>
-                                    @endif
-                                    @if(isset($orderLog) && $orderLog->order_id == $child_order->order_id)
-                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">
-                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">
-                                        </button>
-                                    @else
-                                        <button data-id="{{$child_order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">
-                                            Start order
-                                        </button>
-                                    @endif
-                                        @if($child_order->has_remake)
-                                            <img src="{{ asset('icons/redo.svg') }}" alt="Remake Icon" width="20px">
-                                        @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    @endif
+{{--                                    {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}--}}
+{{--                                    {{ $workingTime['days'] > 0 ? $workingTime['days'] . 'd ' : '' }}--}}
+{{--                                    {{ $workingTime['hours'] > 0 ? $workingTime['hours'] . 'h ' : '' }}--}}
+{{--                                    {{ $workingTime['minutes'] > 0 ? $workingTime['minutes'] . 'm' : '' }}--}}
+{{--                                </td>--}}
+{{--                                <td>--}}
+{{--                                    @if(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)))--}}
+{{--                                        <img src="{{asset('icons/exclaimatio.svg')}}" alt="">--}}
+{{--                                    @elseif(isset($child_order->deadline) && \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($child_order->deadline)->subDays(2)))--}}
+{{--                                        <span class="fw-bold text-warning">due in {{round(\Carbon\Carbon::now()->diffInHours(\Carbon\Carbon::parse($child_order->deadline)),0)}} hours</span>--}}
+{{--                                    @else--}}
+{{--                                        ---}}
+{{--                                    @endif--}}
+{{--                                </td>--}}
+{{--                                <td>--}}
+{{--                                    @if(Auth::user()->role_id == 1)--}}
+{{--                                        <button class="edit-btn" onclick="editStatus(this)" data-id="{{$child_order->id}}" data-status="{{$child_order->status_id}}" data-workstation="{{$child_order->workstation_id}}">--}}
+{{--                                            <img src="{{ asset('icons/warning.svg') }}" alt="Edit Icon" width="20px">--}}
+{{--                                        </button>--}}
+{{--                                    @endif--}}
+{{--                                    @if(isset($orderLog) && $orderLog->order_id == $child_order->order_id)--}}
+{{--                                        <button type="button" class="btn bg-transparent ms-2" onclick="endOrderPhase()">--}}
+{{--                                            <img src="{{ asset('icons/complete_order.svg') }}" alt="Complete Icon" width="20px">--}}
+{{--                                        </button>--}}
+{{--                                    @else--}}
+{{--                                        <button data-id="{{$child_order->order_id}}" type="button" class="btn btn-start-order" data-bs-toggle="modal" data-bs-target="#startWorkModel">--}}
+{{--                                            Start order--}}
+{{--                                        </button>--}}
+{{--                                    @endif--}}
+{{--                                        @if($child_order->has_remake)--}}
+{{--                                            <img src="{{ asset('icons/redo.svg') }}" alt="Remake Icon" width="20px">--}}
+{{--                                        @endif--}}
+{{--                                </td>--}}
+{{--                            </tr>--}}
+{{--                        @endforeach--}}
+{{--                    @endif--}}
                 @endforeach
                 </tbody>
             </table>
@@ -416,6 +427,10 @@
                 searchEnabled: false,
                 itemSelectText: '',
             });
+            const filterOnHold = new Choices('#filter-on-hold', {
+                searchEnabled: false,
+                itemSelectText: '',
+            });
         });
         const order_id = '{{$order_id??null}}';
         $(document).ready(function() {
@@ -425,6 +440,7 @@
                     { title: "Order #" },
                     { title: "Phase" },
                     { title: "Team Member" },
+                    { title: "Date Added" },
                     { title: "Date Started" },
                     { title: "Time in Production" },
                     { title: "Late" },
@@ -471,7 +487,7 @@
             $('#edit_status').trigger('change');
 
 
-            $('#filter-date,#filter-product,#filter-status,#filter-priority').on('change',function () {
+            $('#filter-date,#filter-product,#filter-status,#filter-priority,#filter-on-hold').on('change',function () {
                 $('.filter-bar').submit();
             })
 

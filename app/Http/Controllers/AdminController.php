@@ -78,11 +78,28 @@ class AdminController extends Controller
         // Fetch orders with pagination
         $filter_date = $request->input('filter_date');
         $filter_by_time = $request->input('filter_by_time');
-        $query = Orders::with(['activeChildren' => function($query) use ($remakeStatusId) {
+        $query = Orders::with([
+            'activeChildren' => function($query) use ($remakeStatusId) {
                 $query->withExists(['logs as has_remake' => function ($q) use ($remakeStatusId) {
                     $q->whereIn('status_id', $remakeStatusId);
                 }]);
-            },'items','status','last_log','last_log.status','last_log.sub_status','addresses','station','station.worker','items.attributes'])
+            },
+            'items',
+            'status',
+            'last_log',
+            'last_log.status',
+            'last_log.sub_status',
+            'addresses',
+            'station',
+            'station.worker',
+            'items.attributes',
+            // Add first log relationship
+            'first_log' => function($query) {
+                $query->whereNotNull('time_started')
+                    ->orderBy('time_started', 'ASC')
+                    ->limit(1);
+            }
+        ])
             ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
                 $query->whereIn('status_id', $remakeStatusId);
             }])
@@ -114,7 +131,7 @@ class AdminController extends Controller
                     $q->whereYear('date_started', now()->year);
                 }
             })
-            ->where('orderType','=',Orders::parentType)
+//            ->where('orderType','=',Orders::parentType)
             ->where('status_id','!=',$completedStatusId[0]);
         $orders = $query->get();
 
@@ -231,23 +248,21 @@ class AdminController extends Controller
 
         $teamMembersQuery = OrderLogs::select(
             'order_logs.user_id',
-            'users.name as user_name', // Select user name
+            'users.name as user_name',
             DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
-            DB::raw('SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)) AS total_time_seconds')
+            DB::raw('SUM(TIMESTAMPDIFF(MINUTE, order_logs.time_started, order_logs.time_end)) AS total_minutes') // Changed to MINUTE
         )
-            ->join('users', 'order_logs.user_id', '=', 'users.id') // Join with users table
+            ->join('users', 'order_logs.user_id', '=', 'users.id')
             ->whereNotNull('order_logs.time_started')
             ->whereNotNull('order_logs.time_end');
 
         // Apply the filter based on team_count
         switch ($filter) {
             case 'day':
-                // Filter for today
                 $teamMembersQuery->whereDate('order_logs.time_started', $now->toDateString());
                 break;
 
             case 'week':
-                // Filter for the current week
                 $teamMembersQuery->whereBetween('order_logs.time_started', [
                     $now->startOfWeek()->toDateString(),
                     $now->endOfWeek()->toDateString(),
@@ -255,18 +270,15 @@ class AdminController extends Controller
                 break;
 
             case 'month':
-                // Filter for the current month
                 $teamMembersQuery->whereMonth('order_logs.time_started', $now->month)
                     ->whereYear('order_logs.time_started', $now->year);
                 break;
 
             case 'year':
-                // Filter for the current year
                 $teamMembersQuery->whereYear('order_logs.time_started', $now->year);
                 break;
 
             default:
-                // No filter if the value is invalid or empty
                 break;
         }
 
@@ -279,9 +291,10 @@ class AdminController extends Controller
                 'id' => $userId,
                 'user_name' => $items->first()->user_name,
                 'order_count' => $items->sum('order_count'),
-                'total_time' => $items->sum('total_time_seconds'),
+                'total_minutes' => $items->sum('total_minutes'), // Changed key name
             ];
         });
+
         return $teamMembers;
     }
 
@@ -289,14 +302,14 @@ class AdminController extends Controller
 
         $workstationsQuery = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs']);
         switch ($filter) {
-            case 'this day':
+            case 'day':
                 // Filter for today's date
                 $workstationsQuery->whereHas('logs', function ($query) use ($now) {
                     $query->whereDate('time_started', $now->toDateString());
                 });
                 break;
 
-            case 'this week':
+            case 'week':
                 // Filter for the current week
                 $workstationsQuery->whereHas('logs', function ($query) use ($now) {
                     $query->whereBetween('time_started', [
@@ -306,7 +319,7 @@ class AdminController extends Controller
                 });
                 break;
 
-            case 'this month':
+            case 'month':
                 // Filter for the current month
                 $workstationsQuery->whereHas('logs', function ($query) use ($now) {
                     $query->whereMonth('time_started', $now->month)
@@ -314,7 +327,7 @@ class AdminController extends Controller
                 });
                 break;
 
-            case 'this year':
+            case 'year':
                 // Filter for the current year
                 $workstationsQuery->whereHas('logs', function ($query) use ($now) {
                     $query->whereYear('time_started', $now->year);
@@ -330,11 +343,11 @@ class AdminController extends Controller
         $workstations = $workstationsQuery->get();
 
         foreach ($workstations as $workstation) {
-            $workstation->time_spent = 0;
+            $workstation->time_spent_minutes = 0; // Changed to minutes
             foreach ($workstation->logs as $log) {
-                if ($log->time_started) {
-                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end??Carbon::now()));
-                    $workstation->time_spent += $timeDiff;
+                if ($log->time_started && $log->time_end) {
+                    $timeDiff = Carbon::parse($log->time_started)->diffInMinutes(Carbon::parse($log->time_end));
+                    $workstation->time_spent_minutes += $timeDiff;
                 }
             }
         }
@@ -553,11 +566,11 @@ class AdminController extends Controller
         $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs'])->paginate(10);
 
         foreach ($workstations as $workstation) {
-            $workstation->time_spent = 0;
+            $workstation->time_spent_minutes = 0; // Changed to minutes
             foreach ($workstation->logs as $log) {
-                if ($log->time_started) {
-                    $timeDiff = Carbon::parse($log->time_started)->diffInHours(Carbon::parse($log->time_end??Carbon::now()));
-                    $workstation->time_spent += $timeDiff;
+                if ($log->time_started && $log->time_end) { // Only completed logs
+                    $timeDiff = Carbon::parse($log->time_started)->diffInMinutes(Carbon::parse($log->time_end));
+                    $workstation->time_spent_minutes += $timeDiff;
                 }
             }
         }
@@ -568,15 +581,18 @@ class AdminController extends Controller
     public function getWorkstationDetails($id)
     {
         $areas = OrderLogs::where('status_id',$id)->get();
+
         if ($areas) {
             $ordersHtml = '';
-            $counter = 1;
             foreach ($areas as $order) {
+                $minutes = Carbon::parse($order->time_started)->diffInMinutes(Carbon::parse($order->time_end));
+                $timeFormatted = $this->formatMinutesToHours($minutes);
+
                 $ordersHtml .= '
-                <tr>
-                    <td>Order #' . $order->order_id . '</td>
-                    <td>' . round(Carbon::parse($order->time_started)->diffInHours(Carbon::parse($order->time_end)),2) . '</td>
-                </tr>';
+            <tr>
+                <td>Order #' . $order->order_id . '</td>
+                <td>' . $timeFormatted . '</td>
+            </tr>';
             }
 
             return response()->json([
@@ -594,13 +610,15 @@ class AdminController extends Controller
         $statuses = OrderStatus::all();
 
         $teamMembers = User::select(
-                'users.id',
-                'users.name',
-                'users.product_status_id',
-                DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
-                DB::raw('IFNULL(SUM(TIMESTAMPDIFF(HOUR, order_logs.time_started, order_logs.time_end)), 0) AS total_time')
-            )
+            'users.id',
+            'users.name',
+            'users.product_status_id',
+            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
+            DB::raw('IFNULL(SUM(TIMESTAMPDIFF(MINUTE, order_logs.time_started, order_logs.time_end)), 0) AS total_minutes')
+        )
             ->leftJoin('order_logs', 'users.id', '=', 'order_logs.user_id')
+            ->whereNotNull('order_logs.time_started')
+            ->whereNotNull('order_logs.time_end')
             ->groupBy('users.id','users.name', 'users.product_status_id')
             ->get();
 
@@ -611,7 +629,7 @@ class AdminController extends Controller
     {
         $teamMembersResult = OrderLogs::select(
             'order_id',
-            DB::raw('SUM(TIMESTAMPDIFF(HOUR, time_started, time_end)) AS total_time')
+            DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_started, time_end)) AS total_minutes')
         )
             ->where('user_id', $id)
             ->whereNotNull('time_started')
@@ -624,13 +642,15 @@ class AdminController extends Controller
         }
 
         $ordersHtml = '';
-        $counter = 1;
         foreach ($teamMembersResult as $member) {
+            // Change from $member['total_minutes'] to $member->total_minutes
+            $timeFormatted = $this->formatMinutesToHours($member->total_minutes);
+
             $ordersHtml .= '
-                <tr>
-                    <td>Order #' . $member['order_id'] . '</td>
-                    <td>' . $member['total_time'] . '</td>
-                </tr>';
+            <tr>
+                <td>Order #' . $member->order_id . '</td>
+                <td>' . $timeFormatted . '</td>
+            </tr>';
         }
 
         return response()->json([
@@ -638,7 +658,19 @@ class AdminController extends Controller
             'orderCount' => count($teamMembersResult)
         ]);
     }
+    private function formatMinutesToHours($minutes)
+    {
+        $hours = floor($minutes / 60);
+        $mins = $minutes % 60;
 
+        if ($hours > 0 && $mins > 0) {
+            return $hours . 'h ' . $mins . 'm';
+        } elseif ($hours > 0) {
+            return $hours . 'h';
+        } else {
+            return $mins . 'm';
+        }
+    }
 
     private function calculateTimeSpent($workstationIds)
     {

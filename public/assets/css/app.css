@@ -568,7 +568,7 @@ button {
 
 .filter-bar {
     display: flex;
-    justify-content: space-between;
+    /*justify-content: space-between;*/
     align-items: center;
     margin-bottom: 20px;
     background-color: #fff;
@@ -823,7 +823,8 @@ table th {
     cursor: pointer;
 }
 
-table.tablesorter th {
+
+table th , table.tablesorter th {
     background-color: #BD7F7F;
     color: #fff;
     text-align: left;
@@ -2042,9 +2043,9 @@ thead {
     width: 135px;
 }
 @media (min-width: 1440px) {
-    .filter-item{
-        flex: 0 0 16.5%;
-    }
+    /*.filter-item{*/
+    /*    flex: 0 0 16.5%;*/
+    /*}*/
 }
 @media (min-width: 1300px) {
     .col-xl {
