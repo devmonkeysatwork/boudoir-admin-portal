@@ -38,6 +38,9 @@
                 @php
                     $dateStarted = \Carbon\Carbon::parse($order->created_at);
                     $now = \Carbon\Carbon::now();
+                    if(isset($order->date_completed)){
+                      $now = \Carbon\Carbon::parse($order->date_completed);
+                    }
                     $workingTime = calculateWorkingTime($dateStarted, $now);
                 @endphp
                 {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
