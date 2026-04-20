@@ -93,8 +93,8 @@
                         <td>
                             @php
                                 $dateStarted = \Carbon\Carbon::parse($order->created_at);
-                                $now = \Carbon\Carbon::now();
-                                $workingTime = calculateWorkingTime($dateStarted, $now);
+                                $dateCompleted = \Carbon\Carbon::parse($order->date_completed);
+                                $workingTime = calculateWorkingTime($dateStarted, $dateCompleted);
                             @endphp
 
                             {{ $workingTime['months'] > 0 ? $workingTime['months'] . 'm ' : '' }}
