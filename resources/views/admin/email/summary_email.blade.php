@@ -35,10 +35,10 @@
     </div>
 </div>
 <div style="padding: 26px 40px 0;">
-    <div
-        style="font-family: Trade Gothic LT Pro; color: rgba(0, 0, 0, 1);padding: 17px 0 8px; font-style: normal; font-weight: 400; font-size: 14px; line-height: 21px;    text-align: center;">
-        © Copyright {{\Illuminate\Support\Carbon::now()->format('Y')}} All rights reserved.
-    </div>
+{{--    <div--}}
+{{--        style="font-family: Trade Gothic LT Pro; color: rgba(0, 0, 0, 1);padding: 17px 0 8px; font-style: normal; font-weight: 400; font-size: 14px; line-height: 21px;    text-align: center;">--}}
+{{--        © Copyright {{\Illuminate\Support\Carbon::now()->format('Y')}} All rights reserved.--}}
+{{--    </div>--}}
 </div>
 </body>
 </html>
