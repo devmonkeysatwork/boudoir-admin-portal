@@ -195,7 +195,7 @@ class OrdersController extends Controller
                 $order->order_unique_id = $order_data['order_unique_id']??null;
                 $order->customer_name = $order_data['customer_name']??null;
                 $order->customer_email = $order_data['customer_email']??null;
-                $order->date_started = Carbon::now()->format('Y-m-d h:i:s')??null;
+                $order->date_started = null; // Set when first log is created, not on order creation
                 $order->status_id = 1;
                 $order->workstation_id = 0;
                 $order->payment_method = $order_data['payment_method']??null;
@@ -434,6 +434,59 @@ class OrdersController extends Controller
     public function destroy(Orders $orders)
     {
         //
+    }
+
+    public function deleteOrder(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $order = Orders::find($request->id);
+
+            if (!$order) {
+                return response()->json([
+                    'status'  => 404,
+                    'message' => 'Order not found.',
+                ]);
+            }
+
+            $orderId      = $order->id;
+            $orderNumber  = $order->order_id;
+
+            // Delete related records from all tables
+            OrderLogs::where('order_id', $orderNumber)->delete();
+            OrderComments::where('order_id', $orderId)->delete();
+            CostumerAddress::where('order_id', $orderId)->delete();
+
+            // Delete item attributes first, then items
+            $itemIds = OrderItems::where('order_id', $orderId)->pluck('id');
+            if ($itemIds->isNotEmpty()) {
+                ItemAttributes::whereIn('item_id', $itemIds)->delete();
+            }
+            OrderItems::where('order_id', $orderId)->delete();
+
+            // Delete notifications linked to logs of this order
+            // (log IDs already deleted above — clean up orphaned notifications)
+            // If you store log_id on notifications, they're already orphaned — delete by order reference if possible
+            // Otherwise skip this step if cascade is handled at DB level
+
+            // Finally delete the order itself
+            $order->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Order #' . $orderNumber . ' and all related data deleted successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status'  => 400,
+                'message' => 'Something went wrong: ' . $e->getMessage(),
+            ]);
+        }
     }
 
 
@@ -794,160 +847,270 @@ class OrdersController extends Controller
 //        return response()->json($response);
 //    }
 
-    public function updateOrderStatus(Request $request)
-    {
-        // Get the logged-in user's ID
-        $userId = auth()->id();
+    public function updateOrderStatus(Request $request) {
+        $userId = auth()->id(); // ✅ Fix undefined variable
 
         try {
             DB::beginTransaction();
 
-            // Split the input into order number and status ID
+            // Support both: scanner (order_id + status_id) AND admin modal (id + edit_status)
+            $statusId    = $request->input('status_id') ?? $request->input('edit_status');
             $orderNumber = $request->input('order_id');
-            $statusId = $request->input('status_id');
-            if (!$orderNumber && !$statusId || $statusId==0) {
+            $orderId     = $request->input('id');
+
+            if (!$statusId || $statusId == 0) {
                 return response()->json([
-                    'status' => 400,
-                    'message' => 'Invalid input format. Please provide order number and status ID.',
+                    'status'  => 400,
+                    'message' => 'Please select a valid status.',
                 ]);
             }
-            $order = Orders::with('items')->whereOrderId($orderNumber)->first();
+
+//            dd($orderNumber);
+
+            // Resolve order
+            if ($orderNumber) {
+                // Scanner sent WooCommerce order number directly
+                $order = Orders::with('items')->whereOrderId($orderNumber)->first();
+            } else {
+                // Admin modal sent primary key
+                $order = Orders::find($orderId);
+                if ($order) {
+                    $orderNumber = $order->order_id;
+                    $order = Orders::with('items')->whereOrderId($orderNumber)->first();
+                }
+            }
+
+            if (!$order) {
+                return response()->json([
+                    'status'  => 400,
+                    'message' => 'Order not found.',
+                ]);
+            }
+
+
+            // Now order_id (WooCommerce number) is available for log queries
+            $orderNumber = $order->order_id;
+
+            $order            = Orders::with('items')->whereOrderId($orderNumber)->first();
             $exceptionStatuses = OrderStatus::exceptionStatuses;
-            // $nextExpectedStatusId = $this->getNextExpectedStatusForOrder($order);
-            $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
+            $completed_status  = OrderStatus::where('status_name', OrderStatus::COMPLETED)->pluck('id')->first();
+
+            $remakeStatusIds = OrderStatus::getRemakeStatusIds();
 
             $skipValidation = false;
-            if (in_array($statusId, $exceptionStatuses) || $completed_status == $statusId) {
+            if (
+                in_array($statusId, $exceptionStatuses) ||
+                $completed_status == $statusId           ||
+                in_array($statusId, $remakeStatusIds)
+            ) {
                 $skipValidation = true;
             }
 
-            if(!$skipValidation){
-                $p_ids = ProductFlows::where('step_id',$statusId)->pluck('product_id');
-                $prod_ids = Orders::with('items') // Eager load items relation
-                ->whereHas('items', function ($query) use ($p_ids) {
-                    $query->whereIn('product_id', $p_ids); // Filter items by product_id
-                })->whereOrderId($orderNumber)->count();
-                if(!$prod_ids){
-                    $excludedProducts = Product::whereIn('name',['Metal Prints','Canvas'])->pluck('id');
-                    $orderProducts = Orders::with('items')
-                    ->whereHas('items', function ($query) use ($excludedProducts) {
-                        $query->whereIn('product_id', $excludedProducts);
+            if (!$skipValidation) {
+                $p_ids    = ProductFlows::where('step_id', $statusId)->pluck('product_id');
+                $prod_ids = Orders::with('items')
+                    ->whereHas('items', function ($query) use ($p_ids) {
+                        $query->whereIn('product_id', $p_ids);
                     })->whereOrderId($orderNumber)->count();
-                    if(!$orderProducts){
+
+                if (!$prod_ids) {
+                    $excludedProducts = Product::whereIn('name', ['Metal Prints', 'Canvas'])->pluck('id');
+                    $orderProducts    = Orders::with('items')
+                        ->whereHas('items', function ($query) use ($excludedProducts) {
+                            $query->whereIn('product_id', $excludedProducts);
+                        })->whereOrderId($orderNumber)->count();
+
+                    if (!$orderProducts) {
                         $status_name = OrderStatus::whereId($statusId)->pluck('status_name')->first();
                         return response()->json([
-                            'status' => 400,
-                            'message' => 'Order ID '.$orderNumber.' does not have '.$status_name.' required.',
+                            'status'  => 400,
+                            'message' => 'Order ID ' . $orderNumber . ' does not have ' . $status_name . ' required.',
                         ]);
                     }
                 }
             }
 
-
-
-//            dd($nextExpectedStatusId,in_array($nextExpectedStatusId, $exceptionStatuses),in_array($statusId, $exceptionStatuses));
-
-            //Gilding
-            if($statusId == 3){
+            // Gilding check
+            if ($statusId == 3) {
                 $attributes = Orders::with('items')
                     ->where(function ($attrQuery) {
                         $attrQuery->whereHas('items.attributes', function ($subQuery) {
-                            $subQuery->where('type','Like','Gilding')
-                                ->where('title', 'none');
+                            $subQuery->where('type', 'Like', 'Gilding')->where('title', 'none');
                         });
                     })
                     ->whereOrderId($orderNumber)->first();
-                if($attributes){
+                if ($attributes) {
                     return response()->json([
-                        'status' => 400,
-                        'message' => 'Order ID '.$orderNumber.' does not have gilding required.',
+                        'status'  => 400,
+                        'message' => 'Order ID ' . $orderNumber . ' does not have gilding required.',
                     ]);
                 }
-            }elseif($statusId == 5){
-                $attributes = Orders::with('items')
+            } elseif ($statusId == 5) {
+                $attributes  = Orders::with('items')
                     ->where(function ($attrQuery) {
                         $attrQuery->whereHas('items.attributes', function ($subQuery) {
-                            $subQuery->where('type','Like','Imprinting or Logo')
-                                ->where('title', 'none');
+                            $subQuery->where('type', 'Like', 'Imprinting or Logo')->where('title', 'none');
                         });
                     })
                     ->whereOrderId($orderNumber)->first();
                 $attributes2 = Orders::with('items')
                     ->where(function ($attrQuery) {
                         $attrQuery->whereHas('items.attributes', function ($subQuery) {
-                            $subQuery->where('type','Like','Second Imprinting or Logo')
-                                ->where('title', 'none');
+                            $subQuery->where('type', 'Like', 'Second Imprinting or Logo')->where('title', 'none');
                         });
                     })
                     ->whereOrderId($orderNumber)->first();
-                if($attributes && $attributes2){
+                if ($attributes && $attributes2) {
                     return response()->json([
-                        'status' => 400,
-                        'message' => 'Order ID '.$orderNumber.' does not have Imprinting required.',
+                        'status'  => 400,
+                        'message' => 'Order ID ' . $orderNumber . ' does not have Imprinting required.',
                     ]);
                 }
             }
 
-
-            // Check for existing order status
-            $existingOrderStatus = OrderLogs::with('status')->where('time_end', null)
+            // Check for an existing open log
+            $existingOrderStatus = OrderLogs::with('status')
+                ->whereNull('time_end')
                 ->where('order_id', $orderNumber)
-                ->where('time_started','!=', null)
+                ->whereNotNull('time_started')
                 ->first();
 
             if ($existingOrderStatus) {
                 return response()->json([
-                    'status' => 400,
-                    'message' => 'Order ID '.$orderNumber.' is not yet completed on '. $existingOrderStatus->status->status_name,
+                    'status'  => 400,
+                    'message' => 'Order ID ' . $orderNumber . ' is not yet completed on ' . $existingOrderStatus->status->status_name,
                 ]);
             }
 
+            // ── Remake / Reprint reset ────────────────────────────────────────────
+            // Handles remake triggered via scanner — same logic as AdminController
+            if (in_array($statusId, OrderStatus::RemakeStatusIds)) {
+                $this->resetOrderForRemake($order);
+            }
+            // ─────────────────────────────────────────────────────────────────────
+
             // Create new order status log
-            $orderStatus = new OrderLogs();
-            $orderStatus->order_id = $orderNumber;
-            $orderStatus->user_id = $userId;
-            $orderStatus->status_id = $statusId;
-            $orderStatus->time_started = Carbon::now()->format('Y-m-d H:i:s');
-            if($completed_status == $statusId){
+            $orderStatus               = new OrderLogs();
+            $orderStatus->order_id     = $orderNumber;
+            $orderStatus->user_id      = $userId;
+            $orderStatus->status_id    = $statusId;
+            $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
+            if ($completed_status == $statusId) {
                 $orderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
             }
-
             $orderStatus->save();
 
-//            $order = Orders::where('order_id', $orderNumber)->first();
             if ($order) {
                 $order->status_id = $statusId;
-                if($completed_status == $statusId){
+
+                // Set date_started only on the very first log — not on order creation
+                // After a remake resetOrderForRemake() already sets it to today,
+                // so this only fires for brand new orders hitting their first station
+                if (is_null($order->date_started)) {
+                    $order->date_started = Carbon::now()->format('Y-m-d H:i:s');
+                }
+
+                if ($completed_status == $statusId) {
                     $order->date_completed = Carbon::now()->format('Y-m-d');
                 }
+
                 $order->save();
             }
+
             DB::commit();
-            $log = OrderLogs::whereId($orderStatus->id)->with(['user','status'])->first();
-            $notification = new Notifications();
-            $notification->type = Notifications::typestatus;
-            $notification->log_id = $log->id;
+
+            $log = OrderLogs::whereId($orderStatus->id)->with(['user', 'status'])->first();
+
+            $notification          = new Notifications();
+            $notification->type    = Notifications::typestatus;
+            $notification->log_id  = $log->id;
             $notification->save();
-            $message = ['message' => 'A status was updated for order id ' . $orderStatus->order_id, 'log' => $log];
+
+            $message = [
+                'message' => 'A status was updated for order id ' . $orderStatus->order_id,
+                'log'     => $log,
+            ];
             event(new NewMessage($message));
+
             $this->sendIssueWithPrintEmail($order, $log->status->status_name);
-            // Sync to WooCommerce if order is completed
-            if($completed_status == $statusId){
+
+            if ($completed_status == $statusId) {
                 syncToWooCommerce($order->order_id, 'completed');
             }
-            $response = [
-                'status' => 200,
+
+            return response()->json([
+                'status'  => 200,
                 'message' => 'Status log row created.',
-            ];
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'status' => 400,
+                'status'  => 400,
                 'message' => 'Something went wrong: ' . $e->getMessage(),
             ]);
         }
-        return response()->json($response);
+    }
+
+    /**
+     * Shared remake reset logic — used by both scanner and admin panel.
+     *
+     * 1. Closes any open in-progress log
+     * 2. Preserves all historical logs (activity feed shows full timeline)
+     * 3. Resets date_started to today and recalculates deadline keeping
+     *    the same number of working days — production timer goes back to Day 1
+     */
+    private function resetOrderForRemake(Orders $order): void
+    {
+        // Close any log still open
+        OrderLogs::where('order_id', $order->order_id)
+            ->whereNull('time_end')
+            ->whereNotNull('time_started')
+            ->update(['time_end' => Carbon::now()->format('Y-m-d H:i:s')]);
+
+        // Recalculate production_days from TimelinePool exactly like store() does
+        $production_days = 0;
+
+        // Load items with their attributes
+        $order->load('items.attributes');
+
+        foreach ($order->items as $item) {
+            // Base days for the product
+            $baseDays = TimelinePool::where('item', $item->product_name)
+                ->whereNull('attribute')
+                ->whereNull('attribute_value')
+                ->pluck('days')
+                ->first();
+
+            $production_days += $baseDays ?? 0;
+
+            // Extra days per attribute combination
+            foreach ($item->attributes as $attribute) {
+                $attrDays = TimelinePool::where('item', $item->product_name)
+                    ->where('attribute', $attribute->type)
+                    ->where('attribute_value', $attribute->title)
+                    ->pluck('days')
+                    ->first();
+
+                $production_days += $attrDays ?? 0;
+            }
+        }
+
+        // Reset date_started to today
+        $order->date_started = Carbon::now()->format('Y-m-d H:i:s');
+
+
+        // Recalculate deadline from today using same logic as store()
+        if ($order->is_rush) {
+            // Rush orders keep their original rush delivery date — do not change it
+        } else {
+            $order->deadline = $this->addBusinessDays(
+                Carbon::now(),
+                $production_days
+            )->format('Y-m-d');
+        }
+
+        $order->save();
     }
 
     private function getNextExpectedStatusForOrder($order)

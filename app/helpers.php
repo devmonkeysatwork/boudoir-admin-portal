@@ -106,10 +106,58 @@ function calculateTime($startDate, $endDate)
         'minutes' => $minutes,
     ];
 }
+function getCanadaHolidays($year)
+{
+    $holidays = [];
+
+    // 1. New Year's Day - January 1
+    $holidays[] = Carbon::create($year, 1, 1)->format('Y-m-d');
+
+    // 2. Family Day - Third Monday in February
+    $familyDay = Carbon::create($year, 2, 1)->nthOfMonth(3, Carbon::MONDAY);
+    $holidays[] = $familyDay->format('Y-m-d');
+
+    // 3. Good Friday - Friday before Easter Sunday
+    $easter = Carbon::createFromTimestamp(easter_date($year));
+    $goodFriday = $easter->copy()->subDays(2);
+    $holidays[] = $goodFriday->format('Y-m-d');
+
+    // 4. Victoria Day - Monday preceding May 25
+    $victoriaDayBase = Carbon::create($year, 5, 25);
+    $victoriaDay = $victoriaDayBase->copy();
+    while ($victoriaDay->dayOfWeek !== Carbon::MONDAY) {
+        $victoriaDay->subDay();
+    }
+    $holidays[] = $victoriaDay->format('Y-m-d');
+
+    // 5. Canada Day - July 1
+    $holidays[] = Carbon::create($year, 7, 1)->format('Y-m-d');
+
+    // 6. Labour Day - First Monday in September
+    $labourDay = Carbon::create($year, 9, 1)->nthOfMonth(1, Carbon::MONDAY);
+    $holidays[] = $labourDay->format('Y-m-d');
+
+    // 7. Thanksgiving - Second Monday in October
+    $thanksgiving = Carbon::create($year, 10, 1)->nthOfMonth(2, Carbon::MONDAY);
+    $holidays[] = $thanksgiving->format('Y-m-d');
+
+    // 8. Christmas Day - December 25
+    $holidays[] = Carbon::create($year, 12, 25)->format('Y-m-d');
+
+    // 9. Boxing Day - December 26
+    $holidays[] = Carbon::create($year, 12, 26)->format('Y-m-d');
+
+    return $holidays;
+}
+
+
+// ============================================
+// STEP 2: Update your EXISTING calculateWorkingTime() function
+// Find this section in your helpers.php and ADD the holiday check
+// ============================================
 
 function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId = null, $has_remake = false)
 {
-//    \Illuminate\Support\Facades\Log::info($startDate .' : '. $endDate);
     $start = Carbon::parse($startDate);
     if($has_remake && $orderId){
         $remakeLog = \App\Models\OrderLogs::whereIn('status_id',\App\Models\OrderStatus::RemakeStatusIds)
@@ -123,7 +171,6 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId 
     }
     $end = Carbon::parse($endDate);
 
-    // If the start date is after the end date, return zero difference
     if ($start->greaterThan($end)) {
         return [
             'months' => 0,
@@ -139,32 +186,46 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId 
     $currentDate = $start->copy()->startOfDay();
     $endDate = $end->copy()->startOfDay();
 
+    // *** ADD THIS: Get holidays for the date range ***
+    $holidays = [];
+    $startYear = $start->year;
+    $endYear = $end->year;
+    for ($year = $startYear; $year <= $endYear; $year++) {
+        $holidays = array_merge($holidays, getCanadaHolidays($year));
+    }
+    $holidays = array_unique($holidays);
+    // *** END OF NEW CODE ***
+
     // Process each day
     while ($currentDate->lessThanOrEqualTo($endDate)) {
         // Only process weekdays
         if ($currentDate->isWeekday()) {
+
+            // *** ADD THIS: Skip holidays ***
+            if (in_array($currentDate->format('Y-m-d'), $holidays)) {
+                $currentDate->addDay();
+                continue;
+            }
+            // *** END OF NEW CODE ***
+
             $workStart = $currentDate->copy()->setTime(9, 0);
             $workEnd = $currentDate->copy()->setTime(17, 0);
 
-            // Determine actual start time for this day
             if ($currentDate->isSameDay($start)) {
                 $actualStart = $start->greaterThan($workStart) ? $start : $workStart;
             } else {
                 $actualStart = $workStart;
             }
 
-            // Determine actual end time for this day
             if ($currentDate->isSameDay($end)) {
                 $actualEnd = $end->lessThan($workEnd) ? $end : $workEnd;
             } else {
                 $actualEnd = $workEnd;
             }
 
-            // Calculate minutes for this day if there's actual working time
             if ($actualStart->lessThan($actualEnd)) {
                 $dailyMinutes = $actualStart->diffInMinutes($actualEnd);
 
-                // Check if this constitutes a full working day (8 hours = 480 minutes)
                 if ($dailyMinutes >= 480) {
                     $fullDays++;
                 } else {
@@ -176,9 +237,7 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId 
         $currentDate->addDay();
     }
 
-
-    // If an order was in waiting
-    // Calculate waiting time to subtract if orderId is provided
+    // Rest of your function stays the same (waiting time logic, etc.)
     if ($orderId) {
         $waitingLogs = \App\Models\OrderLogs::select('time_started', 'time_end')
             ->where('order_id', $orderId)
@@ -193,35 +252,27 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId 
 
             foreach ($waitingLogs as $log) {
                 $waitingTime = calculateWorkingTimeInternal($log->time_started, $log->time_end);
-//                \Illuminate\Support\Facades\Log::info($waitingTime);
                 $waitingFullDays += $waitingTime['full_days'];
                 $totalWaitingMinutes += $waitingTime['total_minutes'];
             }
 
-            // Subtract waiting time from total time
             $fullDays = max(0, $fullDays - $waitingFullDays);
             $totalMinutes = max(0, $totalMinutes - $totalWaitingMinutes);
 
-            // Handle negative minutes by borrowing from full days
             while ($totalMinutes < 0 && $fullDays > 0) {
                 $fullDays--;
-                $totalMinutes += 480; // Add 8 hours worth of minutes
+                $totalMinutes += 480;
             }
 
-            // Ensure we don't go negative
             $totalMinutes = max(0, $totalMinutes);
             $fullDays = max(0, $fullDays);
         }
     }
 
-
-
-    // Convert remaining minutes to hours and minutes
     $hours = floor($totalMinutes / 60);
     $minutes = $totalMinutes % 60;
 
-    // Convert full days to months and remaining days
-    $months = floor($fullDays / 30); // Assuming 30 working days per month
+    $months = floor($fullDays / 30);
     $days = $fullDays % 30;
 
     return [
@@ -231,8 +282,6 @@ function calculateWorkingTime($startDate, $endDate, $orderId = null, $waitingId 
         'minutes' => $minutes,
     ];
 }
-
-
 
 // Helper function to calculate working time without subtraction
 function calculateWorkingTimeInternal($startDate, $endDate)
@@ -250,8 +299,26 @@ function calculateWorkingTimeInternal($startDate, $endDate)
     $currentDate = $start->copy()->startOfDay();
     $endDate = $end->copy()->startOfDay();
 
+    // *** ADD THIS: Get holidays for the date range ***
+    $holidays = [];
+    $startYear = $start->year;
+    $endYear = $end->year;
+    for ($year = $startYear; $year <= $endYear; $year++) {
+        $holidays = array_merge($holidays, getCanadaHolidays($year));
+    }
+    $holidays = array_unique($holidays);
+    // *** END OF NEW CODE ***
+
     while ($currentDate->lessThanOrEqualTo($endDate)) {
         if ($currentDate->isWeekday()) {
+
+            // *** ADD THIS: Skip holidays ***
+            if (in_array($currentDate->format('Y-m-d'), $holidays)) {
+                $currentDate->addDay();
+                continue;
+            }
+            // *** END OF NEW CODE ***
+
             $workStart = $currentDate->copy()->setTime(9, 0);
             $workEnd = $currentDate->copy()->setTime(17, 0);
 
@@ -283,6 +350,7 @@ function calculateWorkingTimeInternal($startDate, $endDate)
 
     return ['full_days' => $fullDays, 'total_minutes' => $totalMinutes];
 }
+
 
 
 
@@ -346,4 +414,69 @@ function syncToWooCommerce($orderNumber, $status)
             'error' => $e->getMessage()
         ]);
     }
+}
+
+
+function calculateWorkingMinutes($startDate, $endDate)
+{
+    $start = Carbon::parse($startDate);
+    $end = Carbon::parse($endDate);
+
+    if ($start->greaterThan($end)) {
+        return 0;
+    }
+
+    $totalMinutes = 0;
+    $currentDate = $start->copy()->startOfDay();
+    $endDateDay = $end->copy()->startOfDay();
+
+    // Get holidays for the date range
+    $holidays = [];
+    $startYear = $start->year;
+    $endYear = $end->year;
+    for ($year = $startYear; $year <= $endYear; $year++) {
+        $holidays = array_merge($holidays, getCanadaHolidays($year));
+    }
+    $holidays = array_unique($holidays);
+
+    while ($currentDate->lessThanOrEqualTo($endDateDay)) {
+        // Skip weekends
+        if (!$currentDate->isWeekday()) {
+            $currentDate->addDay();
+            continue;
+        }
+
+        // Skip holidays
+        if (in_array($currentDate->format('Y-m-d'), $holidays)) {
+            $currentDate->addDay();
+            continue;
+        }
+
+        // Business hours: 9 AM - 5 PM
+        $workStart = $currentDate->copy()->setTime(9, 0);
+        $workEnd = $currentDate->copy()->setTime(17, 0);
+
+        // Determine actual start time for this day
+        if ($currentDate->isSameDay($start)) {
+            $actualStart = $start->greaterThan($workStart) ? $start : $workStart;
+        } else {
+            $actualStart = $workStart;
+        }
+
+        // Determine actual end time for this day
+        if ($currentDate->isSameDay($end)) {
+            $actualEnd = $end->lessThan($workEnd) ? $end : $workEnd;
+        } else {
+            $actualEnd = $workEnd;
+        }
+
+        // Calculate minutes for this day
+        if ($actualStart->lessThan($actualEnd)) {
+            $totalMinutes += $actualStart->diffInMinutes($actualEnd);
+        }
+
+        $currentDate->addDay();
+    }
+
+    return $totalMinutes;
 }

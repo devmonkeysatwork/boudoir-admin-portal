@@ -14,7 +14,6 @@ use App\Models\OrderStatus;
 use App\Models\Product;
 use App\Models\ProductAttributes;
 use App\Models\ProductAttributeValues;
-use App\Models\ProductFlows;
 use App\Models\Roles;
 use App\Models\SubStatus;
 use App\Models\TimelinePool;
@@ -26,6 +25,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+
 //use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Facades\Excel;
 use Picqer\Barcode\BarcodeGeneratorJPG;
@@ -35,7 +35,7 @@ class AdminController extends Controller
     public function dashboard(Request $request)
     {
 
-        if(Auth::user()->role_id != 1){
+        if (Auth::user()->role_id != 1) {
             return redirect()->route('my_dashboard');
         }
 
@@ -55,11 +55,11 @@ class AdminController extends Controller
         }
 
         // Status IDs based on your categorization
-        $readyForPrintStatusId = OrderStatus::where('status_name','Ready for Production')->pluck('id')->toArray();
-        $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
-        $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
-        $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
-        $completedStatusId = OrderStatus::where('status_name','Completed')->pluck('id')->toArray();
+        $readyForPrintStatusId = OrderStatus::where('status_name', 'Ready for Production')->pluck('id')->toArray();
+        $onHoldStatusIds = OrderStatus::where('status_name', 'On hold')->pluck('id')->toArray();
+        $readyToShipStatusId = OrderStatus::where('status_name', 'Ready to Ship')->pluck('id')->toArray();
+        $qualityControlStatusId = OrderStatus::where('status_name', 'Quality Control')->pluck('id')->toArray();
+        $completedStatusId = OrderStatus::where('status_name', 'Completed')->pluck('id')->toArray();
         $remakeStatusId = OrderStatus::RemakeStatusIds;
         $excludedStatusIds = array_merge(
             $readyForPrintStatusId,
@@ -68,7 +68,7 @@ class AdminController extends Controller
 //            $qualityControlStatusId,
             $completedStatusId
         );
-        $inProductionStatusIds = OrderStatus::whereNotIn('id',$excludedStatusIds)->pluck('id');
+        $inProductionStatusIds = OrderStatus::whereNotIn('id', $excludedStatusIds)->pluck('id');
 
         // Dynamic counts for each category
         $readyForPrintOrdersCount = Orders::whereIn('status_id', $readyForPrintStatusId)->count();
@@ -81,7 +81,7 @@ class AdminController extends Controller
         $filter_date = $request->input('filter_date');
         $filter_by_time = $request->input('filter_by_time');
         $query = Orders::with([
-            'activeChildren' => function($query) use ($remakeStatusId) {
+            'activeChildren' => function ($query) use ($remakeStatusId) {
                 $query->withExists(['logs as has_remake' => function ($q) use ($remakeStatusId) {
                     $q->whereIn('status_id', $remakeStatusId);
                 }]);
@@ -96,7 +96,7 @@ class AdminController extends Controller
             'station.worker',
             'items.attributes',
             // Add first log relationship
-            'first_log' => function($query) {
+            'first_log' => function ($query) {
                 $query->whereNotNull('time_started')
                     ->orderBy('time_started', 'ASC')
                     ->limit(1);
@@ -112,8 +112,8 @@ class AdminController extends Controller
                     $q->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
                 }
             }, function ($q) {
-                $q->orderBy('is_rush','DESC')
-                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'),'DESC')
+                $q->orderBy('is_rush', 'DESC')
+                    ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(deadline)'), 'DESC')
                     ->orderBy(\Illuminate\Support\Facades\DB::raw('DATE(date_started)'), 'DESC');
             })
             ->when($filter_by_time, function ($q) use ($filter_by_time) {
@@ -134,17 +134,17 @@ class AdminController extends Controller
                 }
             })
 //            ->where('orderType','=',Orders::parentType)
-            ->where('status_id','!=',$completedStatusId[0]);
+            ->where('status_id', '!=', $completedStatusId[0]);
         $orders = $query->get();
 
 
-        $edit_statuses = OrderStatus::whereIn('status_name',OrderStatus::adminStatuses)->get();
+        $edit_statuses = OrderStatus::whereIn('status_name', OrderStatus::adminStatuses)->get();
         $sub_statuses = SubStatus::with('status')->get();
-        if(Auth::user()->role_id == 1){
-            $statuses = OrderStatus::whereNotIn('status_name',OrderStatus::adminStatuses)->get();
-        }else{
+        if (Auth::user()->role_id == 1) {
+            $statuses = OrderStatus::whereNotIn('status_name', OrderStatus::adminStatuses)->get();
+        } else {
             $myWorkStatusIDs = auth()->user()->workstations->pluck('status_id')->toArray();
-            $statuses = OrderStatus::whereIn('id',$myWorkStatusIDs)->get();
+            $statuses = OrderStatus::whereIn('id', $myWorkStatusIDs)->get();
         }
 
 //        Percentage Counts ****************************************
@@ -205,7 +205,7 @@ class AdminController extends Controller
 
         foreach ($orderCounts as $status => $counts) {
             if ($counts['yesterday'] > 0) {
-                $percentageChange[$status] = round((($counts['today'] - $counts['yesterday']) / $counts['yesterday']) * 100,0);
+                $percentageChange[$status] = round((($counts['today'] - $counts['yesterday']) / $counts['yesterday']) * 100, 0);
             } else {
                 $percentageChange[$status] = $counts['today'] > 0 ? 100 : 0; // If there were no orders yesterday
             }
@@ -213,17 +213,17 @@ class AdminController extends Controller
 
         $userId = auth()->id();
         // Fetch the associated OrderLogs to get the time_started
-        $orderLog = OrderLogs::with(['user','status','order'])
-            ->where('user_id',$userId)
+        $orderLog = OrderLogs::with(['user', 'status', 'order'])
+            ->where('user_id', $userId)
             ->whereNotNull('time_started')
             ->whereNull('time_end')
             ->get();
         $now = Carbon::now();
         $team_sort = $request->input('team_sort');
         $workstation_sort = $request->input('workstation_sort');
-        $teamMembers = $this->getTeamCounts($team_sort,$now);
+        $teamMembers = $this->getTeamCounts($team_sort, $now);
         $workstations = $this->getWorkstationCounts($workstation_sort, $now, $excludedStatusIds);
-        $waitingId = OrderStatus::where('status_name','Waiting')->pluck('id')->first();
+        $waitingId = OrderStatus::where('status_name', 'Waiting')->pluck('id')->first();
         return view('admin.dashboard', compact(
             'readyForPrintOrdersCount',
             'inProductionOrdersCount',
@@ -246,419 +246,292 @@ class AdminController extends Controller
         ));
     }
 
-    function getTeamCounts($filter,$now){
-
-        $teamMembersQuery = OrderLogs::select(
+    function getTeamCounts($filter, $now)
+    {
+        // Fetch all logs with time_started and time_end
+        $logsQuery = OrderLogs::select(
+            'order_logs.id',
             'order_logs.user_id',
-            'users.name as user_name',
-            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
-            DB::raw('SUM(TIMESTAMPDIFF(MINUTE, order_logs.time_started, order_logs.time_end)) AS total_minutes') // Changed to MINUTE
+            'order_logs.order_id',
+            'order_logs.time_started',
+            'order_logs.time_end',
+            'users.name as user_name'
         )
             ->join('users', 'order_logs.user_id', '=', 'users.id')
             ->whereNotNull('order_logs.time_started')
             ->whereNotNull('order_logs.time_end');
 
-        // Apply the filter based on team_count
+        // Apply filter
         switch ($filter) {
             case 'day':
-                $teamMembersQuery->whereDate('order_logs.time_started', $now->toDateString());
+                $logsQuery->whereDate('order_logs.time_started', $now->toDateString());
                 break;
-
             case 'week':
-                $teamMembersQuery->whereBetween('order_logs.time_started', [
-                    $now->startOfWeek()->toDateString(),
-                    $now->endOfWeek()->toDateString(),
+                $logsQuery->whereBetween('order_logs.time_started', [
+                    $now->copy()->startOfWeek()->toDateString(),
+                    $now->copy()->endOfWeek()->toDateString(),
                 ]);
                 break;
-
             case 'month':
-                $teamMembersQuery->whereMonth('order_logs.time_started', $now->month)
+                $logsQuery->whereMonth('order_logs.time_started', $now->month)
                     ->whereYear('order_logs.time_started', $now->year);
                 break;
-
             case 'year':
-                $teamMembersQuery->whereYear('order_logs.time_started', $now->year);
+                $logsQuery->whereYear('order_logs.time_started', $now->year);
                 break;
-
             default:
                 break;
         }
 
-        $teamMembersResult = $teamMembersQuery->groupBy('order_logs.user_id', 'users.name')
-            ->get();
+        $logs = $logsQuery->get();
 
-        // Further aggregate the results
-        $teamMembers = $teamMembersResult->groupBy('user_id')->map(function ($items, $userId) {
+        // Group by user and calculate working time
+        $teamMembers = $logs->groupBy('user_id')->map(function ($userLogs, $userId) {
+            $totalMinutes = 0;
+            $uniqueOrders = $userLogs->pluck('order_id')->unique();
+
+            foreach ($userLogs as $log) {
+                // Use the NEW helper function
+                $workingMinutes = calculateWorkingMinutes($log->time_started, $log->time_end);
+                $totalMinutes += $workingMinutes;
+            }
+
             return [
                 'id' => $userId,
-                'user_name' => $items->first()->user_name,
-                'order_count' => $items->sum('order_count'),
-                'total_minutes' => $items->sum('total_minutes'), // Changed key name
+                'user_name' => $userLogs->first()->user_name,
+                'order_count' => $uniqueOrders->count(),
+                'total_minutes' => $totalMinutes,
             ];
         });
 
         return $teamMembers;
     }
 
+
     function getWorkstationCounts($filter, $now, $excludedStatusIds)
     {
-        $workstationsQuery = OrderStatus::whereNotIn('id', $excludedStatusIds)
-            ->whereHas('logs', function ($query) use ($filter, $now) {
-                // Add the same constraints as modal
-                $query->whereNotNull('time_started')
-                    ->whereNotNull('time_end');
+        $periodStart = null;
+        $periodEnd = null;
 
-                switch ($filter) {
-                    case 'day':
-                        $query->whereDate('time_started', $now->toDateString());
-                        break;
+        // Make sure $excludedStatusIds is an array
+        if (!is_array($excludedStatusIds)) {
+            $excludedStatusIds = $excludedStatusIds->toArray();
+        }
 
-                    case 'week':
-                        $query->whereBetween('time_started', [
+        // Query logs and exclude the specified status IDs
+        $logsQuery = OrderLogs::whereNotIn('status_id', $excludedStatusIds)
+            ->whereNotNull('time_started')
+            ->whereNotNull('status_id');  // ✅ Make sure status_id exists
+
+        if ($filter) {
+            switch ($filter) {
+                case 'day':
+                    $periodStart = $now->copy()->startOfDay();
+                    $periodEnd = $now->copy()->endOfDay();
+
+                    $logsQuery->where(function ($q) use ($now) {
+                        $q->whereDate('time_started', $now->toDateString())
+                            ->orWhere(function ($subQ) use ($now) {
+                                $subQ->where('time_started', '<=', $now->endOfDay())
+                                    ->where(function ($endQ) use ($now) {
+                                        $endQ->whereNull('time_end')
+                                            ->orWhere('time_end', '>=', $now->startOfDay());
+                                    });
+                            });
+                    });
+                    break;
+
+                case 'week':
+                    $periodStart = $now->copy()->startOfWeek();
+                    $periodEnd = $now->copy()->endOfWeek();
+
+                    $logsQuery->where(function ($q) use ($now) {
+                        $q->whereBetween('time_started', [
                             $now->copy()->startOfWeek(),
                             $now->copy()->endOfWeek(),
-                        ]);
-                        break;
+                        ])
+                            ->orWhere(function ($subQ) use ($now) {
+                                $subQ->where('time_started', '<=', $now->copy()->endOfWeek())
+                                    ->where(function ($endQ) use ($now) {
+                                        $endQ->whereNull('time_end')
+                                            ->orWhere('time_end', '>=', $now->copy()->startOfWeek());
+                                    });
+                            });
+                    });
+                    break;
 
-                    case 'month':
-                        // Use the same approach as modal for consistency
-                        $query->whereMonth('time_started', $now->month)
-                            ->whereYear('time_started', $now->year);
-                        break;
+                case 'month':
+                    $periodStart = $now->copy()->startOfMonth();
+                    $periodEnd = $now->copy()->endOfMonth();
 
-                    case 'year':
-                        $query->whereYear('time_started', $now->year);
-                        break;
-                }
-            })
-            ->with(['logs' => function ($query) use ($filter, $now) {
-                // Add the same constraints here too
-                $query->whereNotNull('time_started')
-                    ->whereNotNull('time_end');
+                    $logsQuery->where(function ($q) use ($now) {
+                        $q->where(function ($dateQ) use ($now) {
+                            $dateQ->whereMonth('time_started', $now->month)
+                                ->whereYear('time_started', $now->year);
+                        })
+                            ->orWhere(function ($subQ) use ($now) {
+                                $subQ->where('time_started', '<=', $now->copy()->endOfMonth())
+                                    ->where(function ($endQ) use ($now) {
+                                        $endQ->whereNull('time_end')
+                                            ->orWhere('time_end', '>=', $now->copy()->startOfMonth());
+                                    });
+                            });
+                    });
+                    break;
 
-                switch ($filter) {
-                    case 'day':
-                        $query->whereDate('time_started', $now->toDateString());
-                        break;
+                case 'year':
+                    $periodStart = $now->copy()->startOfYear();
+                    $periodEnd = $now->copy()->endOfYear();
 
-                    case 'week':
-                        $query->whereBetween('time_started', [
-                            $now->copy()->startOfWeek(),
-                            $now->copy()->endOfWeek(),
-                        ]);
-                        break;
-
-                    case 'month':
-                        $query->whereMonth('time_started', $now->month)
-                            ->whereYear('time_started', $now->year);
-                        break;
-
-                    case 'year':
-                        $query->whereYear('time_started', $now->year);
-                        break;
-                }
-            }]);
-
-        $workstations = $workstationsQuery->get();
-
-        foreach ($workstations as $workstation) {
-            $workstation->time_spent_minutes = 0;
-
-            // Group by order_id to match modal's distinct count logic
-            $uniqueOrders = $workstation->logs->groupBy('order_id');
-            $workstation->unique_orders_count = $uniqueOrders->count();
-
-            foreach ($workstation->logs as $log) {
-                if ($log->time_started && $log->time_end) {
-                    $workstation->time_spent_minutes +=
-                        Carbon::parse($log->time_started)
-                            ->diffInMinutes(Carbon::parse($log->time_end));
-                }
+                    $logsQuery->where(function ($q) use ($now) {
+                        $q->whereYear('time_started', $now->year)
+                            ->orWhere(function ($subQ) use ($now) {
+                                $subQ->where('time_started', '<=', $now->copy()->endOfYear())
+                                    ->where(function ($endQ) use ($now) {
+                                        $endQ->whereNull('time_end')
+                                            ->orWhere('time_end', '>=', $now->copy()->startOfYear());
+                                    });
+                            });
+                    });
+                    break;
             }
         }
+
+        $logs = $logsQuery->with('status')->get();
+
+        // Filter out any logs where status is null or excluded after loading
+        $logs = $logs->filter(function ($log) use ($excludedStatusIds) {
+            return $log->status && !in_array($log->status_id, $excludedStatusIds);
+        });
+
+        $workstations = $logs->groupBy('status_id')->map(function ($statusLogs) use ($now, $filter, $periodStart, $periodEnd) {
+            $totalMinutes = 0;
+            $orderCount = $statusLogs->pluck('order_id')->unique()->count();
+
+            foreach ($statusLogs as $log) {
+                $startTime = Carbon::parse($log->time_started);
+                $endTime = $log->time_end ? Carbon::parse($log->time_end) : $now;
+
+                if ($filter && $periodStart && $periodEnd) {
+                    $effectiveStart = $startTime->copy()->max($periodStart);
+                    $effectiveEnd = $endTime->copy()->min($periodEnd);
+
+                    if ($effectiveEnd > $effectiveStart) {
+                        $totalMinutes += calculateWorkingMinutes($effectiveStart, $effectiveEnd);
+                    }
+                } else {
+                    $totalMinutes += calculateWorkingMinutes($startTime, $endTime);
+                }
+            }
+
+            $status = $statusLogs->first()->status;
+
+            return (object)[
+                'id' => $status->id,
+                'status_id' => $status->id,
+                'status_name' => $status->status_name,
+                'status_color' => $status->status_color ?? null,
+                'order_count' => $orderCount,
+                'unique_orders_count' => $orderCount,
+                'total_minutes' => $totalMinutes,
+                'time_spent_minutes' => $totalMinutes,
+                'status' => $status,
+            ];
+        })->values();
 
         return $workstations;
     }
 
     public function orders()
     {
-        $query = Orders::with(['items','status','addresses','station','station.worker','items.attributes']);
+        $query = Orders::with(['items', 'status', 'addresses', 'station', 'station.worker', 'items.attributes']);
         $orders = $query->paginate(10);
         $workstations = Workstations::all();
         $statuses = OrderStatus::all();
 
-        return view('admin.orders',compact('orders', 'workstations', 'statuses'));
+        return view('admin.orders', compact('orders', 'workstations', 'statuses'));
     }
 
-    public function updateOrderStatus(Request $request) {
-        $userId = auth()->id(); // ✅ Fix undefined variable
-
+    public function updateOrderStatus(Request $request)
+    {
         try {
             DB::beginTransaction();
+            $order = Orders::find($request->id);
+            $order->status_id = $request->edit_status;
+            $order->save();
 
-            // Support both: scanner (order_id + status_id) AND admin modal (id + edit_status)
-            $statusId    = $request->input('status_id') ?? $request->input('edit_status');
-            $orderNumber = $request->input('order_id');
-            $orderId     = $request->input('id');
-
-            if (!$statusId || $statusId == 0) {
-                return response()->json([
-                    'status'  => 400,
-                    'message' => 'Please select a valid status.',
-                ]);
-            }
-
-//            dd($orderNumber);
-
-            // Resolve order
-            if ($orderNumber) {
-                // Scanner sent WooCommerce order number directly
-                $order = Orders::with('items')->whereOrderId($orderNumber)->first();
-            } else {
-                // Admin modal sent primary key
-                $order = Orders::find($orderId);
-                if ($order) {
-                    $orderNumber = $order->order_id;
-                    $order = Orders::with('items')->whereOrderId($orderNumber)->first();
-                }
-            }
-
-            if (!$order) {
-                return response()->json([
-                    'status'  => 400,
-                    'message' => 'Order not found.',
-                ]);
-            }
-
-            // Now order_id (WooCommerce number) is available for log queries
-            $orderNumber = $order->order_id;
-
-            $order            = Orders::with('items')->whereOrderId($orderNumber)->first();
-            $exceptionStatuses = OrderStatus::exceptionStatuses;
-            $completed_status  = OrderStatus::where('status_name', OrderStatus::COMPLETED)->pluck('id')->first();
-
-            $remakeStatusIds = OrderStatus::getRemakeStatusIds();
-
-            $skipValidation = false;
-            if (
-                in_array($statusId, $exceptionStatuses) ||
-                $completed_status == $statusId           ||
-                in_array($statusId, $remakeStatusIds)
-            ) {
-                $skipValidation = true;
-            }
-
-            if (!$skipValidation) {
-                $p_ids    = ProductFlows::where('step_id', $statusId)->pluck('product_id');
-                $prod_ids = Orders::with('items')
-                    ->whereHas('items', function ($query) use ($p_ids) {
-                        $query->whereIn('product_id', $p_ids);
-                    })->whereOrderId($orderNumber)->count();
-
-                if (!$prod_ids) {
-                    $excludedProducts = Product::whereIn('name', ['Metal Prints', 'Canvas'])->pluck('id');
-                    $orderProducts    = Orders::with('items')
-                        ->whereHas('items', function ($query) use ($excludedProducts) {
-                            $query->whereIn('product_id', $excludedProducts);
-                        })->whereOrderId($orderNumber)->count();
-
-                    if (!$orderProducts) {
-                        $status_name = OrderStatus::whereId($statusId)->pluck('status_name')->first();
-                        return response()->json([
-                            'status'  => 400,
-                            'message' => 'Order ID ' . $orderNumber . ' does not have ' . $status_name . ' required.',
-                        ]);
-                    }
-                }
-            }
-
-            // Gilding check
-            if ($statusId == 3) {
-                $attributes = Orders::with('items')
-                    ->where(function ($attrQuery) {
-                        $attrQuery->whereHas('items.attributes', function ($subQuery) {
-                            $subQuery->where('type', 'Like', 'Gilding')->where('title', 'none');
-                        });
-                    })
-                    ->whereOrderId($orderNumber)->first();
-                if ($attributes) {
+            $engravingId = OrderStatus::where('status_name', OrderStatus::ENGRAVING)->pluck('id')->first();
+            $waitingId = OrderStatus::where('status_name', OrderStatus::Waiting)->pluck('id')->first();
+            //If there is sub status for on-hold or any other then it should mark the previous step as an error occurred
+            if ($request->edit_sub_status) {
+                //            $lastLog = Orders::whereId($order->id)->with(['last_log'])->first();
+                $lastLog = OrderLogs::whereOrderId($order->order_id)->orderBy('id', 'DESC')->first();
+                if (!$lastLog) {
                     return response()->json([
-                        'status'  => 400,
-                        'message' => 'Order ID ' . $orderNumber . ' does not have gilding required.',
+                        'status' => 400,
+                        'message' => 'No activity so far on this order'
                     ]);
                 }
-            } elseif ($statusId == 5) {
-                $attributes  = Orders::with('items')
-                    ->where(function ($attrQuery) {
-                        $attrQuery->whereHas('items.attributes', function ($subQuery) {
-                            $subQuery->where('type', 'Like', 'Imprinting or Logo')->where('title', 'none');
-                        });
-                    })
-                    ->whereOrderId($orderNumber)->first();
-                $attributes2 = Orders::with('items')
-                    ->where(function ($attrQuery) {
-                        $attrQuery->whereHas('items.attributes', function ($subQuery) {
-                            $subQuery->where('type', 'Like', 'Second Imprinting or Logo')->where('title', 'none');
-                        });
-                    })
-                    ->whereOrderId($orderNumber)->first();
-                if ($attributes && $attributes2) {
-                    return response()->json([
-                        'status'  => 400,
-                        'message' => 'Order ID ' . $orderNumber . ' does not have Imprinting required.',
-                    ]);
+                if ($engravingId != $request->edit_status && $waitingId != $request->edit_status) {
+                    $lastLog->error = 1;
                 }
+                $lastLog->save();
             }
 
-            // Check for an existing open log
-            $existingOrderStatus = OrderLogs::with('status')
-                ->whereNull('time_end')
-                ->where('order_id', $orderNumber)
-                ->whereNotNull('time_started')
-                ->first();
+            if (in_array($request->edit_status, OrderStatus::RemakeStatusIds)) {
+                $workingDays = $this->countBusinessDays(
+                    Carbon::parse($order->date_started),
+                    Carbon::parse($order->deadline)
+                );
 
-            if ($existingOrderStatus) {
-                return response()->json([
-                    'status'  => 400,
-                    'message' => 'Order ID ' . $orderNumber . ' is not yet completed on ' . $existingOrderStatus->status->status_name,
-                ]);
+                $newDeadline = $this->addBusinessDays(Carbon::now(), $workingDays);
+                $order->date_started = Carbon::now()->format('Y-m-d');
+                $order->deadline = $newDeadline->format('Y-m-d');
+                $order->save();
             }
 
-            // ── Remake / Reprint reset ────────────────────────────────────────────
-            // Handles remake triggered via scanner — same logic as AdminController
-            if (in_array($statusId, OrderStatus::RemakeStatusIds)) {
-                $this->resetOrderForRemake($order);
+            $orderStatus = new OrderLogs();
+            $orderStatus->order_id = $order->order_id;
+            $orderStatus->status_id = $request->edit_status;
+            $orderStatus->sub_status_id = $request->edit_sub_status ?? null;
+            $orderStatus->user_id = Auth::user()->id;
+            $orderStatus->notes = $request->notes ?? null;
+            if ($engravingId != $request->edit_status && $waitingId != $request->edit_status) {
+                $orderStatus->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
             }
-            // ─────────────────────────────────────────────────────────────────────
-
-            // Create new order status log
-            $orderStatus               = new OrderLogs();
-            $orderStatus->order_id     = $orderNumber;
-            $orderStatus->user_id      = $userId;
-            $orderStatus->status_id    = $statusId;
-            $orderStatus->time_started = Carbon::now()->format('Y-m-d H:i:s');
-            if ($completed_status == $statusId || in_array($statusId, $remakeStatusIds)) {
-                $orderStatus->time_end = Carbon::now()->format('Y-m-d H:i:s');
-            }
+            $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
             $orderStatus->save();
 
-            if ($order) {
-                if (!in_array($statusId, OrderStatus::getRemakeStatusIds())) {
-                    $order->status_id = $statusId;
+            $log = OrderLogs::whereId($orderStatus->id)->with(['user', 'status', 'updated_by'])->first();
 
-                    if (is_null($order->date_started)) {
-                        $order->date_started = Carbon::now()->format('Y-m-d H:i:s');
-                    }
-
-                    if ($completed_status == $statusId) {
-                        $order->date_completed = Carbon::now()->format('Y-m-d');
-                    }
-
-                    $order->save();
-                }
-            }
-            DB::commit();
-
-            $log = OrderLogs::whereId($orderStatus->id)->with(['user', 'status'])->first();
-
-            $notification          = new Notifications();
-            $notification->type    = Notifications::typestatus;
-            $notification->log_id  = $log->id;
+            $notification = new Notifications();
+            $notification->type = Notifications::typestatus;
+            $notification->log_id = $log->id;
             $notification->save();
 
-            $message = [
-                'message' => 'A status was updated for order id ' . $orderStatus->order_id,
-                'log'     => $log,
-            ];
+            $message = ['message' => 'A status was updated for order id ' . $request->order_id, 'log' => $log];
             event(new NewMessage($message));
+
+
+            DB::commit();
 
             $this->sendIssueWithPrintEmail($order, $log->status->status_name);
 
-            if ($completed_status == $statusId) {
-                syncToWooCommerce($order->order_id, 'completed');
-            }
-
-            return response()->json([
-                'status'  => 200,
-                'message' => 'Status log row created.',
-            ]);
-
+            $response = [
+                'status' => 200,
+                'message' => 'Status updated successfully.',
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'status'  => 400,
-                'message' => 'Something went wrong: ' . $e->getMessage(),
+                'status' => 400,
+                'message' => 'Something went wrong' . $e->getMessage()
             ]);
         }
+
+        return response()->json($response);
     }
 
-    /**
-     * Shared remake reset logic — used by both scanner and admin panel.
-     *
-     * 1. Closes any open in-progress log
-     * 2. Preserves all historical logs (activity feed shows full timeline)
-     * 3. Resets date_started to today and recalculates deadline keeping
-     *    the same number of working days — production timer goes back to Day 1
-     */
-    private function resetOrderForRemake(Orders $order): void
-    {
-        // Close any log still open
-        OrderLogs::where('order_id', $order->order_id)
-            ->whereNull('time_end')
-            ->whereNotNull('time_started')
-            ->update(['time_end' => Carbon::now()->format('Y-m-d H:i:s')]);
-
-        // Recalculate production_days from TimelinePool exactly like store() does
-        $production_days = 0;
-
-        // Load items with their attributes
-        $order->load('items.attributes');
-
-        foreach ($order->items as $item) {
-            // Base days for the product
-            $baseDays = TimelinePool::where('item', $item->product_name)
-                ->whereNull('attribute')
-                ->whereNull('attribute_value')
-                ->pluck('days')
-                ->first();
-
-            $production_days += $baseDays ?? 0;
-
-            // Extra days per attribute combination
-            foreach ($item->attributes as $attribute) {
-                $attrDays = TimelinePool::where('item', $item->product_name)
-                    ->where('attribute', $attribute->type)
-                    ->where('attribute_value', $attribute->title)
-                    ->pluck('days')
-                    ->first();
-
-                $production_days += $attrDays ?? 0;
-            }
-        }
-        // Reset to Ready for Production — same as brand new order
-        $readyForProductionId = OrderStatus::where('status_name', 'Ready for Production')
-            ->pluck('id')
-            ->first();
-
-        if ($readyForProductionId) {
-            $order->status_id = $readyForProductionId;
-        }
-
-
-        // Reset date_started to today
-        $order->date_started = Carbon::now()->format('Y-m-d H:i:s');
-
-
-
-        if (!$order->is_rush) {
-            $order->deadline = $this->addBusinessDays(
-                Carbon::now(),
-                $production_days
-            )->format('Y-m-d');
-        }
-
-        $order->save();
-    }
     private function countBusinessDays(Carbon $startDate, Carbon $endDate)
     {
         $currentDate = $startDate->copy();
@@ -688,9 +561,9 @@ class AdminController extends Controller
         return $currentDate;
     }
 
-    public function sendIssueWithPrintEmail($order,$status)
+    public function sendIssueWithPrintEmail($order, $status)
     {
-        \Log::info('Sending email for order status '.$status, ['order_id' => $order->id]);
+        \Log::info('Sending email for order status ' . $status, ['order_id' => $order->id]);
         $template = EmailTemplates::where('status_id', $order->status_id)->where('status', 1)->first();
         if ($template) {
             $content = str_replace(
@@ -698,12 +571,12 @@ class AdminController extends Controller
                 [$order->customer_name, $order->order_id, 'support@boudoir.com'],
                 $template->content
             );
-            $address = DB::table('costumer_address')->where('order_id',$order->id)->where('type','=','billing_address')->first();
+            $address = DB::table('costumer_address')->where('order_id', $order->id)->where('type', '=', 'billing_address')->first();
             Mail::to($address->email)->send(new TemplateEmail($template->subject, $content));
 
             \Log::info('Email sent successfully', ['order_id' => $order->id]);
         } else {
-            \Log::error('No email template found for status '.$status.'.');
+            \Log::error('No email template found for status ' . $status . '.');
         }
     }
 
@@ -715,8 +588,8 @@ class AdminController extends Controller
             $order->status_id = $request->override_status;
             $order->save();
 
-            $lastLog = OrderLogs::whereOrderId($order->order_id)->whereNull('time_end')->orderBy('id','DESC')->first();
-            if($lastLog){
+            $lastLog = OrderLogs::whereOrderId($order->order_id)->whereNull('time_end')->orderBy('id', 'DESC')->first();
+            if ($lastLog) {
                 $lastLog->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
                 $lastLog->save();
             }
@@ -725,22 +598,22 @@ class AdminController extends Controller
             $orderStatus->order_id = $order->order_id;
             $orderStatus->status_id = $request->override_status;
             $orderStatus->user_id = Auth::user()->id;
-            $orderStatus->notes = $request->notes??null;
+            $orderStatus->notes = $request->notes ?? null;
             $orderStatus->time_started = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
             $orderStatus->save();
 
-            $log = OrderLogs::whereId($orderStatus->id)->with(['user','status','updated_by'])->first();
+            $log = OrderLogs::whereId($orderStatus->id)->with(['user', 'status', 'updated_by'])->first();
 
             $notification = new Notifications();
             $notification->type = Notifications::typestatus;
             $notification->log_id = $log->id;
             $notification->save();
 
-            $message = ['message'=>'A status was updated for order id '.$request->order_id,'log'=>$log];
+            $message = ['message' => 'A status was updated for order id ' . $request->order_id, 'log' => $log];
             event(new NewMessage($message));
 
-            $completed_status = OrderStatus::where('status_name',OrderStatus::COMPLETED)->pluck('id')->first();
-            if($completed_status == intval($request->override_status)){
+            $completed_status = OrderStatus::where('status_name', OrderStatus::COMPLETED)->pluck('id')->first();
+            if ($completed_status == intval($request->override_status)) {
                 syncToWooCommerce($order->order_id, 'completed');
                 $orderStatus->time_end = \Illuminate\Support\Carbon::now()->format('Y-m-d H:i:s');
                 $orderStatus->save();
@@ -752,11 +625,11 @@ class AdminController extends Controller
                 'status' => 200,
                 'message' => 'Status updated successfully.',
             ];
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => 400,
-                'message' => 'Something went wrong'.$e->getMessage()
+                'message' => 'Something went wrong' . $e->getMessage()
             ]);
         }
 
@@ -764,14 +637,13 @@ class AdminController extends Controller
     }
 
 
-
     public function areas()
     {
-        $readyForPrintStatusId = OrderStatus::where('status_name','Sent To Print')->pluck('id')->toArray();
-        $onHoldStatusIds = OrderStatus::where('status_name','On hold')->pluck('id')->toArray();
-        $readyToShipStatusId = OrderStatus::where('status_name','Ready to Ship')->pluck('id')->toArray();
-        $qualityControlStatusId = OrderStatus::where('status_name','Quality Control')->pluck('id')->toArray();
-        $productionReadyId = OrderStatus::where('status_name','Ready For Production')->pluck('id')->toArray();
+        $readyForPrintStatusId = OrderStatus::where('status_name', 'Sent To Print')->pluck('id')->toArray();
+        $onHoldStatusIds = OrderStatus::where('status_name', 'On hold')->pluck('id')->toArray();
+        $readyToShipStatusId = OrderStatus::where('status_name', 'Ready to Ship')->pluck('id')->toArray();
+        $qualityControlStatusId = OrderStatus::where('status_name', 'Quality Control')->pluck('id')->toArray();
+        $productionReadyId = OrderStatus::where('status_name', 'Ready For Production')->pluck('id')->toArray();
         $excludedStatusIds = array_merge(
             $readyForPrintStatusId,
             $onHoldStatusIds,
@@ -779,7 +651,7 @@ class AdminController extends Controller
             $qualityControlStatusId,
             $productionReadyId
         );
-        $workstations = OrderStatus::whereNotIn('id',$excludedStatusIds)->with(['first_log', 'last_log','logs'])->paginate(10);
+        $workstations = OrderStatus::whereNotIn('id', $excludedStatusIds)->with(['first_log', 'last_log', 'logs'])->paginate(10);
 
         foreach ($workstations as $workstation) {
             $workstation->time_spent_minutes = 0; // Changed to minutes
@@ -797,7 +669,7 @@ class AdminController extends Controller
     public function getWorkstationDetails($id, Request $request)
     {
         $sort = $request->get('sort');
-        $now  = Carbon::now();
+        $now = Carbon::now();
 
         $query = OrderLogs::where('status_id', $id)
             ->whereNotNull('time_started')
@@ -866,78 +738,170 @@ class AdminController extends Controller
         $roles = Roles::all();
         $statuses = OrderStatus::all();
 
-        $teamMembers = User::select(
-            'users.id',
-            'users.name',
-            'users.product_status_id',
-            DB::raw('COUNT(DISTINCT order_logs.order_id) AS order_count'),
-            DB::raw('IFNULL(SUM(TIMESTAMPDIFF(MINUTE, order_logs.time_started, order_logs.time_end)), 0) AS total_minutes')
-        )
-            ->leftJoin('order_logs', 'users.id', '=', 'order_logs.user_id')
-            ->whereNotNull('order_logs.time_started')
-            ->whereNotNull('order_logs.time_end')
-            ->groupBy('users.id','users.name', 'users.product_status_id')
-            ->get();
+        $users = User::with(['logs' => function ($query) {
+            $query->whereNotNull('time_started')
+                ->whereNotNull('time_end')
+                ->select('id', 'user_id', 'order_id', 'time_started', 'time_end');
+        }])->get();
 
-        return view('admin.team', compact(['teamMembers','roles','statuses']));
+        $teamMembers = $users->map(function ($user) {
+            $totalMinutes = 0;
+
+            // Group logs by order_id to get unique orders
+            $logsByOrder = $user->logs->groupBy('order_id');
+            $uniqueOrders = $logsByOrder->keys();
+
+            foreach ($user->logs as $log) {
+                if ($log->time_started && $log->time_end) {
+                    // Use calculateWorkingMinutes helper
+                    $totalMinutes += calculateWorkingMinutes($log->time_started, $log->time_end);
+                }
+            }
+
+            return (object)[
+                'id' => $user->id,
+                'name' => $user->name,
+                'product_status_id' => $user->product_status_id,
+                'order_count' => $uniqueOrders->count(),
+                'total_minutes' => $totalMinutes,
+            ];
+        })->filter(function ($member) {
+            return $member->order_count > 0;
+        })->values();
+
+        return view('admin.team', compact(['teamMembers', 'roles', 'statuses']));
     }
 
     public function getTeamDetails($id, Request $request)
     {
         $sort = $request->get('sort');
+        $now = Carbon::now();
 
-        $query = OrderLogs::select(
-            'order_id',
-            DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_started, time_end)) AS total_minutes')
-        )
-            ->where('user_id', $id)
+        $query = OrderLogs::where('user_id', $id)
             ->whereNotNull('time_started')
             ->whereNotNull('time_end');
 
-        // Only apply date filter if sort parameter is provided
         if ($sort) {
-            $now = Carbon::now();
-            if ($sort == 'day') {
-                $startDate = Carbon::today();
-                $endDate = Carbon::today();
-            } elseif ($sort == 'week') {
-                $startDate = Carbon::now()->startOfWeek();
-                $endDate = Carbon::now()->endOfWeek();
-            } elseif ($sort == 'month') {
-                $startDate = Carbon::now()->startOfMonth();
-                $endDate = Carbon::now()->endOfMonth();
-            } elseif ($sort == 'year') {
-                $startDate = Carbon::now()->startOfYear();
-                $endDate = Carbon::now()->endOfYear();
-            }
+            switch ($sort) {
+                case 'day':
+                    $startDate = Carbon::today();
+                    $endDate = Carbon::today();
+                    $query->whereBetween(DB::raw('DATE(time_started)'), [$startDate, $endDate]);
+                    break;
 
-            if (isset($startDate) && isset($endDate)) {
-                $query->whereBetween(DB::raw('DATE(time_started)'), [$startDate, $endDate]);
+                case 'week':
+                    $startDate = Carbon::now()->startOfWeek();
+                    $endDate = Carbon::now()->endOfWeek();
+                    $query->whereBetween(DB::raw('DATE(time_started)'), [$startDate, $endDate]);
+                    break;
+
+                case 'month':
+                    $startDate = Carbon::now()->startOfMonth();
+                    $endDate = Carbon::now()->endOfMonth();
+                    $query->whereBetween(DB::raw('DATE(time_started)'), [$startDate, $endDate]);
+                    break;
+
+                case 'year':
+                    $startDate = Carbon::now()->startOfYear();
+                    $endDate = Carbon::now()->endOfYear();
+                    $query->whereBetween(DB::raw('DATE(time_started)'), [$startDate, $endDate]);
+                    break;
             }
         }
 
-        $teamMembersResult = $query->groupBy('order_id')->get();
+        $logs = $query->get();
 
-        if (!$teamMembersResult) {
-            return response()->json(['message' => 'Team member not found'], 404);
-        }
+        // Group by order_id and calculate working minutes
+        $ordersData = $logs->groupBy('order_id')->map(function ($orderLogs) {
+            $orderId = $orderLogs->first()->order_id;
+            $totalMinutes = 0;
+
+            foreach ($orderLogs as $log) {
+                if ($log->time_started && $log->time_end) {
+                    // Use calculateWorkingMinutes helper
+                    $totalMinutes += calculateWorkingMinutes($log->time_started, $log->time_end);
+                }
+            }
+
+            return [
+                'order_id' => $orderId,
+                'total_minutes' => $totalMinutes,
+            ];
+        })->values();
 
         $ordersHtml = '';
-        foreach ($teamMembersResult as $member) {
-            $timeFormatted = $this->formatMinutesToHours($member->total_minutes);
+        foreach ($ordersData as $order) {
+            $timeFormatted = $this->formatMinutesToHours($order['total_minutes']);
 
             $ordersHtml .= '
         <tr>
-            <td>Order #' . $member->order_id . '</td>
+            <td>Order #' . $order['order_id'] . '</td>
             <td>' . $timeFormatted . '</td>
         </tr>';
         }
 
         return response()->json([
             'ordersHtml' => $ordersHtml,
-            'orderCount' => count($teamMembersResult)
+            'orderCount' => $ordersData->count(),
+            'totalMinutes' => $ordersData->sum('total_minutes'),
         ]);
     }
+//    public function getTeamDetails($id, Request $request)
+//    {
+//        $sort = $request->get('sort');
+//
+//        $query = OrderLogs::select(
+//            'order_id',
+//            DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_started, time_end)) AS total_minutes')
+//        )
+//            ->where('user_id', $id)
+//            ->whereNotNull('time_started')
+//            ->whereNotNull('time_end');
+//
+//        // Only apply date filter if sort parameter is provided
+//        if ($sort) {
+//            $now = Carbon::now();
+//            if ($sort == 'day') {
+//                $startDate = Carbon::today();
+//                $endDate = Carbon::today();
+//            } elseif ($sort == 'week') {
+//                $startDate = Carbon::now()->startOfWeek();
+//                $endDate = Carbon::now()->endOfWeek();
+//            } elseif ($sort == 'month') {
+//                $startDate = Carbon::now()->startOfMonth();
+//                $endDate = Carbon::now()->endOfMonth();
+//            } elseif ($sort == 'year') {
+//                $startDate = Carbon::now()->startOfYear();
+//                $endDate = Carbon::now()->endOfYear();
+//            }
+//
+//            if (isset($startDate) && isset($endDate)) {
+//                $query->whereBetween(DB::raw('DATE(time_started)'), [$startDate, $endDate]);
+//            }
+//        }
+//
+//        $teamMembersResult = $query->groupBy('order_id')->get();
+//
+//        if (!$teamMembersResult) {
+//            return response()->json(['message' => 'Team member not found'], 404);
+//        }
+//
+//        $ordersHtml = '';
+//        foreach ($teamMembersResult as $member) {
+//            $timeFormatted = $this->formatMinutesToHours($member->total_minutes);
+//
+//            $ordersHtml .= '
+//        <tr>
+//            <td>Order #' . $member->order_id . '</td>
+//            <td>' . $timeFormatted . '</td>
+//        </tr>';
+//        }
+//
+//        return response()->json([
+//            'ordersHtml' => $ordersHtml,
+//            'orderCount' => count($teamMembersResult)
+//        ]);
+//    }
     private function formatMinutesToHours($minutes)
     {
         $hours = floor($minutes / 60);
@@ -963,15 +927,15 @@ class AdminController extends Controller
 
     public function notification()
     {
-        $data['notifications'] = Notifications::with(['log','log.user','log.status','log.sub_status','comment','comment.user','comment.order'])
-            ->orderBy('created_at','DESC')
+        $data['notifications'] = Notifications::with(['log', 'log.user', 'log.status', 'log.sub_status', 'comment', 'comment.user', 'comment.order'])
+            ->orderBy('created_at', 'DESC')
             ->paginate(10);
 
-        if(request()->ajax()) {
+        if (request()->ajax()) {
             return view('admin.partials.notification_rows', $data)->render();
         }
 
-        return view('admin.notifications',$data);
+        return view('admin.notifications', $data);
     }
 
     public function manageStatuses()
@@ -979,12 +943,14 @@ class AdminController extends Controller
         $data['statuses'] = OrderStatus::all();
         return view('admin.manage-statuses', $data);
     }
+
     public function productFlows()
     {
         $data['flows'] = Product::with('orderStatuses')->get();
         $data['availableSteps'] = OrderStatus::all();
         return view('admin.manage-product-flows', $data);
     }
+
     public function addProductFlow(Request $request)
     {
         // Fetch the product
@@ -1009,7 +975,8 @@ class AdminController extends Controller
         return response()->json($response);
     }
 
-    public function addStatuses(Request $request){
+    public function addStatuses(Request $request)
+    {
         $request->validate([
             'status-name' => 'required|string|max:255',
             'status-color' => 'required|string|max:10',
@@ -1018,7 +985,7 @@ class AdminController extends Controller
         $status = new OrderStatus();
         $status->status_name = $request->input('status-name');
         $status->status_color = $request->input('status-color');
-        $status->title = str_replace(" ",'-',$request->input('status-name'));
+        $status->title = str_replace(" ", '-', $request->input('status-name'));
         $status->save();
 
         $response = [
@@ -1029,7 +996,8 @@ class AdminController extends Controller
         return response()->json($response);
     }
 
-    public function updateStatus(Request $request){
+    public function updateStatus(Request $request)
+    {
         $request->validate([
             'edit-status-name' => 'required|string|max:255',
             'edit-status-color' => 'required|string|max:10',
@@ -1046,6 +1014,7 @@ class AdminController extends Controller
 
         return response()->json($response);
     }
+
     public function deleteStatus(Request $request)
     {
         $statusId = $request->input('id');
@@ -1093,6 +1062,7 @@ class AdminController extends Controller
 
         return response()->json($response);
     }
+
     public function getUserWorkstations($userId)
     {
         $user = User::find($userId);
@@ -1115,8 +1085,6 @@ class AdminController extends Controller
     }
 
 
-
-
     public function sendSummaryEmail()
     {
         $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
@@ -1133,9 +1101,9 @@ class AdminController extends Controller
             'order_with_issues' => Orders::with(['status', 'station', 'station.worker'])
                 ->whereIn('status_id', $issues)
                 ->get(),
-            'rush_orders' => Orders::with(['status','station','station.worker'])
-                ->where('is_rush','=',1)
-                ->where('status_id','!=',$completed_status)->get(),
+            'rush_orders' => Orders::with(['status', 'station', 'station.worker'])
+                ->where('is_rush', '=', 1)
+                ->where('status_id', '!=', $completed_status)->get(),
             'title' => 'Daily Summary Report'
         ];
 
@@ -1153,7 +1121,7 @@ class AdminController extends Controller
 
         return response($barcode)
             ->header('Content-Type', 'image/jpeg')
-            ->header('Content-Disposition', 'inline; filename="'.strtolower($status_name).'_barcode.jpg"');
+            ->header('Content-Disposition', 'inline; filename="' . strtolower($status_name) . '_barcode.jpg"');
     }
 
 //    public function import(Request $request)
@@ -1233,10 +1201,10 @@ class AdminController extends Controller
     public function downloadTodaysReport(Request $request)
     {
         $completed_status = OrderStatus::where('status_name', Orders::statusCompleted)->pluck('id')->first();
-        $remakeStatusId = OrderStatus::where('status_name','Remake + Reasons')->pluck('id')->first();
+        $remakeStatusId = OrderStatus::where('status_name', 'Remake + Reasons')->pluck('id')->first();
 
         try {
-            $orders = Orders::with(['status','last_log', 'items.attributes', 'activeChildren'])
+            $orders = Orders::with(['status', 'last_log', 'items.attributes', 'activeChildren'])
                 ->where('orderType', \App\Models\Orders::parentType)
                 ->where('status_id', '!=', $completed_status)
                 ->withExists(['logs as has_remake' => function ($query) use ($remakeStatusId) {
@@ -1267,8 +1235,8 @@ class AdminController extends Controller
                     'is_rush' => $order->is_rush ? 'YES' : 'NO',
                 ];
 
-                if(isset($order->activeChildren) && count($order->activeChildren)){
-                    foreach($order->activeChildren as $child_order){
+                if (isset($order->activeChildren) && count($order->activeChildren)) {
+                    foreach ($order->activeChildren as $child_order) {
                         $daysInProduction = 0;
                         if ($child_order->date_started) {
                             $startDate = Carbon::parse($child_order->date_started);
