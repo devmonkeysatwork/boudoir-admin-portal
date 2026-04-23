@@ -1127,6 +1127,7 @@ class DashboardController extends Controller
             $userIds[] = $userData['userName'];
         }
 
+
         return [
             'data' => $finalData,
             'months' => $monthLabels,     // Month names for x-axis
@@ -1314,6 +1315,8 @@ class DashboardController extends Controller
                 return $date->format('Y-m-d');
         }
     }
+
+
 
 
 

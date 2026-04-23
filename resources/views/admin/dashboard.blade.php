@@ -272,10 +272,10 @@
                                 </td>
                                 <td>
                                   <span class="status" style="background-color: {{$order->status?->status_color ?? 'transparent'}}">
-                                      @if(isset($order->last_log->sub_status))
-                                          {{$order->last_log?->sub_status?->name ?? null}}
-                                      @elseif(isset($order->last_log->status))
-                                          {{$order->last_log?->status?->status_name ?? null}}
+                                     @if($order->last_log?->sub_status)
+                                          {{$order->last_log->sub_status->name}}
+                                      @elseif($order->last_log?->status && $order->last_log->status_id === $order->status_id)
+                                          {{$order->last_log->status->status_name}}
                                       @else
                                           {{$order->status?->status_name ?? null}}
                                       @endif
@@ -288,11 +288,10 @@
                                         {{$order->station?->worker?->name ?? null}}
                                     @endif
                                 </td>
-                                <td>{{$order->date_started ? \Carbon\Carbon::parse($order->date_started)->format('M d, Y') : '-'}}</td>
-                                <td>{{ $order->first_log?->time_started ? \Carbon\Carbon::parse($order->first_log->time_started)->format('M d, Y') : '-' }}</td>
-                                <td>
+                                <td>{{$order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('M d, Y') : '-'}}</td>
+                                <td>{{$order->date_started ? \Carbon\Carbon::parse($order->date_started)->format('M d, Y') : '-'}}</td>                                <td>
                                     @php
-                                        $dateStarted = \Carbon\Carbon::parse($order->created_at);
+                                        $dateStarted = \Carbon\Carbon::parse($order->date_started);
                                         $now = \Carbon\Carbon::now();
                                         $workingTime = calculateWorkingTime($dateStarted, $now,$order->order_id, $waitingId ?? null,$order->has_remake);
                                     @endphp
@@ -425,6 +424,7 @@
 {{--                </div>--}}
 {{--            </div>--}}
         </div>
+
         @if(Auth::user()->role_id == 1)
             <div class="team-workstations">
                 <div class="team">
@@ -492,7 +492,7 @@
                         @foreach($workstations as $workstation)
                             <tr onclick="loadWorkstationDetails({{ $workstation->id }},'{{$workstation->status_name}}')">
                                 <td>{{ $workstation->status_name }}</td>
-                                <td>{{ $workstation->orders_count() }}</td>
+                                <td>{{ $workstation->unique_orders_count }}</td>
                                 <td>
                                     @php
                                         $hours = floor($workstation->time_spent_minutes / 60);
@@ -665,6 +665,9 @@
                         <button class="btn pdf-btn override-btn bg-warning fw-bolder text-white" onclick="document.getElementById('adminOverrideFormModal').style.display='block'">
                             Override
                         </button>
+                        <button class="btn btn-danger fw-bold ms-2" onclick="confirmDeleteOrder()">
+                            Delete Order
+                        </button>
                     @endif
                     <div class="new-comment">
                         <textarea placeholder="Write a message..." id="comment_input"></textarea>
@@ -684,6 +687,37 @@
         </x-modal>
     </div>
 @endsection
+<style>
+    .log-entry--remake {
+        background: #fff8e1;
+        border-left: 3px solid #f59e0b;
+        padding-left: 8px;
+    }
+    .log-divider {
+        list-style: none;
+        text-align: center;
+        padding: 6px 0;
+        margin: 6px 0;
+    }
+    .divider-label {
+        background: #f59e0b;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 20px;
+    }
+    .log-timing {
+        display: flex;
+        flex-direction: column;
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+    .log-time {
+        display: block;
+    }
+</style>
 @section('footer_scripts')
     <script>
         function updateUrlParameter(param, value) {
@@ -856,14 +890,42 @@
             })
         }
 
+
+        function formatLogDateTime(datetimeStr) {
+            if (!datetimeStr) return null;
+            const d = new Date(datetimeStr);
+            return d.toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: 'numeric', minute: '2-digit', hour12: true,
+            });
+        }
+
+        function formatDuration(totalMinutes) {
+            if (totalMinutes < 1) return '< 1m';
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
+        }
+
+        const TIMED_STATUSES = [
+            'Blocking', 'Gilding', 'ICE Cover', 'Imprinting',
+            'Quality Control', 'Workstation #1', 'Workstation #2',
+            'Workstation #3', 'Workstation #4', 'Printing', 'Engraving',
+        ];
+
+        const REMAKE_STATUS_NAMES = ['Issue with print', 'Remake + Reasons', 'Internal Reprint'];
+
         function viewDetails(orderId, title) {
             $('#child_order > h3').text('Sub-Orders');
             activeOrder = orderId;
             show_loader();
 
-            let data  = new FormData();
-            data.append('_token','{{@csrf_token()}}');
-            data.append('id',orderId);
+            let data = new FormData();
+            data.append('_token', '{{@csrf_token()}}');
+            data.append('id', orderId);
+
             $.ajax({
                 type: 'post',
                 processData: false,
@@ -878,46 +940,125 @@
                     hide_loader();
                 },
                 success: function (response) {
-                    console.log(response);
-                    if(response.status == 200){
-                        let status = response.status_log;
-                        let logs = response.order.logs;
-                        let commentsHtml = response.comments_vew;
-                        let child_orders = response.order.children;
+                    if (response.status == 200) {
+
+                        let status        = response.status_log;
+                        let logs          = response.order.logs;
+                        let commentsHtml  = response.comments_vew;
+                        let child_orders  = response.order.children;
                         let parent_orders = response.order.parent;
-                        if(child_orders && child_orders.length == 0 && parent_orders){
+
+                        if (child_orders && child_orders.length == 0 && parent_orders) {
                             child_orders = [parent_orders];
                             $('#child_order > h3').text('Main order');
                         }
 
-                        $('#order_logs').empty();
-                        $.each(logs, function(index, value) {
-                            let html = `<li class="log-entry">
-                                    <span class="log-desc">${value?.user?.name ?? 'Admin'} updated the status to <span class="fw-bold">${value?.status?.status_name}</span>`;
-                            if(value.sub_status){
-                                html += ` because of ${value.sub_status.name}`;
-                            }
-                            if(value.notes){
-                                html += `<br><b>Notes: </b><i>${value.notes}</i>`;
-                            }
-                            html += `</span>
-                                    <span class="log-date">${value.time_started}</span>
-                                </li>`;
-                            $('#order_logs').append(html);
-                        });
+                        // ── Activity log ──────────────────────────────────────────────────────
 
-                        if(child_orders && child_orders.length > 0){
+                        $('#order_logs').empty();
+
+                        if (!logs || logs.length === 0) {
+                            $('#order_logs').append('<li class="log-empty">No activity yet.</li>');
+                        } else {
+                            let remakeDividerDrawn = false;
+
+                            $.each(logs, function (index, value) {
+                                if (!value.status) return;
+
+                                const statusName = value.status.status_name;
+                                const isRemake   = REMAKE_STATUS_NAMES.includes(statusName);
+                                const isTimed    = TIMED_STATUSES.includes(statusName);
+
+                                // ── Remake divider ────────────────────────────────────────────
+                                if (isRemake && !remakeDividerDrawn) {
+                                    remakeDividerDrawn = true;
+                                    $('#order_logs').append(`
+                                <li class="log-divider" aria-hidden="true">
+                                    <span class="divider-label">&#8635; Remake triggered — history above, restarted below</span>
+                                </li>
+                            `);
+                                }
+
+                                // ── Sub-status ────────────────────────────────────────────────
+                                const subStatusHtml = value.sub_status
+                                    ? `<span class="log-reason">Reason: ${value.sub_status.name}</span>`
+                                    : '';
+
+                                // ── Notes ─────────────────────────────────────────────────────
+                                const notesHtml = value.notes
+                                    ? `<div class="log-notes"><span class="log-notes-label">Notes: </span>${value.notes}</div>`
+                                    : '';
+
+                                // ── Timing block — station statuses only ──────────────────────
+                                let timingHtml = '';
+                                if (isTimed) {
+                                    const startedAt   = formatLogDateTime(value.time_started);
+                                    const completedAt = formatLogDateTime(value.time_end);
+
+                                    let durationBadge = '';
+                                    if (value.time_started && value.time_end) {
+                                        const diffMins = Math.round(
+                                            (new Date(value.time_end) - new Date(value.time_started)) / 60000
+                                        );
+                                        durationBadge = `<span class="log-badge log-badge--duration">${formatDuration(diffMins)}</span>`;
+                                    } else if (value.time_started && !value.time_end) {
+                                        durationBadge = `<span class="log-badge log-badge--inprogress">In progress</span>`;
+                                    }
+
+                                    timingHtml = `
+                                <div class="log-timing">
+                                    ${startedAt   ? `<div class="log-time-row">
+                                                        <span class="log-time-label">Started</span>
+                                                        <span class="log-time-value">${startedAt}</span>
+                                                     </div>` : ''}
+                                    ${completedAt ? `<div class="log-time-row log-time-row--completed">
+                                                        <span class="log-time-label">Completed</span>
+                                                        <span class="log-time-value">${completedAt}</span>
+                                                     </div>` : ''}
+                                    ${durationBadge}
+                                </div>`;
+                                } else {
+                                    // ── Non-station statuses — just show when it was added ─────
+                                    const addedAt = formatLogDateTime(value.time_started);
+                                    timingHtml = addedAt
+                                        ? `<div class="log-timing">
+                                       <div class="log-time-row">
+                                           <span class="log-time-label">Added</span>
+                                           <span class="log-time-value">${addedAt}</span>
+                                       </div>
+                                   </div>`
+                                        : '';
+                                }
+
+                                // ── Assemble entry ────────────────────────────────────────────
+                                $('#order_logs').append(`
+                            <li class="log-entry ${isRemake ? 'log-entry--remake' : ''}">
+                                <div class="log-entry__header">
+                                    <span class="log-entry__status">${statusName}</span>
+                                </div>
+                                <div class="log-entry__meta">
+                                    <span class="log-entry__user">${value?.user?.name ?? 'Admin'}</span>
+                                    ${subStatusHtml}
+                                </div>
+                                ${timingHtml}
+                                ${notesHtml}
+                            </li>
+                        `);
+                            });
+                        }
+
+                        // ── Sub-orders table ──────────────────────────────────────────────────
+
+                        if (child_orders && child_orders.length > 0) {
                             $('#child_order').show();
                             $('#child_order table tbody').empty();
-                            $.each(child_orders, function(index, value) {
+                            $.each(child_orders, function (index, value) {
                                 let html = `<tr>
-                                        <td>${value.order_id}</td>
-                                        <td>${value.status.status_name}</td>`;
-                                if(value.status.status_name === 'Completed'){
-                                    html += `<td><img src="{{ asset('icons/green-checkmark.png') }}" alt="Completed" class="status-icon"></td>`;
-                                } else {
-                                    html += `<td><img src="{{ asset('icons/grey-checkmark.png') }}" alt="Incomplete" class="status-icon"></td>`;
-                                }
+                            <td>${value.order_id}</td>
+                            <td>${value.status.status_name}</td>`;
+                                html += value.status.status_name === 'Completed'
+                                    ? `<td><img src="{{ asset('icons/green-checkmark.png') }}" alt="Completed" class="status-icon"></td>`
+                                    : `<td><img src="{{ asset('icons/grey-checkmark.png') }}" alt="Incomplete" class="status-icon"></td>`;
                                 html += `</tr>`;
                                 $('#child_order table tbody').append(html);
                             });
@@ -925,22 +1066,35 @@
                             $('#child_order').hide();
                         }
 
-                        $('#comments_container').html(commentsHtml);
+                        // ── Comments ──────────────────────────────────────────────────────────
 
-                        if(status){
-                            if(status.sub_status){
-                                $('#modal_status_text').empty().html(status.sub_status.name).css('background-color',status.status.status_color);
-                            }else{
-                                $('#modal_status_text').empty().html(status?.status?.status_name).css('background-color',status?.status?.status_color);
+                        $('#comments_container').empty().html(commentsHtml);
+
+                        // ── Status badge ──────────────────────────────────────────────────────
+
+                        if (status) {
+                            if (status.sub_status) {
+                                $('#modal_status_text').empty()
+                                    .html(status.sub_status.name)
+                                    .css('background-color', status.status.status_color);
+                            } else {
+                                $('#modal_status_text').empty()
+                                    .html(status.status.status_name)
+                                    .css('background-color', status.status.status_color);
                             }
-                        }else{
-                            $('#modal_status_text').empty().html(response.order.status.status_name).css('background-color',response.order.status.status_color);
+                        } else {
+                            $('#modal_status_text').empty()
+                                .html(response.order.status.status_name)
+                                .css('background-color', response.order.status.status_color);
                         }
+
+                        // ── Show modal ────────────────────────────────────────────────────────
 
                         $('#orderModal').show();
                         $('#orderModal > div > h2').text('Order #' + title);
+
                     } else {
-                        show_toast(response.message,'error');
+                        show_toast(response.message, 'error');
                     }
                 },
                 error: function (response) {
@@ -1098,11 +1252,13 @@
             });
         }
 
-        function loadWorkstationDetails(workstationId,title) {
+        function loadWorkstationDetails(workstationId, title) {
+            // Get the current sort value
+            var sortParam = $('#workstation-sort').val();
 
             // Make an AJAX request to fetch workstation details
             $.ajax({
-                url: '/workstations/' + workstationId,
+                url: '/workstations/' + workstationId + '?sort=' + sortParam,
                 method: 'GET',
                 success: function(response) {
                     if ($.fn.DataTable.isDataTable('#workers_area_modal')) {
@@ -1122,7 +1278,6 @@
                 }
             });
         }
-
         // $('#searchOrders').on('keyup', function() {
         //     var searchValue = $(this).val().toLowerCase();
         //     $('#workstationOrders tr').filter(function() {
@@ -1173,6 +1328,61 @@
                 updateClock();
             }
         @endif
+
+        function confirmDeleteOrder() {
+            if (!activeOrder) {
+                show_toast('No order selected.', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Delete Order?',
+                text: 'This will permanently delete the order and all its related data. This cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                let data = new FormData();
+                data.append('_token', '{{ csrf_token() }}');
+                data.append('id', activeOrder);
+
+                $.ajax({
+                    type: 'post',
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    url: '{{ route("orders.delete") }}',
+                    data: data,
+                    beforeSend() { show_loader(); },
+                    complete: function() { hide_loader(); },
+                    success: function(response) {
+                        if (response.status == 200) {
+                            $('#orderModal').hide();
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonColor: '#16a34a',
+                                timer: 2000,
+                                timerProgressBar: true,
+                            }).then(() => window.location.reload());
+                        } else {
+                            Swal.fire({ title: 'Error', text: response.message, icon: 'error' });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({ title: 'Error', text: 'Something went wrong. Please try again.', icon: 'error' });
+                    }
+                });
+            });
+        }
     </script>
 
 @endsection

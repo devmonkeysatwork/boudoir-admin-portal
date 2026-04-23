@@ -15,7 +15,7 @@ class OrderStatus extends Model
     const COMPLETED = 'Completed';
     const ENGRAVING = 'Engraving';
     const Waiting = 'Waiting';
-    const RemakeStatusIds = [11,12];
+    const RemakeStatusIds = [10,11,12];
 
 
     function sub_status(){
@@ -56,5 +56,16 @@ class OrderStatus extends Model
         return $this->belongsToMany(Product::class, 'product_flows', 'step_id', 'product_id')
             ->withPivot('step_no')
             ->orderBy('pivot_step_no');
+    }
+
+    // Fetch IDs dynamically by name so they always match the DB
+// regardless of what ID they were assigned
+    public static function getRemakeStatusIds(): array
+    {
+        return self::whereIn('status_name', [
+            'Issue with print',
+            'Remake + Reasons',
+            'Internal Reprint',
+        ])->pluck('id')->toArray();
     }
 }

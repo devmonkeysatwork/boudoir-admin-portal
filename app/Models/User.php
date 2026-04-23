@@ -58,4 +58,9 @@ class User extends Authenticatable
         return $this->hasMany(Workstations::class, 'assigned_to_id', 'id');
     }
 
+    public function logs()
+    {
+        return $this->hasMany(OrderLogs::class, 'user_id', 'id');
+    }
+
 }

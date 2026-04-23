@@ -61,6 +61,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/orders/{id}/download-pdf', [OrdersController::class, 'packing_slip'])->name('orders.downloadPDF');
 
+    Route::post('/orders/delete', [OrdersController::class, 'deleteOrder'])->name('orders.delete');
+
 
     Route::get('/workstations/{id}', [AdminController::class, 'getWorkstationDetails']);
 
