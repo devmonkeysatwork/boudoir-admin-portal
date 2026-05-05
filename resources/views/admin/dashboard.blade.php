@@ -762,16 +762,20 @@
             let table = new DataTable('#dashboardOrdersTable', {
                 autoWidth: false,
                 columns: [
-                    { title: "Order #" },
-                    { title: "Phase" },
-                    { title: "Team Member" },
-                    { title: "Date Added" },
-                    { title: "Date Started" },
-                    { title: "Time in Production" },
-                    { title: "Late" },
-                    { title: "Actions", defaultContent: "" }
+                    { title: "Order #", width: "150px" },
+                    { title: "Phase", width: "200px" },
+                    { title: "Team Member", width: "150px" },
+                    { title: "Date Added", width: "200px" },
+                    { title: "Date Started", width: "200px" },
+                    { title: "Time in Production", width: "200px" },
+                    { title: "Late", width: "200px" },
+                    { title: "Actions", width: "280px", defaultContent: "" }
                 ],
                 columnDefs: [
+                    {
+                        targets: "_all",
+                        orderSequence: ["asc", "desc"] // remove default state
+                    },
                     {
                         targets: -1,         // -1 targets the last column
                         orderable: false     // Disable sorting on it

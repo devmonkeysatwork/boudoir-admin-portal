@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="4ec78ed0-4e0f-4e4b-93eb-a07bfa19075d" name="live" url="http://ftp.theboudoiralbum.com">
+        <fileTransfer rootFolder="/production.theboudoiralbum.com/public_html/" host="ftp.theboudoiralbum.com" port="21">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -563,7 +563,7 @@ class AdminController extends Controller
 
     public function sendIssueWithPrintEmail($order, $status)
     {
-        \Log::info('Sending email for order status ' . $status, ['order_id' => $order->id]);
+//        \Log::info('Sending email for order status ' . $status, ['order_id' => $order->id]);
         $template = EmailTemplates::where('status_id', $order->status_id)->where('status', 1)->first();
         if ($template) {
             $content = str_replace(
